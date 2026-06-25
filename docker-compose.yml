@@ -1,0 +1,7 @@
+services:
+  cinetracker:
+    image: ghcr.io/labombina7/cinetracker:latest
+    container_name: cinetracker-apache
+    ports:
+      - "8080:80"
+    restart: unless-stopped
