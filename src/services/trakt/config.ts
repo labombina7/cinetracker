@@ -15,7 +15,7 @@ export const getClientSecret = (): string => {
 
 // Get the redirect URI
 export const getRedirectUri = (): string => {
-  return window.location.origin + '/auth/callback';
+  return window.location.origin + '/trakt-redirect.html';
 };
 
 // Función para actualizar los headers de las peticiones a Trakt
