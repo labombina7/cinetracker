@@ -37,13 +37,5 @@ export const fetchMediaData = async (
   // Only log results count, not entire results
   console.log(`Received ${results.length} results for ${dataSource}/${mediaType}`);
   
-  // Apply sorting if needed
-  let sortedData = results;
-  if (sortBy === 'rating' && results.length > 0) {
-    sortedData = sortByVoteAverage(results);
-  } else if (sortBy === 'date' && results.length > 0) {
-    sortedData = sortByReleaseDate(results);
-  }
-  
-  return sortedData;
+  return results;
 };
