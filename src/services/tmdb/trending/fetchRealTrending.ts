@@ -9,7 +9,8 @@ export const fetchRealTrending = async (
   type: 'all' | 'movie' | 'tv' = 'all',
   page: number = 1,
   timeWindow: 'day' | 'week' = 'week',
-  showSpanishOnly: boolean = false // Nuevo parámetro
+  showSpanishOnly: boolean = false,
+  fetchProviders: boolean = false
 ): Promise<Media[]> => {
   try {
     // Obtenemos los parámetros de idioma según el toggle
@@ -51,26 +52,28 @@ export const fetchRealTrending = async (
         // Convertir el item
         const media = await convertToMedia(item, mediaType === 'all' ? item.media_type : mediaType);
         
-        // Obtener proveedores de streaming para España
         if (media) {
-          try {
-            const providers = await fetchWatchProviders(media.id, media.type);
-            if (providers?.results?.ES) {
-              media.watchProviders = {
-                flatrate: providers.results.ES.flatrate || [],
-                rent: providers.results.ES.rent || [],
-                buy: providers.results.ES.buy || []
-              };
-              
-              // Guardar información del país de origen
-              if (item.original_language === 'es' || (item.origin_country && item.origin_country.includes('ES'))) {
-                media.country = 'ES';
-              } else {
-                media.country = item.origin_country?.[0] || undefined;
+          // Guardar información del país de origen
+          if (item.original_language === 'es' || (item.origin_country && item.origin_country.includes('ES'))) {
+            media.country = 'ES';
+          } else {
+            media.country = item.origin_country?.[0] || undefined;
+          }
+
+          // Solo pedir providers si se va a filtrar por plataforma
+          if (fetchProviders) {
+            try {
+              const providers = await fetchWatchProviders(media.id, media.type);
+              if (providers?.results?.ES) {
+                media.watchProviders = {
+                  flatrate: providers.results.ES.flatrate || [],
+                  rent: providers.results.ES.rent || [],
+                  buy: providers.results.ES.buy || []
+                };
               }
+            } catch (err) {
+              console.error(`Error fetching providers for ${media.title}:`, err);
             }
-          } catch (err) {
-            console.error(`Error fetching providers for ${media.title}:`, err);
           }
         }
         

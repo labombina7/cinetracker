@@ -8,7 +8,8 @@ export const fetchMediaByPlatforms = async (
   mediaType: 'all' | 'movie' | 'tv',
   platformIds: number[],
   page: number = 1,
-  showSpanishOnly: boolean = false // Nuevo parámetro
+  showSpanishOnly: boolean = false,
+  sortBy: 'rating' | 'date' = 'rating'
 ): Promise<Media[]> => {
   try {
     if (!platformIds || platformIds.length === 0) {
@@ -25,13 +26,17 @@ export const fetchMediaByPlatforms = async (
     // Para cada tipo de contenido, realizar una solicitud
     for (const type of typesToFetch) {
       // Parámetros para la solicitud
+      const apiSortBy = sortBy === 'date'
+        ? (type === 'tv' ? 'first_air_date.desc' : 'primary_release_date.desc')
+        : 'vote_average.desc';
+
       const params: Record<string, string | number | boolean> = {
         watch_region: 'ES',
         with_watch_providers: platformIds.join('|'),
         page: page,
         include_adult: false,
-        // Nueva mejora: ordenar por popularidad para obtener contenido más relevante
-        sort_by: 'popularity.desc'
+        'vote_count.gte': sortBy === 'rating' ? 50 : 5,
+        sort_by: apiSortBy
       };
 
       // Si queremos solo contenido español, añadimos el filtro de idioma original

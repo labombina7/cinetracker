@@ -43,11 +43,12 @@ export const useFetchStrategy = () => {
         case 'discover':
           console.log(`Using discover strategy for ${mediaType}`);
           results = await fetchDiscoverStrategy(
-            mediaType, 
-            page, 
-            validPlatformIds, 
+            mediaType,
+            page,
+            validPlatformIds,
             filterByPlatform,
-            showSpanishOnly
+            showSpanishOnly,
+            sortBy
           );
           break;
           

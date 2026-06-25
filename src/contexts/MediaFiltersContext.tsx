@@ -24,7 +24,7 @@ interface MediaFiltersContextType {
 const initialState: MediaFiltersState = {
   showSpanishOnly: false,
   mediaType: 'all',
-  dataSource: 'trending',
+  dataSource: 'discover',
   selectedPlatformIds: [],
   sortBy: 'rating',
 };
@@ -57,7 +57,7 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
         console.log('Loaded filters from localStorage:', parsed);
         
         // Convert old data source values to new ones
-        if (parsed.dataSource === 'combined' || parsed.dataSource === 'new') {
+        if (parsed.dataSource === 'combined' || parsed.dataSource === 'new' || parsed.dataSource === 'trending') {
           parsed.dataSource = 'discover';
         }
         

@@ -8,7 +8,8 @@ export const fetchDiscoverStrategy = async (
   page: number,
   validPlatformIds: number[],
   filterByPlatform: (items: Media[], platformIds: number[]) => Media[],
-  showSpanishOnly: boolean = false // Nuevo parámetro
+  showSpanishOnly: boolean = false,
+  sortBy: 'rating' | 'date' = 'rating'
 ): Promise<Media[]> => {
   console.log(`Fetching discover for ${mediaType}, page ${page}, Spanish only: ${showSpanishOnly}`);
   let results: Media[] = [];
@@ -20,7 +21,7 @@ export const fetchDiscoverStrategy = async (
       
       // Use the API that filters directly by platform
       // Pasamos el nuevo parámetro de idioma español
-      results = await fetchMediaByPlatforms(mediaType, validPlatformIds, page, showSpanishOnly);
+      results = await fetchMediaByPlatforms(mediaType, validPlatformIds, page, showSpanishOnly, sortBy);
       console.log(`Direct platform API returned ${results.length} items for discover`);
       
       // Fallback if not enough results
@@ -33,7 +34,7 @@ export const fetchDiscoverStrategy = async (
         let generalResults: Media[] = [];
         for (const type of typesToFetch) {
           // Pasamos el parámetro de idioma español a discoverMedia
-          const data = await discoverMedia(type as 'movie' | 'tv', page, [], showSpanishOnly);
+          const data = await discoverMedia(type as 'movie' | 'tv', page, [], showSpanishOnly, sortBy);
           if (data && data.length > 0) {
             generalResults = [...generalResults, ...data];
           }

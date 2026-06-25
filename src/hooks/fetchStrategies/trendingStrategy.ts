@@ -13,8 +13,8 @@ export const fetchTrendingStrategy = async (
   console.log(`Fetching trending for ${mediaType}, page ${page}, platforms: ${validPlatformIds.join(',') || 'all'}, Spanish only: ${showSpanishOnly}`);
   
   try {
-    // Pasamos el parámetro de idioma español a fetchRealTrending
-    let results = await fetchRealTrending(mediaType, page, 'week', showSpanishOnly);
+    const needsProviders = validPlatformIds.length > 0;
+    let results = await fetchRealTrending(mediaType, page, 'week', showSpanishOnly, needsProviders);
     console.log(`Got ${results.length} trending items before platform filtering for page ${page}`);
     
     // Si no obtuvimos resultados, devolver array vacío para evitar errores
@@ -52,8 +52,7 @@ export const fetchTrendingStrategy = async (
           const nextPage = page + i;
           console.log(`Fetching additional trending page ${nextPage}`);
           
-          // Pasamos el parámetro de idioma español
-          const additionalResults = await fetchRealTrending(mediaType, nextPage, 'week', showSpanishOnly);
+          const additionalResults = await fetchRealTrending(mediaType, nextPage, 'week', showSpanishOnly, needsProviders);
           console.log(`Got ${additionalResults.length} additional trending items from page ${nextPage}`);
           
           // Filter these results too
