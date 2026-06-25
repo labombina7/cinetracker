@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cinetracker",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 8080
+    },
+    {
+      "name": "kanban",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "specs", "-p", "8081", "--no-clipboard"],
+      "port": 8081
+    }
+  ]
+}

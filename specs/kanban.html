@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mediaTracker — Kanban</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f8f7f5;
+      --surface:   #ffffff;
+      --surface2:  #f8f7f5;
+      --surface3:  #f0ede8;
+      --border:    #e8e6e1;
+      --border2:   #dbd9d4;
+      --text:      #1a1917;
+      --muted:     #706e6a;
+      --muted2:    #a8a5a0;
+      --accent:    #3b62d4;
+      --accent2:   #2a4fb5;
+      --effort-s:  #16a34a;
+      --effort-m:  #b45309;
+      --effort-l:  #c2410c;
+      --tag-epic:  #6d28d9;
+      --tag-us:    #0369a1;
+      --tag-next:  #dc2626;
+      --tag-done:  #166534;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      padding: 18px 28px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0;
+      background: var(--bg); z-index: 10;
+    }
+    .logo {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #1e40af, #3b62d4);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+    header .subtitle { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+    /* ── Board ──────────────────────────────────────────────── */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      padding: 18px 20px 48px;
+      overflow-x: auto;
+    }
+    .column {
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      min-height: 400px; overflow: hidden;
+    }
+    .col-header {
+      padding: 13px 14px 11px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .col-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .col-header h2 {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--muted);
+    }
+    .col-count {
+      margin-left: auto;
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 11px; color: var(--muted); font-weight: 600;
+    }
+    .col-body {
+      padding: 10px;
+      display: flex; flex-direction: column; gap: 8px;
+      flex: 1; overflow-y: auto;
+      max-height: calc(100vh - 160px);
+    }
+    .col-body::-webkit-scrollbar { width: 5px; }
+    .col-body::-webkit-scrollbar-track { background: transparent; }
+    .col-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* ── Cards ─────────────────────────────────────────────── */
+    .card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 13px;
+      cursor: pointer;
+      transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+      position: relative;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(59,98,212,0.15), 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    .card-top {
+      display: flex; align-items: center; gap: 5px;
+      margin-bottom: 7px; flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 9px; font-weight: 800; letter-spacing: 0.05em;
+      padding: 2px 6px; border-radius: 4px; text-transform: uppercase; flex-shrink: 0;
+    }
+    .badge-epic { background: var(--tag-epic); color: #fff; }
+    .badge-us   { background: var(--tag-us);   color: #fff; }
+    .badge-next { background: var(--tag-next); color: #fff; animation: pulse 2s infinite; }
+    .badge-done { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+    .effort {
+      font-size: 9px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px;
+      margin-left: auto; flex-shrink: 0;
+    }
+    .effort-s { color: var(--effort-s); border: 1px solid var(--effort-s); }
+    .effort-m { color: var(--effort-m); border: 1px solid var(--effort-m); }
+    .effort-l { color: var(--effort-l); border: 1px solid var(--effort-l); }
+
+    .card-title {
+      font-size: 13px; font-weight: 600;
+      line-height: 1.35; margin-bottom: 5px; color: var(--text);
+    }
+    .card-done .card-title { color: #16a34a; }
+    .card-summary { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+    .card-footer {
+      margin-top: 9px; padding-top: 7px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; color: var(--muted2); flex-wrap: wrap;
+    }
+    .dep-badge {
+      background: var(--surface3); border: 1px solid var(--border);
+      border-radius: 4px; padding: 1px 5px;
+      font-size: 10px; font-weight: 600; color: var(--muted);
+      cursor: pointer; transition: border-color 0.1s, color 0.1s;
+    }
+    .dep-badge:hover { border-color: var(--accent); color: var(--accent); }
+    .card-done { opacity: 0.6; }
+    .card-done:hover { opacity: 0.9; }
+
+    /* ── Drag & drop ────────────────────────────────────────── */
+    .card[draggable="true"] { cursor: grab; }
+    .card[draggable="true"]:active { cursor: grabbing; }
+    .card.dragging { opacity: 0.5; box-shadow: 0 0 0 2px var(--accent); }
+    .drag-placeholder {
+      height: 4px; background: var(--accent); border-radius: 4px;
+      margin: 0 2px; pointer-events: none; flex-shrink: 0;
+    }
+    .col-body.drag-active { background: rgba(59,98,212,0.04); border-radius: 0 0 12px 12px; }
+
+    /* ── Move-to-column button ──────────────────────────────── */
+    .move-btn {
+      position: absolute; top: 8px; right: 10px;
+      background: var(--surface3); border: 1px solid var(--border2);
+      border-radius: 5px; padding: 2px 6px;
+      font-size: 10px; font-weight: 600; color: var(--muted);
+      cursor: pointer; opacity: 0;
+      transition: opacity 0.12s, background 0.1s, color 0.1s;
+      z-index: 5; font-family: inherit; line-height: 1.6;
+    }
+    .card:hover .move-btn { opacity: 1; }
+    .move-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .move-menu {
+      position: absolute; top: 28px; right: 10px;
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+      z-index: 50; min-width: 150px; overflow: hidden; display: none;
+    }
+    .move-menu.open { display: block; }
+    .move-menu-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; font-size: 12px; font-weight: 500;
+      color: var(--text); cursor: pointer; transition: background 0.1s;
+      border: none; background: none; width: 100%;
+      text-align: left; font-family: inherit;
+    }
+    .move-menu-item:hover { background: var(--surface2); }
+    .move-menu-item .mm-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .move-menu-item.current { color: var(--muted2); pointer-events: none; }
+
+    .empty-col {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; padding: 40px 16px;
+      color: var(--muted); font-size: 12px; flex: 1;
+    }
+    .empty-icon { font-size: 28px; }
+
+    /* ── Modal overlay ──────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,25,23,0.45);
+      backdrop-filter: blur(4px);
+      z-index: 100; display: flex;
+      align-items: flex-start; justify-content: center;
+      padding: 48px 20px 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.18s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 14px; width: 100%; max-width: 720px;
+      max-height: calc(100vh - 80px);
+      display: flex; flex-direction: column;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+      transform: translateY(12px); transition: transform 0.18s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      padding: 20px 22px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 12px; flex-shrink: 0;
+    }
+    .modal-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .modal-title-block { flex: 1; }
+    .modal-title {
+      font-size: 18px; font-weight: 700;
+      letter-spacing: -0.02em; line-height: 1.25; margin-top: 6px;
+    }
+    .modal-story {
+      margin-top: 8px; font-size: 12px; color: var(--muted);
+      line-height: 1.6; font-style: italic;
+      border-left: 2px solid var(--border2); padding-left: 10px;
+    }
+    .close-btn {
+      background: var(--surface3); border: 1px solid var(--border);
+      border-radius: 7px; width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--muted); font-size: 16px;
+      flex-shrink: 0; transition: background 0.1s, color 0.1s; margin-top: 2px;
+    }
+    .close-btn:hover { background: var(--surface2); color: var(--text); }
+    .modal-body { overflow-y: auto; padding: 20px 22px 24px; flex: 1; }
+    .modal-body::-webkit-scrollbar { width: 6px; }
+    .modal-body::-webkit-scrollbar-track { background: transparent; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    .modal-section { margin-bottom: 22px; }
+    .modal-section:last-child { margin-bottom: 0; }
+    .section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--muted2); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .modal-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .modal-desc + .modal-desc { margin-top: 8px; }
+    .criteria-group-title {
+      font-size: 11px; font-weight: 700; color: var(--muted2);
+      margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .criteria-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .criteria-list li {
+      font-size: 12.5px; color: var(--text);
+      display: flex; gap: 8px; line-height: 1.45;
+    }
+    .criteria-list li::before {
+      content: '◻'; color: var(--muted2); flex-shrink: 0; margin-top: 1px;
+    }
+    .criteria-list li.done::before { content: '✓'; color: var(--effort-s); }
+
+    .comp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .comp-table th {
+      text-align: left; font-weight: 600; color: var(--muted2);
+      padding: 4px 8px; border-bottom: 1px solid var(--border);
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .comp-table td { padding: 5px 8px; color: var(--text); vertical-align: top; }
+    .comp-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+    .comp-path { font-family: monospace; font-size: 11px; color: var(--accent); }
+    .badge-new {
+      font-size: 9px; font-weight: 700; padding: 1px 5px;
+      border-radius: 3px; background: #dbeafe; color: #1d4ed8; margin-left: 4px;
+    }
+    .tech-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .tech-list li {
+      font-size: 12.5px; color: var(--muted); line-height: 1.5;
+      padding-left: 14px; position: relative;
+    }
+    .tech-list li::before {
+      content: '→'; position: absolute; left: 0; color: var(--muted2);
+    }
+    .dep-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .oos-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .oos-list li {
+      font-size: 12px; color: var(--muted2); padding-left: 14px; position: relative;
+    }
+    .oos-list li::before { content: '–'; position: absolute; left: 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎬</div>
+  <h1>mediaTracker — Kanban</h1>
+  <span class="subtitle">Edita <code>specs/kanban.html</code> · Nunca <code>public/specs/</code></span>
+</header>
+
+<div class="board" id="board"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modalHeader"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+// To add a card: add an entry to CARDS and set column to 'ideas'|'todo'|'done'|'discarded'
+// To move a card: change its column value
+// column values map to COLUMN_DEFS keys
+
+const COLUMN_DEFS = [
+  { key: 'ideas', label: 'Ideas to Refine', dot: '#ca8a04',  emptyIcon: '💡', emptyText: 'Sin ideas por refinar' },
+  { key: 'todo',  label: 'To Do',           dot: '#3b82f6',  emptyIcon: '📋', emptyText: 'Sin tareas pendientes' },
+  { key: 'done',  label: 'Done',            dot: '#22c55e',  emptyIcon: '✅', emptyText: 'Sin ítems completados' },
+  { key: 'discarded', label: 'Descartadas', dot: '#6b7280',  emptyIcon: '🗑️', emptyText: 'Sin ítems descartados' },
+];
+
+const CARDS = {
+
+  // ── Done ─────────────────────────────────────────────────────────────────
+
+  'US-001': {
+    id: 'US-001', type: 'US', column: 'done', effort: 'L',
+    title: 'Home con catálogo TMDB',
+    summary: 'Grid de películas y series con scroll infinito desde TMDB.',
+    story: 'Como usuario,\nquiero ver un catálogo de películas y series populares en la portada,\npara descubrir contenido nuevo sin tener que buscarlo.',
+    description: [
+      'Pantalla principal con grid de tarjetas de media. Carga inicial desde TMDB (trending o discover), con paginación automática al hacer scroll (infinite scroll). Estado de carga con skeleton cards.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Grid responsivo con skeleton en carga', done: true },
+      { text: 'Infinite scroll funcional', done: true },
+      { text: 'Cada tarjeta muestra póster, título, año y valoración', done: true },
+    ]}],
+    dependencies: [], components: [
+      { path: 'src/pages/Home.tsx', desc: 'Página principal', isNew: false },
+      { path: 'src/components/MediaCard.tsx', desc: 'Tarjeta de media', isNew: false },
+      { path: 'src/hooks/mediaFetch/', desc: 'Hooks de fetching', isNew: false },
+    ], tech: ['TMDB /trending/all/week y /discover/*'], outOfScope: [],
+  },
+
+  'US-002': {
+    id: 'US-002', type: 'US', column: 'done', effort: 'M',
+    title: 'Filtros de tipo de media y fuente de datos',
+    summary: 'Filtrar por Películas/Series/Todos y cambiar entre Tendencias y Descubrir.',
+    story: 'Como usuario,\nquiero filtrar el catálogo por tipo de contenido y fuente,\npara ver solo lo que me interesa.',
+    description: [
+      'Tres botones de tipo (Todos / Películas / Series) y selector de fuente (Tendencias = /trending, Descubrir = /discover). Los filtros persisten en localStorage.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Botones Todos/Películas/Series funcionan', done: true },
+      { text: 'Selector Tendencias/Descubrir cambia el endpoint', done: true },
+      { text: 'Los filtros se guardan en localStorage', done: true },
+    ]}],
+    dependencies: ['US-001'], components: [
+      { path: 'src/components/home/MediaFilters.tsx', desc: 'Filtros de tipo y fuente', isNew: false },
+      { path: 'src/contexts/MediaFiltersContext.tsx', desc: 'Estado global de filtros', isNew: false },
+    ], tech: [], outOfScope: [],
+  },
+
+  'US-003': {
+    id: 'US-003', type: 'US', column: 'done', effort: 'M',
+    title: 'Filtros de plataforma de streaming',
+    summary: 'Filtrar catálogo por Netflix, Disney+, HBO Max, Movistar+, etc.',
+    story: 'Como usuario,\nquiero filtrar el catálogo por plataforma de streaming,\npara ver solo el contenido al que ya tengo acceso.',
+    description: [
+      'Fila de botones con los logos/nombres de plataformas disponibles. Solo activo en modo "Descubrir". Pasa with_watch_providers al endpoint de TMDB. Multi-selección soportada.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Botones de plataforma visibles en modo Descubrir', done: true },
+      { text: 'Multi-selección de plataformas funciona', done: true },
+      { text: 'En modo Tendencias los filtros de plataforma se ignoran', done: true },
+    ]}],
+    dependencies: ['US-002'], components: [
+      { path: 'src/components/home/PlatformFilters.tsx', desc: 'Filtros de plataforma', isNew: false },
+    ], tech: ['TMDB /watch/providers/movie y /discover con with_watch_providers'], outOfScope: [],
+  },
+
+  'US-004': {
+    id: 'US-004', type: 'US', column: 'done', effort: 'L',
+    title: 'Detalle de película/serie',
+    summary: 'Página de detalle completa: póster, sinopsis, reparto, providers, valoración.',
+    story: 'Como usuario,\nquiero ver toda la información de una película o serie,\npara decidir si quiero verla.',
+    description: [
+      'Ruta /details/:type/:id con backdrop, póster, sinopsis, géneros, valoración, carrusel de reparto (foto + nombre + personaje) y sección de dónde verlo (providers por país).',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Backdrop + póster con efecto parallax suave', done: true },
+      { text: 'Sinopsis, géneros, año, duración', done: true },
+      { text: 'Carrusel de reparto con fotos', done: true },
+      { text: 'Sección de proveedores de streaming', done: true },
+      { text: 'Botón de favorito', done: true },
+    ]}],
+    dependencies: ['US-001'], components: [
+      { path: 'src/pages/MediaDetail.tsx', desc: 'Página de detalle', isNew: false },
+      { path: 'src/components/media/', desc: 'Subcomponentes del detalle', isNew: false },
+    ], tech: ['TMDB /movie/:id?append_to_response=credits,watch/providers'], outOfScope: [],
+  },
+
+  'US-005': {
+    id: 'US-005', type: 'US', column: 'done', effort: 'S',
+    title: 'Búsqueda de películas y series',
+    summary: 'Barra de búsqueda con resultados en tiempo real.',
+    story: 'Como usuario,\nquiero buscar películas y series por título,\npara encontrar contenido específico que tengo en mente.',
+    description: [
+      'Barra de búsqueda en la navbar. Al escribir muestra resultados en /search. Usa el endpoint /search/multi de TMDB.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Barra de búsqueda en la navbar', done: true },
+      { text: 'Resultados en página /search', done: true },
+      { text: 'Muestra películas y series mezcladas', done: true },
+    ]}],
+    dependencies: ['US-001'], components: [
+      { path: 'src/components/SearchBar.tsx', desc: 'Barra de búsqueda', isNew: false },
+      { path: 'src/pages/SearchResults.tsx', desc: 'Página de resultados', isNew: false },
+    ], tech: ['TMDB /search/multi'], outOfScope: [],
+  },
+
+  'US-006': {
+    id: 'US-006', type: 'US', column: 'done', effort: 'S',
+    title: 'Favoritos locales',
+    summary: 'Marcar películas/series como favoritas, persistido en localStorage.',
+    story: 'Como usuario,\nquiero guardar mis favoritos sin necesidad de crear una cuenta,\npara tenerlos accesibles en mi próxima visita.',
+    description: [
+      'Botón de corazón en MediaCard y MediaDetail. Los favoritos se guardan en localStorage. Persisten entre sesiones.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Botón de favorito en tarjeta y en detalle', done: true },
+      { text: 'Estado persiste en localStorage', done: true },
+    ]}],
+    dependencies: ['US-001'], components: [
+      { path: 'src/components/media/FavoriteButton.tsx', desc: 'Botón de favorito', isNew: false },
+      { path: 'src/hooks/useFavorites.ts', desc: 'Hook de favoritos', isNew: false },
+    ], tech: [], outOfScope: ['Sincronización en la nube'],
+  },
+
+  'US-007': {
+    id: 'US-007', type: 'US', column: 'done', effort: 'L',
+    title: 'Integración con Trakt.tv (OAuth2)',
+    summary: 'Login con Trakt para sincronizar watchlist e historial.',
+    story: 'Como usuario que usa Trakt,\nquiero conectar mi cuenta para ver mi watchlist aquí,\npara tener todo en un único lugar.',
+    description: [
+      'OAuth2 con Trakt.tv usando PKCE + state. El usuario introduce sus credenciales de app (Client ID + Secret) en Settings. Flujo: /auth/trakt → Trakt authorization → /auth/callback → token guardado en localStorage.',
+      'Estado de conexión visible en Settings. Perfil de usuario visible tras autenticación.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Formulario de Client ID/Secret en Settings', done: true },
+      { text: 'Flujo OAuth2 completo con verificación de state', done: true },
+      { text: 'Token guardado en localStorage', done: true },
+      { text: 'Perfil de usuario Trakt visible', done: true },
+    ]}],
+    dependencies: [], components: [
+      { path: 'src/pages/TraktAuth.tsx', desc: 'Inicio del flujo OAuth', isNew: false },
+      { path: 'src/pages/AuthCallback.tsx', desc: 'Callback OAuth', isNew: false },
+      { path: 'src/services/trakt/', desc: 'Cliente Trakt API', isNew: false },
+    ], tech: ['Trakt.tv OAuth2 PIN flow', 'HashRouter para compatibilidad con Apache/NAS'], outOfScope: ['Backend proxy para token exchange'],
+  },
+
+  'US-008': {
+    id: 'US-008', type: 'US', column: 'done', effort: 'S',
+    title: 'Filtro de solo contenido español',
+    summary: 'Toggle para mostrar únicamente contenido de origen español.',
+    story: 'Como usuario hispanohablante,\nquiero filtrar para ver solo contenido en español,\npara descubrir series y películas de habla hispana.',
+    description: [
+      'Toggle "Solo contenido español" que pasa language=es y with_original_language=es a los endpoints de TMDB. Persiste en localStorage.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Toggle visible junto a los demás filtros', done: true },
+      { text: 'Cambia el idioma y origen de los resultados', done: true },
+    ]}],
+    dependencies: ['US-002'], components: [
+      { path: 'src/components/home/MediaFilters.tsx', desc: 'Toggle en la barra de filtros', isNew: false },
+    ], tech: [], outOfScope: [],
+  },
+
+  'US-009': {
+    id: 'US-009', type: 'US', column: 'done', effort: 'S',
+    title: 'Ordenación por valoración y fecha',
+    summary: 'Selector para ordenar los resultados por TMDB rating o fecha de estreno.',
+    story: 'Como usuario,\nquiero poder ordenar el catálogo por valoración o fecha de estreno,\npara ver primero lo mejor o lo más reciente.',
+    description: [
+      'Selector "Ordenar por" con opciones Valoración y Fecha de estreno. Ordena los resultados localmente tras recibirlos de TMDB.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Selector con dos opciones', done: true },
+      { text: 'El orden cambia el grid correctamente', done: true },
+    ]}],
+    dependencies: ['US-002'], components: [
+      { path: 'src/utils/mediaSorting.ts', desc: 'Lógica de ordenación', isNew: false },
+    ], tech: [], outOfScope: [],
+  },
+
+  'US-010': {
+    id: 'US-010', type: 'US', column: 'done', effort: 'M',
+    title: 'Despliegue en NAS Synology con HashRouter',
+    summary: 'App desplegada en NAS Synology mediante Docker + Apache + proxy inverso.',
+    story: 'Como usuario doméstico,\nquiero acceder a la app desde fuera de mi red local,\npara usarla desde cualquier lugar.',
+    description: [
+      'Build de producción con Vite. Docker con Apache httpd:2.4 sirviendo el dist/. Proxy inverso en DSM (puerto 5554) con HTTPS Let\'s Encrypt. HashRouter para que el callback OAuth de Trakt funcione correctamente con Apache.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'App accesible en https://xava73.synology.me:5554', done: true },
+      { text: 'OAuth callback de Trakt funciona', done: true },
+      { text: 'HTTPS con certificado válido', done: true },
+    ]}],
+    dependencies: ['US-007'], components: [
+      { path: 'docs/deploy-synology.md', desc: 'Guía de despliegue', isNew: false },
+    ], tech: ['Docker httpd:2.4', 'Synology DSM reverse proxy', 'Let\'s Encrypt HTTPS'], outOfScope: [],
+  },
+
+  // ── To Do ────────────────────────────────────────────────────────────────
+
+  'US-011': {
+    id: 'US-011', type: 'US', column: 'todo', effort: 'M',
+    title: 'Vista de Favoritos',
+    summary: 'Página dedicada donde ver y gestionar todas las películas/series marcadas como favoritas.',
+    story: 'Como usuario,\nquiero una página de Favoritos,\npara revisar fácilmente mi lista de contenido guardado.',
+    description: [
+      'Ruta /favorites con grid de tarjetas de los ítems favoritos guardados en localStorage. Opción de eliminar de favoritos desde la propia vista. Estado vacío con CTA.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Ruta /favorites accesible desde la navbar', done: false },
+      { text: 'Grid con el mismo estilo que Home', done: false },
+      { text: 'Estado vacío con mensaje y CTA a Home', done: false },
+      { text: 'Botón de eliminar en cada tarjeta', done: false },
+    ]}],
+    dependencies: ['US-006'], components: [
+      { path: 'src/pages/Favorites.tsx', desc: 'Página de favoritos', isNew: true },
+      { path: 'src/components/Navbar.tsx', desc: 'Añadir enlace a Favorites', isNew: false },
+    ], tech: [], outOfScope: ['Favoritos sincronizados con Trakt'],
+  },
+
+  'US-012': {
+    id: 'US-012', type: 'US', column: 'todo', effort: 'L',
+    title: 'Watchlist de Trakt sincronizada',
+    summary: 'Ver la watchlist de Trakt directamente en mediaTracker.',
+    story: 'Como usuario conectado a Trakt,\nquiero ver mi watchlist de Trakt en la app,\npara tener en un lugar el contenido que quiero ver.',
+    description: [
+      'Pestaña o sección "Mi lista" que muestra la watchlist de Trakt cuando el usuario está autenticado. Enriquece los datos con pósters y metadata de TMDB (cross-referencia por ID).',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Sección visible solo si está autenticado en Trakt', done: false },
+      { text: 'Lista de watchlist con póster TMDB', done: false },
+      { text: 'Posibilidad de añadir/quitar de watchlist', done: false },
+    ]}],
+    dependencies: ['US-007'], components: [
+      { path: 'src/services/trakt/watchlist.ts', desc: 'Ya existe, expandir', isNew: false },
+      { path: 'src/pages/Watchlist.tsx', desc: 'Vista de watchlist', isNew: true },
+    ], tech: ['Trakt /sync/watchlist', 'Cross-reference con TMDB ids'], outOfScope: ['Historial de Trakt visto'],
+  },
+
+  'US-013': {
+    id: 'US-013', type: 'US', column: 'todo', effort: 'S',
+    title: 'Soporte para múltiples idiomas de interfaz',
+    summary: 'Selector de idioma (ES/EN) persistido. Ya hay lógica parcial en el código.',
+    story: 'Como usuario anglófono,\nquiero cambiar el idioma de la interfaz a inglés,\npara entender todos los controles.',
+    description: [
+      'El hook useLanguage y las traducciones en src/utils/translations/ ya existen parcialmente. Completar la cobertura de todas las cadenas de texto y añadir un selector en Settings.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Selector de idioma en Settings', done: false },
+      { text: 'Todas las cadenas de UI traducidas a ES/EN', done: false },
+      { text: 'Idioma persiste en localStorage', done: false },
+    ]}],
+    dependencies: [], components: [
+      { path: 'src/hooks/useLanguage.ts', desc: 'Hook ya existente', isNew: false },
+      { path: 'src/utils/translations/', desc: 'Traducciones ya existentes', isNew: false },
+    ], tech: [], outOfScope: ['i18n library, usar las traducciones ya presentes'],
+  },
+
+  // ── Ideas ────────────────────────────────────────────────────────────────
+
+  'IDEA-historial': {
+    id: 'IDEA-historial', type: 'IDEA', column: 'ideas',
+    title: 'Historial de visualización',
+    summary: 'Registro de lo que has visto, con fechas.',
+    story: 'Como usuario,\nquiero llevar un historial de lo que he visto,\npara no repetir contenido y ver mis estadísticas.',
+    description: [
+      'Marcar un ítem como "visto" con fecha. Historial navegable. Sincronizable con Trakt history.',
+    ],
+    criteria: [{ group: 'Ideas', items: [
+      { text: 'Marcar como visto con fecha', done: false },
+      { text: 'Historial paginado', done: false },
+      { text: 'Sincronización bidireccional con Trakt', done: false },
+    ]}],
+    dependencies: ['US-007'], components: [], tech: ['Trakt /history'], outOfScope: [],
+  },
+
+  'IDEA-recomendaciones': {
+    id: 'IDEA-recomendaciones', type: 'IDEA', column: 'ideas',
+    title: 'Sección de recomendaciones personalizadas',
+    summary: 'Usar el endpoint de recomendaciones de TMDB basado en favoritos.',
+    story: 'Como usuario,\nquiero recibir recomendaciones basadas en lo que me ha gustado,\npara descubrir contenido afín a mis gustos.',
+    description: [
+      'TMDB tiene /movie/:id/recommendations y /tv/:id/recommendations. Agregar recomendaciones a partir de los favoritos del usuario para generar un feed personalizado.',
+    ],
+    criteria: [{ group: 'Ideas', items: [
+      { text: 'Sección "Porque te gustó X" en Home o en Detalle', done: false },
+      { text: 'Basado en favoritos del usuario', done: false },
+    ]}],
+    dependencies: ['US-006'], components: [], tech: ['TMDB /movie/:id/recommendations'], outOfScope: [],
+  },
+
+  'IDEA-notificaciones': {
+    id: 'IDEA-notificaciones', type: 'IDEA', column: 'ideas',
+    title: 'Notificaciones de estrenos',
+    summary: 'Avisar cuando una película/serie que sigues esté disponible en streaming.',
+    story: 'Como usuario,\nquiero que me avisen cuando el contenido que espero llegue a una plataforma,\npara no perdérmelo.',
+    description: [
+      'Requiere backend o service worker. Suscripción a un título, TMDB webhooks o polling. Fuera del alcance actual si no se añade backend.',
+    ],
+    criteria: [{ group: 'Ideas', items: [
+      { text: 'Añadir a "alertas" desde el detalle', done: false },
+      { text: 'Notificación push o email', done: false },
+    ]}],
+    dependencies: [], components: [], tech: ['Requiere backend o service worker'], outOfScope: ['Sin backend, imposible de implementar'],
+  },
+
+};
+
+// ── Render engine ─────────────────────────────────────────────────────────────
+
+function effortClass(e) {
+  return e === 'S' ? 'effort-s' : e === 'M' ? 'effort-m' : 'effort-l';
+}
+
+function badgeClass(type) {
+  return type === 'EPIC' ? 'badge-epic' : type === 'IDEA' ? 'badge-epic' : 'badge-us';
+}
+
+function buildCard(card) {
+  const isDone = card.column === 'done';
+  const div = document.createElement('div');
+  div.className = `card${isDone ? ' card-done' : ''}`;
+  div.setAttribute('data-id', card.id);
+  div.setAttribute('tabindex', '0');
+  div.setAttribute('draggable', 'true');
+  div.addEventListener('click', () => openModal(card.id));
+  div.addEventListener('keydown', e => { if (e.key === 'Enter') openModal(card.id); });
+
+  const topBadge = isDone ? 'badge-done' : badgeClass(card.type);
+  const topText  = isDone ? '✓ ' + card.id : card.id;
+
+  div.innerHTML = `
+    <div class="card-top">
+      <span class="badge ${topBadge}">${topText}</span>
+      ${card.effort ? `<span class="effort ${effortClass(card.effort)}">${card.effort}</span>` : ''}
+    </div>
+    <div class="card-title">${card.title}</div>
+    ${card.summary ? `<div class="card-summary">${card.summary}</div>` : ''}
+    ${card.dependencies && card.dependencies.length ? `
+      <div class="card-footer">
+        Depende de: ${card.dependencies.map(d => `<span class="dep-badge" onclick="event.stopPropagation();openModal('${d}')">${d}</span>`).join('')}
+      </div>` : ''}
+  `;
+
+  return div;
+}
+
+function buildBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  const grouped = {};
+  COLUMN_DEFS.forEach(c => { grouped[c.key] = []; });
+  Object.values(CARDS).forEach(card => {
+    if (grouped[card.column]) grouped[card.column].push(card);
+  });
+
+  COLUMN_DEFS.forEach(colDef => {
+    const cards = grouped[colDef.key];
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.innerHTML = `
+      <div class="col-header">
+        <div class="col-dot" style="background:${colDef.dot}"></div>
+        <h2>${colDef.label}</h2>
+        <span class="col-count">${cards.length}</span>
+      </div>
+    `;
+    const body = document.createElement('div');
+    body.className = 'col-body';
+    body.dataset.col = colDef.key;
+
+    if (cards.length === 0) {
+      body.innerHTML = `<div class="empty-col"><span class="empty-icon">${colDef.emptyIcon}</span>${colDef.emptyText}</div>`;
+    } else {
+      cards.forEach(card => body.appendChild(buildCard(card)));
+    }
+
+    col.appendChild(body);
+    board.appendChild(col);
+  });
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+
+function openModal(cardId) {
+  const card = CARDS[cardId];
+  if (!card) return;
+
+  const overlay = document.getElementById('modalOverlay');
+  const header  = document.getElementById('modalHeader');
+  const body    = document.getElementById('modalBody');
+
+  const typeLabel = card.type === 'IDEA' ? 'IDEA' : card.type;
+  const badgeCls  = badgeClass(card.type);
+
+  header.innerHTML = `
+    <div class="modal-title-block">
+      <div class="modal-badges">
+        <span class="badge ${badgeCls}">${typeLabel} · ${card.id}</span>
+        ${card.effort ? `<span class="effort ${effortClass(card.effort)}">${card.effort}</span>` : ''}
+        ${card.column === 'done' ? '<span class="badge badge-done">✓ Done</span>' : ''}
+      </div>
+      <div class="modal-title">${card.title}</div>
+      ${card.story ? `<div class="modal-story">${card.story.replace(/\n/g, '<br>')}</div>` : ''}
+    </div>
+    <button class="close-btn" onclick="closeModal()">✕</button>
+  `;
+
+  let bodyHTML = '';
+
+  if (card.description && card.description.length) {
+    bodyHTML += `<div class="modal-section">
+      <div class="section-label">Descripción</div>
+      ${card.description.map(d => `<p class="modal-desc">${d}</p>`).join('')}
+    </div>`;
+  }
+
+  if (card.criteria && card.criteria.length) {
+    bodyHTML += `<div class="modal-section">
+      <div class="section-label">Criterios de aceptación</div>
+      ${card.criteria.map(g => `
+        ${g.group ? `<div class="criteria-group-title">${g.group}</div>` : ''}
+        <ul class="criteria-list">
+          ${g.items.map(item => {
+            const text = typeof item === 'string' ? item : item.text;
+            const done = typeof item === 'object' && item.done;
+            return `<li class="${done ? 'done' : ''}">${text}</li>`;
+          }).join('')}
+        </ul>
+      `).join('')}
+    </div>`;
+  }
+
+  if (card.dependencies && card.dependencies.length) {
+    bodyHTML += `<div class="modal-section">
+      <div class="section-label">Dependencias</div>
+      <div class="dep-row">
+        ${card.dependencies.map(d => `<span class="dep-badge" onclick="closeModal();setTimeout(()=>openModal('${d}'),200)">${d}</span>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  if (card.components && card.components.length) {
+    bodyHTML += `<div class="modal-section">
+      <div class="section-label">Componentes</div>
+      <table class="comp-table">
+        <thead><tr><th>Fichero</th><th>Descripción</th></tr></thead>
+        <tbody>
+          ${card.components.map(c => `
+            <tr>
+              <td><span class="comp-path">${c.path}</span>${c.isNew ? '<span class="badge-new">nuevo</span>' : ''}</td>
+              <td>${c.desc}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  if (card.tech && card.tech.length) {
+    bodyHTML += `<div class="modal-section">
+      <div class="section-label">Notas técnicas</div>
+      <ul class="tech-list">
+        ${card.tech.map(t => `<li>${t}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  if (card.outOfScope && card.outOfScope.length) {
+    bodyHTML += `<div class="modal-section">
+      <div class="section-label">Fuera de alcance (v1)</div>
+      <ul class="oos-list">
+        ${card.outOfScope.map(o => `<li>${o}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  body.innerHTML = bodyHTML;
+  overlay.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Drag & drop ───────────────────────────────────────────────────────────────
+
+(function initDragDrop() {
+  let dragging = null;
+
+  function getColBody(key) {
+    return document.querySelector(`.col-body[data-col="${key}"]`);
+  }
+
+  function makePlaceholder() {
+    const p = document.createElement('div');
+    p.className = 'drag-placeholder';
+    return p;
+  }
+
+  function getInsertPosition(colBody, clientY) {
+    const cards = [...colBody.querySelectorAll('.card[data-id]')];
+    for (const card of cards) {
+      const rect = card.getBoundingClientRect();
+      if (clientY < rect.top + rect.height / 2) return card;
+    }
+    return null;
+  }
+
+  document.addEventListener('dragstart', e => {
+    const card = e.target.closest('.card[data-id]');
+    if (!card) return;
+    dragging = card;
+    setTimeout(() => card.classList.add('dragging'), 0);
+  });
+
+  document.addEventListener('dragend', () => {
+    if (dragging) { dragging.classList.remove('dragging'); dragging = null; }
+    document.querySelectorAll('.drag-placeholder').forEach(p => p.remove());
+    document.querySelectorAll('.col-body.drag-active').forEach(b => b.classList.remove('drag-active'));
+    updateAllCounts();
+  });
+
+  document.addEventListener('dragover', e => {
+    e.preventDefault();
+    const colBody = e.target.closest('.col-body');
+    if (!colBody || !dragging) return;
+    colBody.classList.add('drag-active');
+    document.querySelectorAll('.drag-placeholder').forEach(p => p.remove());
+    const before = getInsertPosition(colBody, e.clientY);
+    const ph = makePlaceholder();
+    if (before) colBody.insertBefore(ph, before);
+    else colBody.appendChild(ph);
+  });
+
+  document.addEventListener('drop', e => {
+    e.preventDefault();
+    const colBody = e.target.closest('.col-body');
+    if (!colBody || !dragging) return;
+    const ph = colBody.querySelector('.drag-placeholder');
+    if (ph) colBody.insertBefore(dragging, ph);
+    else colBody.appendChild(dragging);
+    updateAllCounts();
+  });
+
+  function updateAllCounts() {
+    document.querySelectorAll('.column').forEach(col => {
+      const count = col.querySelectorAll('.card[data-id]').length;
+      const badge = col.querySelector('.col-count');
+      if (badge) badge.textContent = count;
+    });
+  }
+})();
+
+// ── Move-to-column buttons ────────────────────────────────────────────────────
+
+(function initMoveButtons() {
+  const COLS = COLUMN_DEFS.map(c => ({ key: c.key, label: c.label, dot: c.dot }));
+
+  function getCurrentColLabel(card) {
+    const body = card.closest('.col-body');
+    if (!body) return null;
+    const h = body.closest('.column').querySelector('.col-header h2');
+    return h ? h.textContent.trim() : null;
+  }
+
+  function getColBodyByLabel(label) {
+    const h = [...document.querySelectorAll('.col-header h2')].find(el => el.textContent.trim() === label);
+    return h ? h.closest('.column').querySelector('.col-body') : null;
+  }
+
+  function updateCount(colBody) {
+    const badge = colBody.closest('.column').querySelector('.col-count');
+    if (badge) badge.textContent = colBody.querySelectorAll('.card[data-id]').length;
+  }
+
+  document.getElementById('board').addEventListener('mouseover', e => {
+    const card = e.target.closest('.card[data-id]');
+    if (!card || card.querySelector('.move-btn')) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'move-btn';
+    btn.textContent = '⇄';
+    btn.title = 'Mover a columna';
+    card.appendChild(btn);
+
+    let menu = null;
+    btn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (menu) { menu.classList.toggle('open'); return; }
+
+      menu = document.createElement('div');
+      menu.className = 'move-menu';
+      const current = getCurrentColLabel(card);
+
+      COLS.forEach(col => {
+        const item = document.createElement('button');
+        item.className = 'move-menu-item' + (col.label === current ? ' current' : '');
+        item.innerHTML = `<span class="mm-dot" style="background:${col.dot}"></span>${col.label}`;
+        if (col.label !== current) {
+          item.addEventListener('click', ie => {
+            ie.stopPropagation();
+            const from = card.closest('.col-body');
+            const to   = getColBodyByLabel(col.label);
+            if (to && from !== to) {
+              to.prepend(card);
+              updateCount(from);
+              updateCount(to);
+            }
+            menu.classList.remove('open');
+          });
+        }
+        menu.appendChild(item);
+      });
+
+      card.appendChild(menu);
+      menu.classList.add('open');
+
+      document.addEventListener('click', function close(ce) {
+        if (!menu.contains(ce.target)) { menu.classList.remove('open'); document.removeEventListener('click', close); }
+      });
+    });
+  });
+})();
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildBoard();
+</script>
+</body>
+</html>
