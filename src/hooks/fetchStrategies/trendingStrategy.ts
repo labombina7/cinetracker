@@ -2,19 +2,20 @@
 import { Media } from '@/types/media';
 import { fetchRealTrending } from '@/services/tmdb/index';
 import { sortByVoteAverage } from '@/utils/mediaSorting';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
 export const fetchTrendingStrategy = async (
   mediaType: 'all' | 'movie' | 'tv',
   page: number,
   validPlatformIds: number[],
   filterByPlatform: (items: Media[], platformIds: number[]) => Media[],
-  showSpanishOnly: boolean = false // Nuevo parámetro
+  spanishFilter: SpanishFilter = 'off'
 ): Promise<Media[]> => {
-  console.log(`Fetching trending for ${mediaType}, page ${page}, platforms: ${validPlatformIds.join(',') || 'all'}, Spanish only: ${showSpanishOnly}`);
+  console.log(`Fetching trending for ${mediaType}, page ${page}, platforms: ${validPlatformIds.join(',') || 'all'}, spanishFilter: ${spanishFilter}`);
   
   try {
     const needsProviders = validPlatformIds.length > 0;
-    let results = await fetchRealTrending(mediaType, page, 'week', showSpanishOnly, needsProviders);
+    let results = await fetchRealTrending(mediaType, page, 'week', spanishFilter, needsProviders);
     console.log(`Got ${results.length} trending items before platform filtering for page ${page}`);
     
     // Si no obtuvimos resultados, devolver array vacío para evitar errores
@@ -52,7 +53,7 @@ export const fetchTrendingStrategy = async (
           const nextPage = page + i;
           console.log(`Fetching additional trending page ${nextPage}`);
           
-          const additionalResults = await fetchRealTrending(mediaType, nextPage, 'week', showSpanishOnly, needsProviders);
+          const additionalResults = await fetchRealTrending(mediaType, nextPage, 'week', spanishFilter, needsProviders);
           console.log(`Got ${additionalResults.length} additional trending items from page ${nextPage}`);
           
           // Filter these results too

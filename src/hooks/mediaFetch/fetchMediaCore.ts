@@ -10,15 +10,15 @@ export const fetchMediaCore = async (
     selectedPlatformIds: number[],
     sortBy: 'rating' | 'date',
     page: number,
-    showSpanishOnly: boolean
+    spanishFilter: import('./types').SpanishFilter
   ) => Promise<Media[]>,
   params: MediaFetchParams,
   language: string
 ): Promise<Media[]> => {
-  const { 
-    mediaType, 
-    showSpanishOnly, 
-    dataSource, 
+  const {
+    mediaType,
+    spanishFilter,
+    dataSource,
     selectedPlatformIds,
     sortBy,
     page
@@ -32,14 +32,14 @@ export const fetchMediaCore = async (
   }
   
   // Fetch the data using the appropriate strategy
-  console.log(`Fetching ${dataSource} data for ${mediaType}, platforms: ${selectedPlatformIds.join(',')}, sortBy: ${sortBy}, page: ${page}, Spanish only: ${showSpanishOnly}`);
+  console.log(`Fetching ${dataSource} data for ${mediaType}, platforms: ${selectedPlatformIds.join(',')}, sortBy: ${sortBy}, page: ${page}, Spanish only: ${spanishFilter}`);
   const results = await fetchMediaByStrategy(
     dataSource, 
     mediaType, 
     selectedPlatformIds, 
     sortBy, 
     page,
-    showSpanishOnly
+    spanishFilter
   );
   
   console.log(`Received ${results.length} results for ${dataSource}/${mediaType}`);
@@ -47,7 +47,7 @@ export const fetchMediaCore = async (
   // Ya no filtramos por idioma español aquí, ahora se hace directamente en la API
   let filteredData = results;
   
-  console.log(`Results for page ${page}: ${filteredData.length} items (${showSpanishOnly ? 'Spanish only' : 'All languages'}, sorted by ${sortBy})`);
+  console.log(`Results for page ${page}: ${filteredData.length} items (${spanishFilter ? 'Spanish only' : 'All languages'}, sorted by ${sortBy})`);
   
   return filteredData;
 };

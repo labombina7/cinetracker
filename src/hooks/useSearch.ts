@@ -5,9 +5,9 @@ import { searchMedia } from '@/services/tmdb/index';
 import { toast } from '@/components/ui/use-toast';
 import { translations } from '@/utils/translations/searchResults';
 import { AppLanguage } from '@/hooks/useLanguage';
-import { filterSpanishContent } from '@/hooks/mediaFetch/fetchMediaUtils';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
-export const useSearch = (query: string, language: AppLanguage, selectedPlatformIds: number[], showSpanishOnly: boolean) => {
+export const useSearch = (query: string, language: AppLanguage, selectedPlatformIds: number[], spanishFilter: SpanishFilter) => {
   const [results, setResults] = useState<Media[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +20,7 @@ export const useSearch = (query: string, language: AppLanguage, selectedPlatform
 
   const performSearch = useCallback(async () => {
     // Crear identificador único para esta búsqueda
-    const currentIdentifier = `${query}-${showSpanishOnly}-${JSON.stringify(selectedPlatformIds.sort())}-${language}`;
+    const currentIdentifier = `${query}-${spanishFilter}-${JSON.stringify(selectedPlatformIds.sort())}-${language}`;
     
     // Condiciones de salida temprana
     if (isSearching.current) return;
@@ -39,10 +39,10 @@ export const useSearch = (query: string, language: AppLanguage, selectedPlatform
       searchInitiated.current = true;
       setLoading(true);
       
-      console.log(`Searching: "${query}", platforms: ${selectedPlatformIds.join(',')}, spanish: ${showSpanishOnly}`);
+      console.log(`Searching: "${query}", platforms: ${selectedPlatformIds.join(',')}, spanish: ${spanishFilter}`);
       
       // Pasamos el parámetro de idioma español a la búsqueda
-      const data = await searchMedia(query, language, showSpanishOnly);
+      const data = await searchMedia(query, language, spanishFilter);
       
       // Aplicar filtros de plataforma si es necesario
       let filteredData = data;
@@ -64,7 +64,7 @@ export const useSearch = (query: string, language: AppLanguage, selectedPlatform
       
       // Ya no necesitamos filtrar por español aquí, ya que se hace en la API
       // Pero mantenemos el código por si acaso necesitamos filtrado adicional
-      if (showSpanishOnly) {
+      if (spanishFilter) {
         console.log(`Spanish only filtering: ON, results before: ${filteredData.length}`);
       }
       
@@ -82,7 +82,7 @@ export const useSearch = (query: string, language: AppLanguage, selectedPlatform
       setLoading(false);
       isSearching.current = false;
     }
-  }, [query, language, selectedPlatformIds, showSpanishOnly, t]);
+  }, [query, language, selectedPlatformIds, spanishFilter, t]);
 
   // Ejecutar búsqueda cuando cambian los parámetros
   useEffect(() => {

@@ -3,34 +3,32 @@ import { Media } from '@/types/media';
 import { convertToMedia } from '../utils';
 import { buildApiUrl } from '../config';
 import { fetchWatchProviders } from '../providers';
-import { getLanguageParams } from '@/hooks/mediaFetch/fetchMediaUtils';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
 export const fetchRealTrending = async (
   type: 'all' | 'movie' | 'tv' = 'all',
   page: number = 1,
   timeWindow: 'day' | 'week' = 'week',
-  showSpanishOnly: boolean = false,
+  spanishFilter: SpanishFilter = 'off',
   fetchProviders: boolean = false
 ): Promise<Media[]> => {
   try {
-    // Obtenemos los parámetros de idioma según el toggle
-    const languageParams = showSpanishOnly ? 'es' : 'es-ES';
+    const languageParams = spanishFilter !== 'off' ? 'es' : 'es-ES';
 
     // Construir URL con soporte para paginación y filtrado de idioma
-    const params: any = { 
+    const params: any = {
       page,
-      language: languageParams, // Usamos el idioma basado en la selección
-      region: 'ES' // Región España para mejores resultados regionales
+      language: languageParams,
+      region: 'ES'
     };
-    
-    // Si queremos solo contenido español, añadir with_original_language
-    if (showSpanishOnly) {
+
+    if (spanishFilter !== 'off') {
       params.with_original_language = 'es';
     }
     
     const url = buildApiUrl(`/trending/${type}/${timeWindow}`, params);
     
-    console.log(`Fetching trending ${type} for ${timeWindow}, page ${page}, Spanish only: ${showSpanishOnly}: ${url}`);
+    console.log(`Fetching trending ${type} for ${timeWindow}, page ${page}, spanishFilter: ${spanishFilter}: ${url}`);
     
     const response = await fetch(url);
     

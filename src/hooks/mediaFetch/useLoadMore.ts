@@ -10,8 +10,8 @@ interface UseLoadMoreProps {
   lastFetchParams: React.MutableRefObject<MediaFetchParams>;
   fetchMedia: (
     mediaType: 'all' | 'movie' | 'tv',
-    showSpanishOnly: boolean,
-    dataSource: 'discover' | 'trending' | 'combined' | 'new',
+    spanishFilter: import('./types').SpanishFilter,
+    dataSource: 'discover' | 'trending',
     selectedPlatformIds: number[],
     forceRefresh: boolean,
     page: number,
@@ -37,7 +37,7 @@ export const useLoadMore = ({
     
     console.log("Load more with params:", {
       mediaType: lastFetchParams.current.mediaType,
-      showSpanishOnly: lastFetchParams.current.showSpanishOnly,
+      spanishFilter: lastFetchParams.current.spanishFilter,
       dataSource: lastFetchParams.current.dataSource,
       selectedPlatformIds: lastFetchParams.current.selectedPlatformIds,
       page: nextPage
@@ -45,7 +45,7 @@ export const useLoadMore = ({
     
     fetchMedia(
       lastFetchParams.current.mediaType,
-      lastFetchParams.current.showSpanishOnly,
+      lastFetchParams.current.spanishFilter,
       lastFetchParams.current.dataSource,
       lastFetchParams.current.selectedPlatformIds,
       false, // No force refresh on load more

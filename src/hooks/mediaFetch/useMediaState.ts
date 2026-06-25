@@ -13,8 +13,8 @@ export const useMediaState = () => {
   const fetchInProgress = useRef(false);
   const lastFetchParams = useRef<MediaFetchParams>({
     mediaType: 'all',
-    showSpanishOnly: false,
-    dataSource: 'trending',
+    spanishFilter: 'off',
+    dataSource: 'discover',
     selectedPlatformIds: [],
     sortBy: 'rating',
     page: 1

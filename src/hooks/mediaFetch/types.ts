@@ -1,9 +1,11 @@
 
 import { Media } from '@/types/media';
 
+export type SpanishFilter = 'off' | 'hispano' | 'spain';
+
 export interface MediaFetchParams {
   mediaType: 'all' | 'movie' | 'tv';
-  showSpanishOnly: boolean;
+  spanishFilter: SpanishFilter;
   dataSource: 'discover' | 'trending';
   selectedPlatformIds: number[];
   sortBy: 'rating' | 'date';
@@ -19,7 +21,7 @@ export interface FetchMediaCoreProps {
     selectedPlatformIds: number[],
     sortBy: 'rating' | 'date',
     page: number,
-    showSpanishOnly: boolean // Nuevo parámetro
+    spanishFilter: SpanishFilter
   ) => Promise<Media[]>;
   selectedPlatforms: Array<{id: number, name: string, logoPath?: string}>;
   fetchInProgress: React.MutableRefObject<boolean>;

@@ -3,12 +3,13 @@ import { Media } from '../../../types/media';
 import { TMDBDiscoverResponse } from '../../../types/tmdb';
 import { buildApiUrl } from '../config';
 import { convertToMedia } from '../utils';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
 export const fetchMediaByPlatforms = async (
   mediaType: 'all' | 'movie' | 'tv',
   platformIds: number[],
   page: number = 1,
-  showSpanishOnly: boolean = false,
+  spanishFilter: SpanishFilter = 'off',
   sortBy: 'rating' | 'date' = 'rating'
 ): Promise<Media[]> => {
   try {
@@ -17,7 +18,7 @@ export const fetchMediaByPlatforms = async (
       return [];
     }
 
-    console.log(`Fetching media for platforms: ${platformIds.join(', ')}, Spanish only: ${showSpanishOnly}`);
+    console.log(`Fetching media for platforms: ${platformIds.join(', ')}, spanishFilter: ${spanishFilter}`);
     const results: Media[] = [];
 
     // Define qué tipos de contenido vamos a buscar
@@ -39,8 +40,10 @@ export const fetchMediaByPlatforms = async (
         sort_by: apiSortBy
       };
 
-      // Si queremos solo contenido español, añadimos el filtro de idioma original
-      if (showSpanishOnly) {
+      if (spanishFilter === 'spain') {
+        params.with_original_language = 'es';
+        params['with_origin_country'] = 'ES';
+      } else if (spanishFilter === 'hispano') {
         params.with_original_language = 'es';
       }
 

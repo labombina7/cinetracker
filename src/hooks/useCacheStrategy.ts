@@ -2,9 +2,11 @@
 import { useCallback } from 'react';
 import { useMediaSession } from './useMediaSession';
 
+import { SpanishFilter } from './mediaFetch/types';
+
 export interface CacheParams {
   mediaType: string;
-  showSpanishOnly: boolean;
+  spanishFilter: SpanishFilter;
   dataSource: string;
   selectedPlatformIds: number[];
 }
@@ -27,7 +29,7 @@ export const useCacheStrategy = () => {
     
     // Verificar si algún parámetro ha cambiado
     const mediaTypeChanged = lastParams.mediaType !== currentParams.mediaType;
-    const spanishOnlyChanged = lastParams.showSpanishOnly !== currentParams.showSpanishOnly;
+    const spanishOnlyChanged = lastParams.spanishFilter !== currentParams.spanishFilter;
     const dataSourceChanged = lastParams.dataSource !== currentParams.dataSource;
     
     // Compare platform IDs by converting arrays to sorted strings
@@ -37,7 +39,7 @@ export const useCacheStrategy = () => {
     
     // Registrar cambios para depuración
     if (mediaTypeChanged) console.log('Cache miss: mediaType changed');
-    if (spanishOnlyChanged) console.log('Cache miss: showSpanishOnly changed');
+    if (spanishOnlyChanged) console.log('Cache miss: spanishFilter changed');
     if (dataSourceChanged) console.log('Cache miss: dataSource changed');
     if (platformsChanged) console.log('Cache miss: platforms changed', {
       last: lastParams.selectedPlatformIds, 

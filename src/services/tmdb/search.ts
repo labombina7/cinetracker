@@ -3,12 +3,13 @@ import { Media } from '../../types/media';
 import { convertToMedia } from './utils';
 import { buildApiUrl } from './config';
 import { fetchWatchProviders } from './providers';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
-export const searchMedia = async (query: string, language: string = 'es', showSpanishOnly: boolean = false): Promise<Media[]> => {
+export const searchMedia = async (query: string, language: string = 'es', spanishFilter: SpanishFilter = 'off'): Promise<Media[]> => {
   try {
     if (!query) return [];
-    
-    console.log(`Searching for "${query}" in language: ${language}, Spanish only: ${showSpanishOnly}`);
+
+    console.log(`Searching for "${query}" in language: ${language}, spanishFilter: ${spanishFilter}`);
     
     // Construir parámetros de API
     const params: Record<string, string | number> = {
@@ -19,9 +20,8 @@ export const searchMedia = async (query: string, language: string = 'es', showSp
       region: 'ES' // Siempre usamos región España para resultados más relevantes
     };
     
-    // Si queremos solo contenido español, añadimos el filtro
-    if (showSpanishOnly) {
-      params.with_original_language = 'es'; // Fixed: Using as string not boolean
+    if (spanishFilter !== 'off') {
+      params.with_original_language = 'es';
     }
     
     // URL de la API
@@ -71,8 +71,7 @@ export const searchMedia = async (query: string, language: string = 'es', showSp
     const mediaResults = await Promise.all(mediaPromises);
     const validResults = mediaResults.filter((item): item is Media => item !== null);
     
-    // Si se seleccionó contenido español, contamos cuántos son realmente en español
-    if (showSpanishOnly) {
+    if (spanishFilter !== 'off') {
       const spanishLanguageResults = validResults.filter(item => item.original_language === 'es');
       console.log(`Search found ${spanishLanguageResults.length} Spanish language results out of ${validResults.length} total`);
     }

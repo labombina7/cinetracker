@@ -16,10 +16,10 @@ export const fetchMediaData = async (
   params: MediaFetchParams,
   language: string
 ): Promise<Media[]> => {
-  const { 
-    mediaType, 
-    showSpanishOnly, 
-    dataSource, 
+  const {
+    mediaType,
+    spanishFilter,
+    dataSource,
     selectedPlatformIds,
     sortBy,
     page

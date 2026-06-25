@@ -3,12 +3,13 @@ import { Media } from '../../../types/media';
 import { TMDBDiscoverResponse } from '../../../types/tmdb';
 import { buildApiUrl } from '../config';
 import { convertToMedia } from '../utils';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
 export const discoverMedia = async (
   type: 'movie' | 'tv',
   page: number = 1,
   platformIds: number[] = [],
-  showSpanishOnly: boolean = false,
+  spanishFilter: SpanishFilter = 'off',
   sortBy: 'rating' | 'date' = 'rating'
 ): Promise<Media[]> => {
   try {
@@ -24,10 +25,12 @@ export const discoverMedia = async (
       include_adult: false,
       watch_region: 'ES'
     };
-    
-    if (showSpanishOnly) {
+
+    if (spanishFilter === 'spain') {
       params.with_original_language = 'es';
       params['with_origin_country'] = 'ES';
+    } else if (spanishFilter === 'hispano') {
+      params.with_original_language = 'es';
     } else {
       params.with_original_language = 'es|en|fr';
     }

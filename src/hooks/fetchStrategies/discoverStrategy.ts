@@ -2,16 +2,17 @@
 import { Media } from '@/types/media';
 import { discoverMedia, fetchMediaByPlatforms } from '@/services/tmdb/index';
 import { sortByVoteAverage } from '@/utils/mediaSorting';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
 export const fetchDiscoverStrategy = async (
   mediaType: 'all' | 'movie' | 'tv',
   page: number,
   validPlatformIds: number[],
   filterByPlatform: (items: Media[], platformIds: number[]) => Media[],
-  showSpanishOnly: boolean = false,
+  spanishFilter: SpanishFilter = 'off',
   sortBy: 'rating' | 'date' = 'rating'
 ): Promise<Media[]> => {
-  console.log(`Fetching discover for ${mediaType}, page ${page}, Spanish only: ${showSpanishOnly}`);
+  console.log(`Fetching discover for ${mediaType}, page ${page}, spanishFilter: ${spanishFilter}`);
   let results: Media[] = [];
   
   try {
@@ -21,7 +22,7 @@ export const fetchDiscoverStrategy = async (
       
       // Use the API that filters directly by platform
       // Pasamos el nuevo parámetro de idioma español
-      results = await fetchMediaByPlatforms(mediaType, validPlatformIds, page, showSpanishOnly, sortBy);
+      results = await fetchMediaByPlatforms(mediaType, validPlatformIds, page, spanishFilter, sortBy);
       console.log(`Direct platform API returned ${results.length} items for discover`);
       
       // Fallback if not enough results
@@ -34,7 +35,7 @@ export const fetchDiscoverStrategy = async (
         let generalResults: Media[] = [];
         for (const type of typesToFetch) {
           // Pasamos el parámetro de idioma español a discoverMedia
-          const data = await discoverMedia(type as 'movie' | 'tv', page, [], showSpanishOnly, sortBy);
+          const data = await discoverMedia(type as 'movie' | 'tv', page, [], spanishFilter, sortBy);
           if (data && data.length > 0) {
             generalResults = [...generalResults, ...data];
           }
@@ -67,7 +68,7 @@ export const fetchDiscoverStrategy = async (
       
       for (const type of typesToFetch) {
         // Pasamos el parámetro de idioma español
-        const data = await discoverMedia(type as 'movie' | 'tv', page, [], showSpanishOnly);
+        const data = await discoverMedia(type as 'movie' | 'tv', page, [], spanishFilter);
         if (data && data.length > 0) {
           results = [...results, ...data];
         }

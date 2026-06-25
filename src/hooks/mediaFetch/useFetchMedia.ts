@@ -25,7 +25,7 @@ export const useFetchMedia = ({
   
   const fetchMedia = useCallback(async (
     mediaType: 'all' | 'movie' | 'tv' = 'all',
-    showSpanishOnly: boolean = false,
+    spanishFilter: import('./types').SpanishFilter = 'off',
     dataSource: 'discover' | 'trending' = 'trending',
     selectedPlatformIds: number[] = [],
     forceRefresh: boolean = false,
@@ -45,7 +45,7 @@ export const useFetchMedia = ({
     }
 
     // Debug logging
-    console.log(`[fetchMedia] dataSource: ${dataSource}, mediaType: ${mediaType}, Spanish: ${showSpanishOnly}, platforms: ${selectedPlatformIds.join(',') || 'none'}, sortBy: ${sortBy}, page: ${page}, forceRefresh: ${forceRefresh}, append: ${append}`);
+    console.log(`[fetchMedia] dataSource: ${dataSource}, mediaType: ${mediaType}, Spanish: ${spanishFilter}, platforms: ${selectedPlatformIds.join(',') || 'none'}, sortBy: ${sortBy}, page: ${page}, forceRefresh: ${forceRefresh}, append: ${append}`);
 
     // Sanitize platform IDs
     const platformIdsToUse = sanitizePlatformIds(selectedPlatformIds, selectedPlatforms);
@@ -53,7 +53,7 @@ export const useFetchMedia = ({
     // Create current params object
     const currentParams = {
       mediaType,
-      showSpanishOnly,
+      spanishFilter,
       dataSource,
       selectedPlatformIds: platformIdsToUse,
       sortBy,
@@ -133,7 +133,7 @@ export const useFetchMedia = ({
         if (page === 1) {
           saveToCache(finalData, {
             mediaType,
-            showSpanishOnly, 
+            spanishFilter, 
             dataSource,
             selectedPlatformIds: platformIdsToUse,
             sortBy

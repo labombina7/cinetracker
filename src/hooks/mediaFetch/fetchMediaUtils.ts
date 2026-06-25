@@ -1,5 +1,5 @@
 import { Media } from '@/types/media';
-import { MediaFetchParams } from './types';
+import { MediaFetchParams, SpanishFilter } from './types';
 
 /**
  * Helper function to check if fetch parameters have changed
@@ -13,7 +13,7 @@ export const haveParamsChanged = (
   // Compare media type, data source, and filters
   const mediaTypeChanged = currentParams.mediaType !== lastParams.mediaType;
   const dataSourceChanged = currentParams.dataSource !== lastParams.dataSource;
-  const spanishOnlyChanged = currentParams.showSpanishOnly !== lastParams.showSpanishOnly;
+  const spanishOnlyChanged = currentParams.spanishFilter !== lastParams.spanishFilter;
   
   // Compare platform IDs (using string representation for array comparison)
   const currentPlatformsKey = [...(currentParams.selectedPlatformIds || [])].sort().join(',');
@@ -28,7 +28,7 @@ export const haveParamsChanged = (
     console.log('Parameters changed between fetches:', {
       mediaType: { from: lastParams.mediaType, to: currentParams.mediaType, changed: mediaTypeChanged },
       dataSource: { from: lastParams.dataSource, to: currentParams.dataSource, changed: dataSourceChanged },
-      showSpanishOnly: { from: lastParams.showSpanishOnly, to: currentParams.showSpanishOnly, changed: spanishOnlyChanged },
+      spanishFilter: { from: lastParams.spanishFilter, to: currentParams.spanishFilter, changed: spanishOnlyChanged },
       sortBy: { from: lastParams.sortBy, to: currentParams.sortBy, changed: sortByChanged },
       platformsKey: { from: lastPlatformsKey, to: currentPlatformsKey, changed: platformsChanged }
     });
@@ -58,8 +58,8 @@ export const sanitizePlatformIds = (
  * Filter Spanish content with more inclusive criteria
  * This function is used for client-side filtering when needed
  */
-export const filterSpanishContent = (results: Media[], showSpanishOnly: boolean): Media[] => {
-  if (!showSpanishOnly) return results;
+export const filterSpanishContent = (results: Media[], spanishFilter: SpanishFilter): Media[] => {
+  if (spanishFilter === 'off') return results;
   
   console.log(`Client-side filtering for Spanish content from ${results.length} items`);
   
@@ -98,12 +98,7 @@ export const filterSpanishContent = (results: Media[], showSpanishOnly: boolean)
 /**
  * Creates the appropriate language parameter for API requests based on filter settings
  */
-export const getLanguageParams = (showSpanishOnly: boolean): string => {
-  if (showSpanishOnly) {
-    // If Spanish only is selected, we only want Spanish
-    return 'es';
-  }
-  
-  // Otherwise, we include multiple languages with priority
+export const getLanguageParams = (spanishFilter: SpanishFilter): string => {
+  if (spanishFilter !== 'off') return 'es';
   return 'es|en|en-US|fr';
 };

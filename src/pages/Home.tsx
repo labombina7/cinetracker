@@ -17,7 +17,7 @@ const Home = () => {
   const { isConfigured, configureApiKey, isLoading } = useApiKey();
   const { language } = useLanguage();
   const { mediaList, loading, error, hasMore, loadingRef } = useHomeMediaFetch();
-  const { filtersState, setShowSpanishOnly, setMediaType, setDataSource, setSortBy } = useMediaFilters();
+  const { filtersState, setSpanishFilter, setMediaType, setDataSource, setSortBy } = useMediaFilters();
 
   const handlePlatformChange = (platformId: number) => {
     console.log("Platform selection should be done from Settings page");
@@ -39,9 +39,9 @@ const Home = () => {
       
       <SearchBar />
       
-      <MediaFilters 
-        showSpanishOnly={filtersState.showSpanishOnly}
-        setShowSpanishOnly={setShowSpanishOnly}
+      <MediaFilters
+        spanishFilter={filtersState.spanishFilter}
+        setSpanishFilter={setSpanishFilter}
         mediaType={filtersState.mediaType}
         setMediaType={setMediaType}
         dataSource={filtersState.dataSource}

@@ -12,7 +12,7 @@ export const useInitialFetch = () => {
   const initialFetchComplete = useRef(false);
   const lastDataSource = useRef(filtersState.dataSource);
   const lastMediaType = useRef(filtersState.mediaType);
-  const lastShowSpanishOnly = useRef(filtersState.showSpanishOnly);
+  const lastSpanishFilter = useRef(filtersState.spanishFilter);
   const lastSelectedPlatformIds = useRef<number[]>([...filtersState.selectedPlatformIds]);
   const fetchInProgress = useRef(false);
   
@@ -32,7 +32,7 @@ export const useInitialFetch = () => {
     // Comprobación directa de cada filtro individual
     const dataSourceChanged = lastDataSource.current !== filtersState.dataSource;
     const mediaTypeChanged = lastMediaType.current !== filtersState.mediaType;
-    const spanishOnlyChanged = lastShowSpanishOnly.current !== filtersState.showSpanishOnly;
+    const spanishOnlyChanged = lastSpanishFilter.current !== filtersState.spanishFilter;
     
     // Comparación de arrays de plataformas usando strings para simplificar
     const prevPlatforms = [...lastSelectedPlatformIds.current].sort().join(',');
@@ -45,7 +45,7 @@ export const useInitialFetch = () => {
       console.log('FILTERS HAVE CHANGED - Detected in useInitialFetch:', {
         dataSource: { from: lastDataSource.current, to: filtersState.dataSource, changed: dataSourceChanged },
         mediaType: { from: lastMediaType.current, to: filtersState.mediaType, changed: mediaTypeChanged },
-        spanishOnly: { from: lastShowSpanishOnly.current, to: filtersState.showSpanishOnly, changed: spanishOnlyChanged },
+        spanishFilter: { from: lastSpanishFilter.current, to: filtersState.spanishFilter, changed: spanishOnlyChanged },
         platforms: { from: prevPlatforms, to: currentPlatforms, changed: platformsChanged }
       });
     }
@@ -63,7 +63,7 @@ export const useInitialFetch = () => {
     
     console.log('Current filters:', {
       mediaType: filtersState.mediaType,
-      showSpanishOnly: filtersState.showSpanishOnly,
+      spanishFilter: filtersState.spanishFilter,
       dataSource: filtersState.dataSource,
       selectedPlatformIds: filtersState.selectedPlatformIds,
       filtersChanged: filtersChanged
@@ -92,14 +92,14 @@ export const useInitialFetch = () => {
         // para garantizar que detectemos cambios en la próxima llamada
         lastDataSource.current = filtersState.dataSource;
         lastMediaType.current = filtersState.mediaType;
-        lastShowSpanishOnly.current = filtersState.showSpanishOnly;
+        lastSpanishFilter.current = filtersState.spanishFilter;
         lastSelectedPlatformIds.current = [...filtersState.selectedPlatformIds];
         
         // Hacer la petición inicial con los filtros actuales
         try {
           await fetchMedia({
             mediaType: filtersState.mediaType,
-            showSpanishOnly: filtersState.showSpanishOnly,
+            spanishFilter: filtersState.spanishFilter,
             dataSource: filtersState.dataSource,
             selectedPlatformIds: filtersState.selectedPlatformIds,
             forceRefresh: forceRefresh,
@@ -127,7 +127,7 @@ export const useInitialFetch = () => {
   }, [
     fetchMedia, 
     filtersState.mediaType, 
-    filtersState.showSpanishOnly, 
+    filtersState.spanishFilter,
     filtersState.dataSource, 
     filtersState.selectedPlatformIds,
     filtersChanged,

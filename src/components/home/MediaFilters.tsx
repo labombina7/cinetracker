@@ -1,16 +1,16 @@
 
 import React from 'react';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar } from 'lucide-react';
+import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar, Globe } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Platform } from '@/types/media';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
 interface MediaFiltersProps {
-  showSpanishOnly: boolean;
-  setShowSpanishOnly: (value: boolean) => void;
+  spanishFilter: SpanishFilter;
+  setSpanishFilter: (value: SpanishFilter) => void;
   mediaType: 'all' | 'movie' | 'tv';
   setMediaType: (type: 'all' | 'movie' | 'tv') => void;
   dataSource: 'discover' | 'trending';
@@ -23,9 +23,9 @@ interface MediaFiltersProps {
   onPlatformChange: (platformId: number) => void;
 }
 
-const MediaFilters: React.FC<MediaFiltersProps> = ({ 
-  showSpanishOnly, 
-  setShowSpanishOnly,
+const MediaFilters: React.FC<MediaFiltersProps> = ({
+  spanishFilter,
+  setSpanishFilter,
   mediaType,
   setMediaType,
   dataSource,
@@ -40,16 +40,21 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
 
   const translations = {
     es: {
-      spanishOnly: 'Solo contenido español',
-      dataSource: 'Fuente de datos:',
-      sortBy: 'Ordenar por:',
+      spanishFilter: 'Idioma:',
+      dataSource: 'Fuente:',
+      sortBy: 'Ordenar:',
+      spanishOptions: {
+        'off': 'Todo',
+        'hispano': 'Hispano',
+        'spain': 'España'
+      },
       dataSourceOptions: {
         'trending': 'Tendencias',
         'discover': 'Descubrir'
       },
       sortByOptions: {
         'rating': 'Valoración',
-        'date': 'Fecha de estreno'
+        'date': 'Fecha'
       },
       mediaTypeOptions: {
         'all': 'Todos',
@@ -58,9 +63,14 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
       }
     },
     en: {
-      spanishOnly: 'Spanish content only',
-      dataSource: 'Data source:',
-      sortBy: 'Sort by:',
+      spanishFilter: 'Language:',
+      dataSource: 'Source:',
+      sortBy: 'Sort:',
+      spanishOptions: {
+        'off': 'All',
+        'hispano': 'Hispanic',
+        'spain': 'Spain'
+      },
       dataSourceOptions: {
         'trending': 'Trending',
         'discover': 'Discover'
@@ -79,13 +89,11 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
 
   const t = translations[language === 'es' ? 'es' : 'en'];
 
-  // Icons for data sources
   const dataSourceIcons = {
     'trending': <TrendingUp size={16} />,
     'discover': <Compass size={16} />
   };
 
-  // Icons for sorting options
   const sortIcons = {
     'rating': <ArrowDown size={16} />,
     'date': <Calendar size={16} />
@@ -95,24 +103,39 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
     <div className="space-y-4 mb-6">
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <Switch 
-            id="spanish-filter" 
-            checked={showSpanishOnly}
-            onCheckedChange={setShowSpanishOnly}
-            className="data-[state=checked]:bg-primary"
-          />
-          <Label htmlFor="spanish-filter" className="text-sm font-normal">
-            {t.spanishOnly}
-          </Label>
+          <span className="text-sm whitespace-nowrap">{t.spanishFilter}</span>
+          <Select
+            value={spanishFilter}
+            onValueChange={(value) => setSpanishFilter(value as SpanishFilter)}
+          >
+            <SelectTrigger className="w-[130px] h-9 bg-background">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  <Globe size={16} />
+                  <span>{t.spanishOptions[spanishFilter]}</span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.entries(t.spanishOptions) as [SpanishFilter, string][]).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  <div className="flex items-center gap-2">
+                    <Globe size={16} />
+                    <span>{label}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-sm whitespace-nowrap">{t.dataSource}</span>
-          <Select 
-            value={dataSource} 
+          <Select
+            value={dataSource}
             onValueChange={(value) => setDataSource(value as 'discover' | 'trending')}
           >
-            <SelectTrigger className="w-[150px] h-9 bg-background">
+            <SelectTrigger className="w-[140px] h-9 bg-background">
               <SelectValue>
                 <div className="flex items-center gap-2">
                   {dataSourceIcons[dataSource]}
@@ -133,13 +156,13 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
           </Select>
         </div>
 
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-2">
           <span className="text-sm whitespace-nowrap">{t.sortBy}</span>
-          <Select 
-            value={sortBy} 
+          <Select
+            value={sortBy}
             onValueChange={(value) => setSortBy(value as 'rating' | 'date')}
           >
-            <SelectTrigger className="w-[150px] h-9 bg-background">
+            <SelectTrigger className="w-[140px] h-9 bg-background">
               <SelectValue>
                 <div className="flex items-center gap-2">
                   {sortIcons[sortBy]}
@@ -163,8 +186,8 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         <div className={`flex items-center gap-2 ${isMobile ? 'w-full justify-start mt-2' : 'ml-auto'}`}>
           <button
             className={`px-4 py-2 text-sm rounded-md transition-colors flex items-center gap-2 ${
-              mediaType === 'all' 
-                ? 'bg-primary text-primary-foreground' 
+              mediaType === 'all'
+                ? 'bg-primary text-primary-foreground'
                 : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
             }`}
             onClick={() => setMediaType('all')}
@@ -174,8 +197,8 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
           </button>
           <button
             className={`px-4 py-2 text-sm rounded-md transition-colors flex items-center gap-2 ${
-              mediaType === 'movie' 
-                ? 'bg-primary text-primary-foreground' 
+              mediaType === 'movie'
+                ? 'bg-primary text-primary-foreground'
                 : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
             }`}
             onClick={() => setMediaType('movie')}
@@ -185,8 +208,8 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
           </button>
           <button
             className={`px-4 py-2 text-sm rounded-md transition-colors flex items-center gap-2 ${
-              mediaType === 'tv' 
-                ? 'bg-primary text-primary-foreground' 
+              mediaType === 'tv'
+                ? 'bg-primary text-primary-foreground'
                 : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
             }`}
             onClick={() => setMediaType('tv')}

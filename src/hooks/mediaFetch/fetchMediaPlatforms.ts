@@ -28,7 +28,7 @@ export const fetchMediaForMultiplePlatforms = async ({
       allMediaPromises.push(
         fetchMediaData(
           (ds, mt, pids, sb, pg) => 
-            fetchMediaByStrategy(ds, mt, [platformId], sb, pg, currentParams.showSpanishOnly),
+            fetchMediaByStrategy(ds, mt, [platformId], sb, pg, currentParams.spanishFilter),
           {...currentParams, selectedPlatformIds: [platformId]}, 
           language
         )
@@ -39,7 +39,7 @@ export const fetchMediaForMultiplePlatforms = async ({
     allMediaPromises.push(
       fetchMediaData(
         (ds, mt, pids, sb, pg) => 
-          fetchMediaByStrategy(ds, mt, [], sb, pg, currentParams.showSpanishOnly),
+          fetchMediaByStrategy(ds, mt, [], sb, pg, currentParams.spanishFilter),
         currentParams, 
         language
       )

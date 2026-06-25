@@ -1,8 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import { SpanishFilter } from '@/hooks/mediaFetch/types';
 
 interface MediaFiltersState {
-  showSpanishOnly: boolean;
+  spanishFilter: SpanishFilter;
   mediaType: 'all' | 'movie' | 'tv';
   dataSource: 'discover' | 'trending';
   selectedPlatformIds: number[];
@@ -12,7 +13,7 @@ interface MediaFiltersState {
 interface MediaFiltersContextType {
   filtersState: MediaFiltersState;
   updateFilters: (filters: Partial<MediaFiltersState>) => void;
-  setShowSpanishOnly: (value: boolean) => void;
+  setSpanishFilter: (value: SpanishFilter) => void;
   setMediaType: (type: 'all' | 'movie' | 'tv') => void;
   setDataSource: (source: 'discover' | 'trending') => void;
   setSortBy: (sort: 'rating' | 'date') => void;
@@ -22,7 +23,7 @@ interface MediaFiltersContextType {
 }
 
 const initialState: MediaFiltersState = {
-  showSpanishOnly: false,
+  spanishFilter: 'off',
   mediaType: 'all',
   dataSource: 'discover',
   selectedPlatformIds: [],
@@ -32,7 +33,7 @@ const initialState: MediaFiltersState = {
 const MediaFiltersContext = createContext<MediaFiltersContextType>({
   filtersState: initialState,
   updateFilters: () => {},
-  setShowSpanishOnly: () => {},
+  setSpanishFilter: () => {},
   setMediaType: () => {},
   setDataSource: () => {},
   setSortBy: () => {},
@@ -48,24 +49,32 @@ interface MediaFiltersProviderProps {
 }
 
 export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ children }) => {
-  // Try to load saved filter state from localStorage
   const getSavedState = (): MediaFiltersState => {
     try {
       const savedFilters = localStorage.getItem('mediaFilters');
       if (savedFilters) {
         const parsed = JSON.parse(savedFilters);
         console.log('Loaded filters from localStorage:', parsed);
-        
-        // Convert old data source values to new ones
+
+        // Migrate old data source values
         if (parsed.dataSource === 'combined' || parsed.dataSource === 'new' || parsed.dataSource === 'trending') {
           parsed.dataSource = 'discover';
         }
-        
-        // Add sortBy if it doesn't exist
+
+        // Add sortBy if missing
         if (!parsed.sortBy) {
           parsed.sortBy = 'rating';
         }
-        
+
+        // Migrate old showSpanishOnly boolean to spanishFilter
+        if (parsed.showSpanishOnly !== undefined && !parsed.spanishFilter) {
+          parsed.spanishFilter = parsed.showSpanishOnly ? 'hispano' : 'off';
+          delete parsed.showSpanishOnly;
+        }
+        if (!parsed.spanishFilter) {
+          parsed.spanishFilter = 'off';
+        }
+
         return parsed;
       }
     } catch (error) {
@@ -78,37 +87,32 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
   const [filtersChanged, setFiltersChanged] = useState(false);
   const previousState = useRef<MediaFiltersState>({...filtersState});
 
-  // Save filter state to localStorage and detect changes
   useEffect(() => {
     try {
       localStorage.setItem('mediaFilters', JSON.stringify(filtersState));
-      
-      // Verificación explícita de cada filtro para detectar cambios
+
       const dataSourceChanged = previousState.current.dataSource !== filtersState.dataSource;
       const mediaTypeChanged = previousState.current.mediaType !== filtersState.mediaType;
-      const spanishOnlyChanged = previousState.current.showSpanishOnly !== filtersState.showSpanishOnly;
+      const spanishFilterChanged = previousState.current.spanishFilter !== filtersState.spanishFilter;
       const sortByChanged = previousState.current.sortBy !== filtersState.sortBy;
-      
-      // Comparación de arrays de IDs de plataformas
+
       const prevPlatformIds = [...previousState.current.selectedPlatformIds].sort().join(',');
       const currentPlatformIds = [...filtersState.selectedPlatformIds].sort().join(',');
       const platformIdsChanged = prevPlatformIds !== currentPlatformIds;
-      
-      // Si hay cambios, marcamos para forzar actualización
-      if (dataSourceChanged || mediaTypeChanged || spanishOnlyChanged || platformIdsChanged || sortByChanged) {
+
+      if (dataSourceChanged || mediaTypeChanged || spanishFilterChanged || platformIdsChanged || sortByChanged) {
         console.log('FILTERS CHANGED - Setting filtersChanged flag to true');
         console.log({
           dataSource: { from: previousState.current.dataSource, to: filtersState.dataSource, changed: dataSourceChanged },
           mediaType: { from: previousState.current.mediaType, to: filtersState.mediaType, changed: mediaTypeChanged },
-          spanishOnly: { from: previousState.current.showSpanishOnly, to: filtersState.showSpanishOnly, changed: spanishOnlyChanged },
+          spanishFilter: { from: previousState.current.spanishFilter, to: filtersState.spanishFilter, changed: spanishFilterChanged },
           sortBy: { from: previousState.current.sortBy, to: filtersState.sortBy, changed: sortByChanged },
           platformIds: { from: prevPlatformIds, to: currentPlatformIds, changed: platformIdsChanged }
         });
-        
+
         setFiltersChanged(true);
       }
-      
-      // Actualizamos el estado anterior después de la detección de cambios
+
       previousState.current = JSON.parse(JSON.stringify(filtersState));
     } catch (error) {
       console.error('Error saving filters to localStorage:', error);
@@ -118,29 +122,27 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
   const updateFilters = (filters: Partial<MediaFiltersState>) => {
     console.log('Updating filters:', filters);
     setFiltersState(prevState => {
-      // Para cada filtro actualizado, comparamos si realmente cambió
       const newState = {...prevState, ...filters};
-      
-      // Forzar la detección de cambios inmediatamente
+
       const hasChanges = (
         (filters.dataSource !== undefined && filters.dataSource !== prevState.dataSource) ||
         (filters.mediaType !== undefined && filters.mediaType !== prevState.mediaType) ||
-        (filters.showSpanishOnly !== undefined && filters.showSpanishOnly !== prevState.showSpanishOnly) ||
+        (filters.spanishFilter !== undefined && filters.spanishFilter !== prevState.spanishFilter) ||
         (filters.sortBy !== undefined && filters.sortBy !== prevState.sortBy) ||
         (filters.selectedPlatformIds !== undefined)
       );
-      
+
       if (hasChanges) {
         console.log('Setting filtersChanged flag due to immediate filter update');
         setFiltersChanged(true);
       }
-      
+
       return newState;
     });
   };
 
-  const setShowSpanishOnly = (value: boolean) => {
-    updateFilters({ showSpanishOnly: value });
+  const setSpanishFilter = (value: SpanishFilter) => {
+    updateFilters({ spanishFilter: value });
   };
 
   const setMediaType = (type: 'all' | 'movie' | 'tv') => {
@@ -167,7 +169,7 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
   const value = {
     filtersState,
     updateFilters,
-    setShowSpanishOnly,
+    setSpanishFilter,
     setMediaType,
     setDataSource,
     setSortBy,

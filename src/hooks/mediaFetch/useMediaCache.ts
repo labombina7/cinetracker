@@ -33,15 +33,15 @@ export const useMediaCache = () => {
     // If parameters changed, invalidate the cache
     if (currentParams.mediaType !== lastParams.mediaType ||
         currentParams.dataSource !== lastParams.dataSource ||
-        currentParams.showSpanishOnly !== lastParams.showSpanishOnly ||
+        currentParams.spanishFilter !== lastParams.spanishFilter ||
         currentParams.sortBy !== lastParams.sortBy ||
         currentPlatformIds !== lastPlatformIds) {
-          
+
       console.log('Parameters changed, invalidating cache');
       console.log('Previous vs Current platforms:', lastPlatformIds, currentPlatformIds);
       console.log('Previous vs Current mediaType:', lastParams.mediaType, currentParams.mediaType);
       console.log('Previous vs Current dataSource:', lastParams.dataSource, currentParams.dataSource);
-      console.log('Previous vs Current showSpanishOnly:', lastParams.showSpanishOnly, currentParams.showSpanishOnly);
+      console.log('Previous vs Current spanishFilter:', lastParams.spanishFilter, currentParams.spanishFilter);
       console.log('Previous vs Current sortBy:', lastParams.sortBy, currentParams.sortBy);
       
       clearSavedResults();

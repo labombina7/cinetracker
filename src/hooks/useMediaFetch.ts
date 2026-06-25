@@ -8,11 +8,11 @@ import { useMediaCache } from './mediaFetch/useMediaCache';
 import { useFetchMediaCore } from './mediaFetch/useFetchMediaCore';
 import { useLoadMore } from './mediaFetch/useLoadMore';
 import { useProvidersData } from './useProvidersData';
-import { MediaFetchParams } from './mediaFetch/types';
+import { MediaFetchParams, SpanishFilter } from './mediaFetch/types';
 
 interface FetchMediaOptions {
   mediaType?: 'all' | 'movie' | 'tv';
-  showSpanishOnly?: boolean;
+  spanishFilter?: SpanishFilter;
   dataSource?: 'discover' | 'trending';
   sortBy?: 'rating' | 'date';
   selectedPlatformIds?: number[];
@@ -70,7 +70,7 @@ export const useMediaFetch = () => {
   // Wrapper function that accepts either object or parameters
   const fetchMedia = useCallback((
     optionsOrMediaType: FetchMediaOptions | 'all' | 'movie' | 'tv',
-    showSpanishOnly?: boolean,
+    spanishFilterArg?: SpanishFilter,
     dataSource?: 'discover' | 'trending',
     selectedPlatformIds?: number[],
     forceRefresh?: boolean,
@@ -78,12 +78,11 @@ export const useMediaFetch = () => {
     append?: boolean,
     sortBy?: 'rating' | 'date'
   ): Promise<void> => {
-    // Check if first argument is an object (options)
     if (typeof optionsOrMediaType === 'object') {
       const options = optionsOrMediaType;
       return fetchMediaCore(
         options.mediaType || 'all',
-        options.showSpanishOnly || false,
+        options.spanishFilter || 'off',
         options.dataSource || 'trending',
         options.selectedPlatformIds || [],
         options.forceRefresh || false,
@@ -92,10 +91,9 @@ export const useMediaFetch = () => {
         options.sortBy || 'rating'
       );
     } else {
-      // Legacy parameter style
       return fetchMediaCore(
         optionsOrMediaType,
-        showSpanishOnly || false,
+        spanishFilterArg || 'off',
         dataSource || 'trending',
         selectedPlatformIds || [],
         forceRefresh || false,
@@ -115,9 +113,17 @@ export const useMediaFetch = () => {
         savedParams.dataSource = 'discover';
       }
       
-      // Add sortBy if it doesn't exist
       if (!savedParams.sortBy) {
         savedParams.sortBy = 'rating';
+      }
+
+      // Migrate old showSpanishOnly boolean to spanishFilter
+      if ((savedParams as any).showSpanishOnly !== undefined && !savedParams.spanishFilter) {
+        savedParams.spanishFilter = (savedParams as any).showSpanishOnly ? 'hispano' : 'off';
+        delete (savedParams as any).showSpanishOnly;
+      }
+      if (!savedParams.spanishFilter) {
+        savedParams.spanishFilter = 'off';
       }
       
       lastFetchParams.current = {

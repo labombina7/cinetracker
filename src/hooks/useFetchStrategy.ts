@@ -6,17 +6,18 @@ import { usePlatformFilter } from './usePlatformFilter';
 import { fetchTrendingStrategy } from './fetchStrategies/trendingStrategy';
 import { fetchDiscoverStrategy } from './fetchStrategies/discoverStrategy';
 import { sortByReleaseDate, sortByVoteAverage } from '@/utils/mediaSorting';
+import { SpanishFilter } from './mediaFetch/types';
 
 export const useFetchStrategy = () => {
   const { filterByPlatform } = usePlatformFilter();
-  
+
   const fetchMediaByStrategy = useCallback(async (
     dataSource: 'discover' | 'trending',
     mediaType: 'all' | 'movie' | 'tv',
     selectedPlatformIds: number[] = [],
     sortBy: 'rating' | 'date' = 'rating',
     page: number = 1,
-    showSpanishOnly: boolean = false
+    spanishFilter: SpanishFilter = 'off'
   ): Promise<Media[]> => {
     let results: Media[] = [];
     
@@ -25,7 +26,7 @@ export const useFetchStrategy = () => {
     
     try {
       // Cache key for memoization
-      const cacheKey = `${dataSource}-${mediaType}-${validPlatformIds.join(',')}-${sortBy}-${page}-${showSpanishOnly}`;
+      const cacheKey = `${dataSource}-${mediaType}-${validPlatformIds.join(',')}-${sortBy}-${page}-${spanishFilter}`;
       
       // Seleccionar estrategia según fuente de datos
       switch (dataSource) {
@@ -36,7 +37,7 @@ export const useFetchStrategy = () => {
             page, 
             validPlatformIds, 
             filterByPlatform,
-            showSpanishOnly
+            spanishFilter
           );
           break;
           
@@ -47,14 +48,14 @@ export const useFetchStrategy = () => {
             page,
             validPlatformIds,
             filterByPlatform,
-            showSpanishOnly,
+            spanishFilter,
             sortBy
           );
           break;
           
         default:
           console.log(`Fallback to trending for ${mediaType}, page ${page}`);
-          results = await fetchRealTrending(mediaType, page, "week", showSpanishOnly);
+          results = await fetchRealTrending(mediaType, page, "week", spanishFilter);
           
           // Aplicar filtro de plataformas si es necesario
           if (validPlatformIds.length > 0) {

@@ -73,7 +73,7 @@ export const useHomeMediaFetch = () => {
       filtersChanged,
       forceRefreshNeeded,
       mediaType: filtersState.mediaType,
-      showSpanishOnly: filtersState.showSpanishOnly,
+      spanishFilter: filtersState.spanishFilter,
       dataSource: filtersState.dataSource,
       sortBy: filtersState.sortBy,
       selectedPlatformIds: filtersState.selectedPlatformIds,
@@ -94,7 +94,7 @@ export const useHomeMediaFetch = () => {
       // Load new data with updated filters
       fetchMedia({
         mediaType: filtersState.mediaType,
-        showSpanishOnly: filtersState.showSpanishOnly,
+        spanishFilter: filtersState.spanishFilter,
         dataSource: filtersState.dataSource,
         selectedPlatformIds: filtersState.selectedPlatformIds,
         sortBy: filtersState.sortBy,
@@ -122,7 +122,7 @@ export const useHomeMediaFetch = () => {
     filtersChanged,
     forceRefreshNeeded,
     filtersState.mediaType,
-    filtersState.showSpanishOnly,
+    filtersState.spanishFilter,
     filtersState.dataSource,
     filtersState.selectedPlatformIds,
     filtersState.sortBy,
