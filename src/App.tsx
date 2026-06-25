@@ -1,0 +1,48 @@
+
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
+import MediaDetail from "./pages/MediaDetail";
+import TraktAuth from "./pages/TraktAuth";
+import AuthCallback from "./pages/AuthCallback";
+import Navbar from "./components/Navbar";
+import SearchResults from "./pages/SearchResults";
+import Settings from "./pages/Settings";
+import { MediaFiltersProvider } from "./contexts/MediaFiltersContext";
+
+const queryClient = new QueryClient();
+
+const App = () => {
+  console.log("App rendering, setting up routes");
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <TooltipProvider>
+          <MediaFiltersProvider>
+            <Toaster />
+            <Sonner />
+            <Navbar />
+            <main className="min-h-[calc(100vh-64px)]">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/details/:type/:id" element={<MediaDetail />} />
+                <Route path="/search" element={<SearchResults />} />
+                <Route path="/auth/trakt" element={<TraktAuth />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </MediaFiltersProvider>
+        </TooltipProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+};
+
+export default App;
