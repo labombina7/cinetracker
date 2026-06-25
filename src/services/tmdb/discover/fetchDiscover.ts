@@ -25,26 +25,17 @@ export const discoverMedia = async (
       watch_region: 'ES'
     };
     
-    // Si filtramos por idioma español, usamos with_original_language
     if (showSpanishOnly) {
       params.with_original_language = 'es';
-      console.log('Discover: Filtering for Spanish original language only');
+      params['with_origin_country'] = 'ES';
     } else {
-      // Si no, permitimos varios idiomas
-      params.with_original_language = languageCodes.join('|');
+      params.with_original_language = 'es|en|fr';
     }
     
     // Si hay plataformas seleccionadas, incluirlas en los parámetros
     if (platformIds && platformIds.length > 0) {
       params.with_watch_providers = platformIds.join('|');
       console.log(`Discover: Filtering by platforms: ${platformIds.join(', ')}`);
-    }
-    
-    // Si queremos contenido español, damos prioridad a España como país de origen
-    if (showSpanishOnly) {
-      // Para películas y series, especificamos directamente el país de origen
-      params['with_origin_country'] = 'ES';
-      console.log('Buscando contenido con origen en España');
     }
     
     const url = buildApiUrl(`/discover/${type}`, params);
