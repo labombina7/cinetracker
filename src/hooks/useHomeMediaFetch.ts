@@ -4,17 +4,19 @@ import { useMediaFilters } from '@/contexts/MediaFiltersContext';
 import { useInitialFetch } from './home/useInitialFetch';
 import { useMediaScroll } from './home/useMediaScroll';
 import { useMediaFetch } from './useMediaFetch';
+import { useApiKey } from '@/hooks/useApiKey';
 import { useLocation } from 'react-router-dom';
 
 export const useHomeMediaFetch = () => {
-  const { 
-    mediaList, 
-    loading, 
-    error, 
-    hasMore, 
-    fetchMedia, 
-    loadMore, 
-    clearSavedResults 
+  const { isConfigured } = useApiKey();
+  const {
+    mediaList,
+    loading,
+    error,
+    hasMore,
+    fetchMedia,
+    loadMore,
+    clearSavedResults
   } = useMediaFetch();
 
   // Reference for the infinite scroll
@@ -101,7 +103,9 @@ export const useHomeMediaFetch = () => {
         append: false
       }).then(() => {
         console.log('Initial fetch completed successfully');
-        initialFetchCompleted.current = true;
+        if (isConfigured) {
+          initialFetchCompleted.current = true;
+        }
         refreshCompleted.current = true;
         fetchInProgress.current = false;
       }).catch(() => {
@@ -113,6 +117,7 @@ export const useHomeMediaFetch = () => {
       setForceRefreshNeeded(false);
     }
   }, [
+    isConfigured,
     filtersChanged,
     forceRefreshNeeded,
     filtersState.mediaType,
