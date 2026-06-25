@@ -1,7 +1,6 @@
 
 import { Media } from '@/types/media';
 import { MediaFetchParams } from './types';
-import { sortByReleaseDate, sortByVoteAverage } from '@/utils/mediaSorting';
 
 /**
  * Core function to fetch media data using the appropriate strategy
