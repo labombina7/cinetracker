@@ -46,6 +46,15 @@ const TraktClientForm: React.FC<TraktClientFormProps> = ({
       });
       return;
     }
+
+    if (!clientSecret.trim()) {
+      toast({
+        title: "Error",
+        description: "El Client Secret es obligatorio",
+        variant: "destructive",
+      });
+      return;
+    }
     
     onSave(clientId, clientSecret);
     onOpenChange(false);
@@ -99,20 +108,20 @@ const TraktClientForm: React.FC<TraktClientFormProps> = ({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="clientSecret" className="text-right">
-              Client Secret
+              Client Secret <span className="text-red-500">*</span>
             </Label>
             <Input
               id="clientSecret"
               value={clientSecret}
               onChange={(e) => setClientSecret(e.target.value)}
               type="password"
-              placeholder="Ingresa tu Client Secret (opcional)"
+              placeholder="Ingresa tu Client Secret"
             />
           </div>
           <div className="text-sm text-muted-foreground mt-2">
             <p>Configura el Redirect URI en Trakt.tv como:</p>
             <code className="bg-muted px-1 py-0.5 rounded text-xs">
-              {window.location.origin}/auth/callback
+              {window.location.origin}/trakt-redirect.html
             </code>
           </div>
         </div>
