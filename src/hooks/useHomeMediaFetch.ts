@@ -109,6 +109,7 @@ export const useHomeMediaFetch = () => {
         refreshCompleted.current = true;
         fetchInProgress.current = false;
       }).catch(() => {
+        initialFetchCompleted.current = true;
         fetchInProgress.current = false;
       });
       
