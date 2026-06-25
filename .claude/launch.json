@@ -12,6 +12,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "specs", "-p", "8081", "--no-clipboard"],
       "port": 8081
+    },
+    {
+      "name": "kanban-hub",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "/Users/xava73/Projects", "-p", "8082", "--no-clipboard"],
+      "port": 8082
     }
   ]
 }
