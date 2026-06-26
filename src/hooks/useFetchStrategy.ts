@@ -17,7 +17,8 @@ export const useFetchStrategy = () => {
     selectedPlatformIds: number[] = [],
     sortBy: 'none' | 'rating' | 'date' = 'none',
     page: number = 1,
-    spanishFilter: SpanishFilter = 'off'
+    spanishFilter: SpanishFilter = 'off',
+    genreId: number | null = null
   ): Promise<Media[]> => {
     let results: Media[] = [];
     
@@ -25,8 +26,7 @@ export const useFetchStrategy = () => {
     const validPlatformIds = Array.isArray(selectedPlatformIds) ? selectedPlatformIds : [];
     
     try {
-      // Cache key for memoization
-      const cacheKey = `${dataSource}-${mediaType}-${validPlatformIds.join(',')}-${sortBy}-${page}-${spanishFilter}`;
+      const cacheKey = `${dataSource}-${mediaType}-${validPlatformIds.join(',')}-${sortBy}-${page}-${spanishFilter}-${genreId ?? 'all'}`;
       
       // Seleccionar estrategia según fuente de datos
       switch (dataSource) {
@@ -49,7 +49,8 @@ export const useFetchStrategy = () => {
             validPlatformIds,
             filterByPlatform,
             spanishFilter,
-            sortBy
+            sortBy,
+            genreId
           );
           break;
           
@@ -65,7 +66,13 @@ export const useFetchStrategy = () => {
           }
       }
       
-      // Apply sorting based on sortBy parameter if we have results
+      // For trending, apply genre filter client-side (endpoint doesn't support with_genres)
+      if (dataSource === 'trending' && genreId !== null && results.length > 0) {
+        results = results.filter(item =>
+          item.genre_ids?.includes(genreId) || item.genres?.some(g => g.id === genreId)
+        );
+      }
+
       if (results && results.length > 0) {
         if (sortBy === 'rating') {
           results = sortByVoteAverage(results);

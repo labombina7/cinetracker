@@ -8,8 +8,9 @@ export interface MediaFetchParams {
   spanishFilter: SpanishFilter;
   dataSource: 'discover' | 'trending';
   selectedPlatformIds: number[];
-  sortBy: 'rating' | 'date';
+  sortBy: 'none' | 'rating' | 'date';
   page: number;
+  genreId?: number | null;
 }
 
 export interface FetchMediaCoreProps {
@@ -19,9 +20,10 @@ export interface FetchMediaCoreProps {
     dataSource: 'discover' | 'trending',
     mediaType: 'all' | 'movie' | 'tv',
     selectedPlatformIds: number[],
-    sortBy: 'rating' | 'date',
+    sortBy: 'none' | 'rating' | 'date',
     page: number,
-    spanishFilter: SpanishFilter
+    spanishFilter: SpanishFilter,
+    genreId?: number | null
   ) => Promise<Media[]>;
   selectedPlatforms: Array<{id: number, name: string, logoPath?: string}>;
   fetchInProgress: React.MutableRefObject<boolean>;

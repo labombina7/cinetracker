@@ -11,7 +11,8 @@ export const discoverMedia = async (
   page: number = 1,
   platformIds: number[] = [],
   spanishFilter: SpanishFilter = 'off',
-  sortBy: 'none' | 'rating' | 'date' = 'none'
+  sortBy: 'none' | 'rating' | 'date' = 'none',
+  genreId: number | null = null
 ): Promise<Media[]> => {
   try {
     const apiSortBy = sortBy === 'date'
@@ -38,10 +39,12 @@ export const discoverMedia = async (
       params.with_original_language = 'es|en|fr';
     }
     
-    // Si hay plataformas seleccionadas, incluirlas en los parámetros
     if (platformIds && platformIds.length > 0) {
       params.with_watch_providers = platformIds.join('|');
-      console.log(`Discover: Filtering by platforms: ${platformIds.join(', ')}`);
+    }
+
+    if (genreId !== null) {
+      params.with_genres = genreId;
     }
     
     const url = buildApiUrl(`/discover/${type}`, params);

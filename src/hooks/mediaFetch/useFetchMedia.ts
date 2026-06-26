@@ -31,7 +31,8 @@ export const useFetchMedia = ({
     forceRefresh: boolean = false,
     page: number = 1,
     append: boolean = false,
-    sortBy: 'rating' | 'date' = 'rating'
+    sortBy: 'none' | 'rating' | 'date' = 'none',
+    genreId: number | null = null
   ): Promise<void> => {
     if (!isConfigured) {
       console.log('API not configured, skipping fetch');
@@ -45,7 +46,7 @@ export const useFetchMedia = ({
     }
 
     // Debug logging
-    console.log(`[fetchMedia] dataSource: ${dataSource}, mediaType: ${mediaType}, Spanish: ${spanishFilter}, platforms: ${selectedPlatformIds.join(',') || 'none'}, sortBy: ${sortBy}, page: ${page}, forceRefresh: ${forceRefresh}, append: ${append}`);
+    console.log(`[fetchMedia] dataSource: ${dataSource}, mediaType: ${mediaType}, Spanish: ${spanishFilter}, platforms: ${selectedPlatformIds.join(',') || 'none'}, sortBy: ${sortBy}, genreId: ${genreId ?? 'all'}, page: ${page}`);
 
     // Sanitize platform IDs
     const platformIdsToUse = sanitizePlatformIds(selectedPlatformIds, selectedPlatforms);
@@ -57,7 +58,8 @@ export const useFetchMedia = ({
       dataSource,
       selectedPlatformIds: platformIdsToUse,
       sortBy,
-      page
+      page,
+      genreId
     };
     
     // Check if params have changed
@@ -110,7 +112,8 @@ export const useFetchMedia = ({
         currentParams,
         platformIdsToUse,
         language,
-        sortBy
+        sortBy,
+        genreId
       });
       
       console.log(`Combined results: ${finalData.length} unique items`);
@@ -133,10 +136,11 @@ export const useFetchMedia = ({
         if (page === 1) {
           saveToCache(finalData, {
             mediaType,
-            spanishFilter, 
+            spanishFilter,
             dataSource,
             selectedPlatformIds: platformIdsToUse,
-            sortBy
+            sortBy,
+            genreId
           });
         }
         

@@ -8,6 +8,7 @@ interface MediaFiltersState {
   dataSource: 'discover' | 'trending';
   selectedPlatformIds: number[];
   sortBy: 'none' | 'rating' | 'date';
+  selectedGenreId: number | null;
 }
 
 interface MediaFiltersContextType {
@@ -18,6 +19,7 @@ interface MediaFiltersContextType {
   setDataSource: (source: 'discover' | 'trending') => void;
   setSortBy: (sort: 'none' | 'rating' | 'date') => void;
   setSelectedPlatformIds: (platforms: number[]) => void;
+  setSelectedGenreId: (genreId: number | null) => void;
   filtersChanged: boolean;
   resetFiltersChanged: () => void;
 }
@@ -28,6 +30,7 @@ const initialState: MediaFiltersState = {
   dataSource: 'trending',
   selectedPlatformIds: [],
   sortBy: 'none',
+  selectedGenreId: null,
 };
 
 const MediaFiltersContext = createContext<MediaFiltersContextType>({
@@ -38,6 +41,7 @@ const MediaFiltersContext = createContext<MediaFiltersContextType>({
   setDataSource: () => {},
   setSortBy: () => {},
   setSelectedPlatformIds: () => {},
+  setSelectedGenreId: () => {},
   filtersChanged: false,
   resetFiltersChanged: () => {},
 });
@@ -100,7 +104,9 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
       const currentPlatformIds = [...filtersState.selectedPlatformIds].sort().join(',');
       const platformIdsChanged = prevPlatformIds !== currentPlatformIds;
 
-      if (dataSourceChanged || mediaTypeChanged || spanishFilterChanged || platformIdsChanged || sortByChanged) {
+      const genreChanged = previousState.current.selectedGenreId !== filtersState.selectedGenreId;
+
+      if (dataSourceChanged || mediaTypeChanged || spanishFilterChanged || platformIdsChanged || sortByChanged || genreChanged) {
         console.log('FILTERS CHANGED - Setting filtersChanged flag to true');
         console.log({
           dataSource: { from: previousState.current.dataSource, to: filtersState.dataSource, changed: dataSourceChanged },
@@ -129,7 +135,8 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
         (filters.mediaType !== undefined && filters.mediaType !== prevState.mediaType) ||
         (filters.spanishFilter !== undefined && filters.spanishFilter !== prevState.spanishFilter) ||
         (filters.sortBy !== undefined && filters.sortBy !== prevState.sortBy) ||
-        (filters.selectedPlatformIds !== undefined)
+        (filters.selectedPlatformIds !== undefined) ||
+        (filters.selectedGenreId !== undefined && filters.selectedGenreId !== prevState.selectedGenreId)
       );
 
       if (hasChanges) {
@@ -162,6 +169,10 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
     updateFilters({ selectedPlatformIds: platforms });
   };
 
+  const setSelectedGenreId = (genreId: number | null) => {
+    updateFilters({ selectedGenreId: genreId });
+  };
+
   const resetFiltersChanged = () => {
     setFiltersChanged(false);
   };
@@ -173,6 +184,7 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
     setMediaType,
     setDataSource,
     setSortBy,
+    setSelectedGenreId,
     setSelectedPlatformIds,
     filtersChanged,
     resetFiltersChanged,

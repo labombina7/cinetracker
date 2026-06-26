@@ -19,6 +19,7 @@ interface FetchMediaOptions {
   forceRefresh?: boolean;
   page?: number;
   append?: boolean;
+  genreId?: number | null;
 }
 
 export const useMediaFetch = () => {
@@ -76,7 +77,8 @@ export const useMediaFetch = () => {
     forceRefresh?: boolean,
     page?: number,
     append?: boolean,
-    sortBy?: 'none' | 'rating' | 'date'
+    sortBy?: 'none' | 'rating' | 'date',
+    genreId?: number | null
   ): Promise<void> => {
     if (typeof optionsOrMediaType === 'object') {
       const options = optionsOrMediaType;
@@ -88,7 +90,8 @@ export const useMediaFetch = () => {
         options.forceRefresh || false,
         options.page || 1,
         options.append || false,
-        options.sortBy || 'none'
+        options.sortBy || 'none',
+        options.genreId ?? null
       );
     } else {
       return fetchMediaCore(
@@ -99,7 +102,8 @@ export const useMediaFetch = () => {
         forceRefresh || false,
         page || 1,
         append || false,
-        sortBy || 'none'
+        sortBy || 'none',
+        genreId ?? null
       );
     }
   }, [fetchMediaCore]);

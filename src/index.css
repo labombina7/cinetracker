@@ -96,7 +96,15 @@
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/50;
   }
-  
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Firefox scrollbar styling */
   .scrollbar-thin {
     scrollbar-width: thin;

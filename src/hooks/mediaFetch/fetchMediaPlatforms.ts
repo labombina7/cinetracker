@@ -8,7 +8,8 @@ interface FetchMediaForPlatformsProps {
   currentParams: any;
   platformIdsToUse: number[];
   language: string;
-  sortBy: 'rating' | 'date';
+  sortBy: 'none' | 'rating' | 'date';
+  genreId?: number | null;
 }
 
 export const fetchMediaForMultiplePlatforms = async ({
@@ -16,13 +17,13 @@ export const fetchMediaForMultiplePlatforms = async ({
   currentParams,
   platformIdsToUse,
   language,
-  sortBy
+  sortBy,
+  genreId = null
 }: FetchMediaForPlatformsProps): Promise<Media[]> => {
-  // Single API call — TMDB supports multiple platform IDs via | (OR operator)
   const allMediaPromises = [
     fetchMediaData(
       (ds, mt, _pids, sb, pg) =>
-        fetchMediaByStrategy(ds, mt, platformIdsToUse, sb, pg, currentParams.spanishFilter),
+        fetchMediaByStrategy(ds, mt, platformIdsToUse, sb, pg, currentParams.spanishFilter, genreId),
       currentParams,
       language
     )

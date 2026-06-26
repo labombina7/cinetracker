@@ -76,6 +76,7 @@ export const useHomeMediaFetch = () => {
       spanishFilter: filtersState.spanishFilter,
       dataSource: filtersState.dataSource,
       sortBy: filtersState.sortBy,
+      genreId: filtersState.selectedGenreId,
       selectedPlatformIds: filtersState.selectedPlatformIds,
       initialFetchCompleted: initialFetchCompleted.current,
       refreshCompleted: refreshCompleted.current
@@ -98,6 +99,7 @@ export const useHomeMediaFetch = () => {
         dataSource: filtersState.dataSource,
         selectedPlatformIds: filtersState.selectedPlatformIds,
         sortBy: filtersState.sortBy,
+        genreId: filtersState.selectedGenreId,
         forceRefresh: true,
         page: 1,
         append: false
@@ -126,6 +128,7 @@ export const useHomeMediaFetch = () => {
     filtersState.dataSource,
     filtersState.selectedPlatformIds,
     filtersState.sortBy,
+    filtersState.selectedGenreId,
     fetchMedia,
     resetFiltersChanged,
     clearSavedResults

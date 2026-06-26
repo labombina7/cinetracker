@@ -11,7 +11,8 @@ export const fetchMediaByPlatforms = async (
   platformIds: number[],
   page: number = 1,
   spanishFilter: SpanishFilter = 'off',
-  sortBy: 'none' | 'rating' | 'date' = 'none'
+  sortBy: 'none' | 'rating' | 'date' = 'none',
+  genreId: number | null = null
 ): Promise<Media[]> => {
   try {
     if (!platformIds || platformIds.length === 0) {
@@ -42,6 +43,10 @@ export const fetchMediaByPlatforms = async (
         'vote_count.gte': sortBy === 'rating' ? 50 : 5,
         sort_by: apiSortBy
       };
+
+      if (genreId !== null) {
+        params.with_genres = genreId;
+      }
 
       if (spanishFilter === 'spain') {
         params.with_original_language = 'es';

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar, Globe, SlidersHorizontal } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,6 +12,8 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Platform } from '@/types/media';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
+import { useGenres } from '@/hooks/useGenres';
+import GenreChips from './GenreChips';
 
 interface MediaFiltersProps {
   spanishFilter: SpanishFilter;
@@ -22,6 +24,8 @@ interface MediaFiltersProps {
   setDataSource: (source: 'discover' | 'trending') => void;
   sortBy: 'none' | 'rating' | 'date';
   setSortBy: (sort: 'none' | 'rating' | 'date') => void;
+  selectedGenreId: number | null;
+  setSelectedGenreId: (genreId: number | null) => void;
   selectedPlatforms: number[];
   setSelectedPlatforms: (platforms: number[]) => void;
   platforms?: Platform[];
@@ -37,11 +41,22 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
   setDataSource,
   sortBy,
   setSortBy,
+  selectedGenreId,
+  setSelectedGenreId,
   selectedPlatforms,
   onPlatformChange
 }) => {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
+  const { genres, loading: genresLoading } = useGenres(mediaType);
+
+  // Reset genre when the new genre list doesn't include the current selection
+  useEffect(() => {
+    if (!genresLoading && selectedGenreId !== null) {
+      const stillAvailable = genres.some(g => g.id === selectedGenreId);
+      if (!stillAvailable) setSelectedGenreId(null);
+    }
+  }, [genres, genresLoading, selectedGenreId, setSelectedGenreId]);
 
   const translations = {
     es: {
@@ -105,7 +120,7 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
   const isSortActive = sortBy !== 'none';
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className="space-y-3 mb-6">
       <div className="flex flex-wrap items-center gap-3">
 
         {/* Source selector */}
@@ -237,6 +252,14 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Genre chips row */}
+      <GenreChips
+        genres={genres}
+        selectedGenreId={selectedGenreId}
+        onSelect={setSelectedGenreId}
+        loading={genresLoading}
+      />
     </div>
   );
 };

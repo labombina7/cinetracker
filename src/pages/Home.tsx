@@ -17,7 +17,7 @@ const Home = () => {
   const { isConfigured, configureApiKey, isLoading } = useApiKey();
   const { language } = useLanguage();
   const { mediaList, loading, error, hasMore, loadingRef } = useHomeMediaFetch();
-  const { filtersState, setSpanishFilter, setMediaType, setDataSource, setSortBy } = useMediaFilters();
+  const { filtersState, setSpanishFilter, setMediaType, setDataSource, setSortBy, setSelectedGenreId } = useMediaFilters();
 
   const handlePlatformChange = (platformId: number) => {
     console.log("Platform selection should be done from Settings page");
@@ -48,6 +48,8 @@ const Home = () => {
         setDataSource={setDataSource}
         sortBy={filtersState.sortBy}
         setSortBy={setSortBy}
+        selectedGenreId={filtersState.selectedGenreId}
+        setSelectedGenreId={setSelectedGenreId}
         selectedPlatforms={[]}
         setSelectedPlatforms={() => {}}
         onPlatformChange={handlePlatformChange}
