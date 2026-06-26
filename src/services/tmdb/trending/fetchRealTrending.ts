@@ -14,18 +14,12 @@ export const fetchRealTrending = async (
   fetchProviders: boolean = false
 ): Promise<Media[]> => {
   try {
-    const languageParams = spanishFilter !== 'off' ? 'es' : 'es-ES';
-
-    // Construir URL con soporte para paginación y filtrado de idioma
+    // The trending endpoint ignores with_original_language — we filter client-side below
     const params: any = {
       page,
-      language: languageParams,
+      language: 'es-ES',
       region: 'ES'
     };
-
-    if (spanishFilter !== 'off') {
-      params.with_original_language = 'es';
-    }
     
     const url = buildApiUrl(`/trending/${type}/${timeWindow}`, params);
     
@@ -39,11 +33,19 @@ export const fetchRealTrending = async (
     
     const data = await response.json();
     console.log(`Received ${data.results?.length || 0} trending results for ${type}, page ${page}`);
-    
-    // No limitamos el número de resultados
-    // Convertir los resultados a nuestro formato estandarizado
-    const mediaPromises = data.results
-      .filter(Boolean)
+
+    // Client-side language filter (trending endpoint ignores with_original_language)
+    let rawResults: any[] = (data.results || []).filter(Boolean);
+    if (spanishFilter === 'hispano') {
+      rawResults = rawResults.filter(item => item.original_language === 'es');
+    } else if (spanishFilter === 'spain') {
+      rawResults = rawResults.filter(item =>
+        item.original_language === 'es' && item.origin_country?.includes('ES')
+      );
+    }
+    console.log(`After spanishFilter="${spanishFilter}": ${rawResults.length} items`);
+
+    const mediaPromises = rawResults
       .map(async (item: any) => {
         // Obtener tipo real de contenido
         const mediaType = item.media_type || type;
@@ -83,14 +85,6 @@ export const fetchRealTrending = async (
     const validResults = mediaResults.filter((item): item is Media => item !== null);
     
     console.log(`Trending ${type} page ${page}: Found ${validResults.length} valid items`);
-    
-    // Log Spanish content for debugging
-    const spanishContent = validResults.filter(item => 
-      item.original_language === 'es' || item.country === 'ES'
-    );
-    
-    console.log(`Spanish content count in trending results: ${spanishContent.length}`);
-    
     return validResults;
   } catch (error) {
     console.error(`Error fetching trending ${type}:`, error);
