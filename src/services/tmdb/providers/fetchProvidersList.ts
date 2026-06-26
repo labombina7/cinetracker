@@ -2,6 +2,8 @@
 import { buildApiUrl } from '../config';
 import { Platform } from '../../../types/media';
 
+const TOP_PROVIDERS_LIMIT = 20;
+
 export interface TMDBProvider {
   provider_id: number;
   provider_name: string;
@@ -29,14 +31,12 @@ export const fetchProvidersList = async (type: 'movie' | 'tv' = 'movie', region:
     const data: TMDBProvidersResponse = await response.json();
     console.log(`Fetched ${data.results.length} streaming providers for ${type} in ${region}`);
     
-    // Convertimos al formato Platform que usa nuestra aplicación
-    const platforms: Platform[] = data.results.map(provider => ({
+    // TMDB returns results already sorted by display_priority (lower = more relevant)
+    return data.results.map(provider => ({
       id: provider.provider_id,
       name: provider.provider_name,
       logoPath: provider.logo_path,
     }));
-    
-    return platforms;
   } catch (error) {
     console.error('Error fetching streaming providers list:', error);
     return [];
@@ -53,15 +53,14 @@ export const fetchPopularProviders = async (region: string = 'ES'): Promise<Plat
     // Combinamos los resultados y eliminamos duplicados
     const combinedProviders = [...movieProviders];
     
-    // Añadimos proveedores de TV que no están duplicados
+    // Add TV providers not already in the list (preserving display_priority order)
     tvProviders.forEach(tvProvider => {
       if (!combinedProviders.some(p => p.id === tvProvider.id)) {
         combinedProviders.push(tvProvider);
       }
     });
-    
-    // Ordenamos por nombre para facilitar la selección
-    return combinedProviders.sort((a, b) => a.name.localeCompare(b.name));
+
+    return combinedProviders.slice(0, TOP_PROVIDERS_LIMIT);
   } catch (error) {
     console.error('Error fetching popular streaming providers:', error);
     return [];

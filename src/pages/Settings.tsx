@@ -19,7 +19,9 @@ const translations = {
     saveError: 'Error al guardar la configuración',
     loading: 'Cargando plataformas...',
     error: 'Error al cargar las plataformas',
-    save: 'Guardar cambios'
+    save: 'Guardar cambios',
+    selectAll: 'Seleccionar todas',
+    deselectAll: 'Deseleccionar todas',
   },
   en: {
     title: 'Settings',
@@ -29,7 +31,9 @@ const translations = {
     saveError: 'Error saving settings',
     loading: 'Loading platforms...',
     error: 'Error loading platforms',
-    save: 'Save changes'
+    save: 'Save changes',
+    selectAll: 'Select all',
+    deselectAll: 'Deselect all',
   }
 };
 
@@ -59,6 +63,12 @@ const Settings = () => {
         return [...current, platform];
       }
     });
+  };
+
+  const allSelected = platforms.length > 0 && localSelectedPlatforms.length === platforms.length;
+
+  const handleToggleAll = () => {
+    setLocalSelectedPlatforms(allSelected ? [] : [...platforms]);
   };
 
   const handleSave = () => {
@@ -131,8 +141,16 @@ const Settings = () => {
       <div className="space-y-6">
         <div>
           <h2 className="text-lg font-semibold mb-2">{t.platformsSection}</h2>
-          <p className="text-sm text-gray-500 mb-4">{t.description}</p>
-          
+          <p className="text-sm text-gray-500 mb-3">{t.description}</p>
+
+          <button
+            type="button"
+            onClick={handleToggleAll}
+            className="text-sm text-blue-600 hover:underline mb-4 block"
+          >
+            {allSelected ? t.deselectAll : t.selectAll}
+          </button>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {platforms.map((platform) => (
               <div key={platform.id} className="flex items-center space-x-2">
