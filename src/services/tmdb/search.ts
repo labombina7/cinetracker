@@ -4,8 +4,9 @@ import { convertToMedia } from './utils';
 import { buildApiUrl } from './config';
 import { fetchWatchProviders } from './providers';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
+import { cachedFetch } from './apiCache';
 
-export const searchMedia = async (query: string, language: string = 'es', spanishFilter: SpanishFilter = 'off'): Promise<Media[]> => {
+export const searchMedia = async (query: string, language: string = 'es', spanishFilter: SpanishFilter = 'off', fetchProviders: boolean = false): Promise<Media[]> => {
   try {
     if (!query) return [];
 
@@ -29,7 +30,7 @@ export const searchMedia = async (query: string, language: string = 'es', spanis
     console.log(`Search URL: ${url}`);
     
     // Realizar petición
-    const response = await fetch(url);
+    const response = await cachedFetch(url);
     if (!response.ok) {
       throw new Error(`Error searching: ${response.status}`);
     }
@@ -49,8 +50,7 @@ export const searchMedia = async (query: string, language: string = 'es', spanis
       try {
         const media = await convertToMedia(item, item.media_type);
         
-        if (media) {
-          // Obtener proveedores de streaming para España
+        if (media && fetchProviders) {
           const providers = await fetchWatchProviders(media.id, media.type);
           if (providers?.results?.ES) {
             media.watchProviders = {

@@ -4,6 +4,7 @@ import { TMDBDiscoverResponse } from '../../../types/tmdb';
 import { buildApiUrl } from '../config';
 import { convertToMedia } from '../utils';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
+import { cachedFetch } from '../apiCache';
 
 export const fetchMediaByPlatforms = async (
   mediaType: 'all' | 'movie' | 'tv',
@@ -51,7 +52,7 @@ export const fetchMediaByPlatforms = async (
       const url = buildApiUrl(`/discover/${type}`, params);
       console.log(`Fetching by platform for ${type}:`, url);
 
-      const response = await fetch(url);
+      const response = await cachedFetch(url);
       
       if (!response.ok) {
         console.error(`Error fetching discover by platform for ${type}: ${response.status}`);

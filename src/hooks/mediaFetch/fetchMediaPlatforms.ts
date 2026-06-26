@@ -18,33 +18,15 @@ export const fetchMediaForMultiplePlatforms = async ({
   language,
   sortBy
 }: FetchMediaForPlatformsProps): Promise<Media[]> => {
-  // Get results from all different platforms
-  const allMediaPromises = [];
-  
-  // If platforms are selected, make a request for each platform
-  if (platformIdsToUse.length > 0) {
-    for (const platformId of platformIdsToUse) {
-      // Make individual requests per platform
-      allMediaPromises.push(
-        fetchMediaData(
-          (ds, mt, pids, sb, pg) => 
-            fetchMediaByStrategy(ds, mt, [platformId], sb, pg, currentParams.spanishFilter),
-          {...currentParams, selectedPlatformIds: [platformId]}, 
-          language
-        )
-      );
-    }
-  } else {
-    // Without platforms, a single request
-    allMediaPromises.push(
-      fetchMediaData(
-        (ds, mt, pids, sb, pg) => 
-          fetchMediaByStrategy(ds, mt, [], sb, pg, currentParams.spanishFilter),
-        currentParams, 
-        language
-      )
-    );
-  }
+  // Single API call — TMDB supports multiple platform IDs via | (OR operator)
+  const allMediaPromises = [
+    fetchMediaData(
+      (ds, mt, _pids, sb, pg) =>
+        fetchMediaByStrategy(ds, mt, platformIdsToUse, sb, pg, currentParams.spanishFilter),
+      currentParams,
+      language
+    )
+  ];
   
   // Wait for all promises to resolve
   const allResults = await Promise.all(allMediaPromises);

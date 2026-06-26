@@ -42,7 +42,7 @@ export const useSearch = (query: string, language: AppLanguage, selectedPlatform
       console.log(`Searching: "${query}", platforms: ${selectedPlatformIds.join(',')}, spanish: ${spanishFilter}`);
       
       // Pasamos el parámetro de idioma español a la búsqueda
-      const data = await searchMedia(query, language, spanishFilter);
+      const data = await searchMedia(query, language, spanishFilter, selectedPlatformIds.length > 0);
       
       // Aplicar filtros de plataforma si es necesario
       let filteredData = data;

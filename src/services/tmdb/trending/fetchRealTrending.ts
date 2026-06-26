@@ -4,6 +4,7 @@ import { convertToMedia } from '../utils';
 import { buildApiUrl } from '../config';
 import { fetchWatchProviders } from '../providers';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
+import { cachedFetch } from '../apiCache';
 
 export const fetchRealTrending = async (
   type: 'all' | 'movie' | 'tv' = 'all',
@@ -30,7 +31,7 @@ export const fetchRealTrending = async (
     
     console.log(`Fetching trending ${type} for ${timeWindow}, page ${page}, spanishFilter: ${spanishFilter}: ${url}`);
     
-    const response = await fetch(url);
+    const response = await cachedFetch(url);
     
     if (!response.ok) {
       throw new Error(`Error fetching trending ${type}: ${response.status}`);

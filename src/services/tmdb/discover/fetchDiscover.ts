@@ -4,6 +4,7 @@ import { TMDBDiscoverResponse } from '../../../types/tmdb';
 import { buildApiUrl } from '../config';
 import { convertToMedia } from '../utils';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
+import { cachedFetch } from '../apiCache';
 
 export const discoverMedia = async (
   type: 'movie' | 'tv',
@@ -44,7 +45,7 @@ export const discoverMedia = async (
     const url = buildApiUrl(`/discover/${type}`, params);
     console.log(`Fetching discover ${type}:`, url);
     
-    const response = await fetch(url);
+    const response = await cachedFetch(url);
     
     if (!response.ok) {
       throw new Error(`Error fetching discover ${type}: ${response.status}`);

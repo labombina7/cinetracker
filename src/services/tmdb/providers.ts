@@ -2,11 +2,12 @@
 import { TMDBWatchProviders } from '../../types/tmdb';
 import { STREAMING_PROVIDERS } from '../../config/tmdb.config';
 import { buildApiUrl } from './config';
+import { cachedFetch } from './apiCache';
 
 // Función para conseguir los proveedores de streaming de un título
 export const fetchWatchProviders = async (id: number, type: 'movie' | 'tv'): Promise<TMDBWatchProviders | null> => {
   try {
-    const response = await fetch(buildApiUrl(`/${type}/${id}/watch/providers`));
+    const response = await cachedFetch(buildApiUrl(`/${type}/${id}/watch/providers`));
     
     if (!response.ok) {
       throw new Error(`Error fetching watch providers: ${response.status}`);
