@@ -11,7 +11,7 @@ export const fetchMediaByPlatforms = async (
   platformIds: number[],
   page: number = 1,
   spanishFilter: SpanishFilter = 'off',
-  sortBy: 'rating' | 'date' = 'rating'
+  sortBy: 'none' | 'rating' | 'date' = 'none'
 ): Promise<Media[]> => {
   try {
     if (!platformIds || platformIds.length === 0) {
@@ -30,7 +30,9 @@ export const fetchMediaByPlatforms = async (
       // Parámetros para la solicitud
       const apiSortBy = sortBy === 'date'
         ? (type === 'tv' ? 'first_air_date.desc' : 'primary_release_date.desc')
-        : 'vote_average.desc';
+        : sortBy === 'rating'
+          ? 'vote_average.desc'
+          : 'popularity.desc';
 
       const params: Record<string, string | number | boolean> = {
         watch_region: 'ES',

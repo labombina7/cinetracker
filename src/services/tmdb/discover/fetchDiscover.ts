@@ -11,12 +11,14 @@ export const discoverMedia = async (
   page: number = 1,
   platformIds: number[] = [],
   spanishFilter: SpanishFilter = 'off',
-  sortBy: 'rating' | 'date' = 'rating'
+  sortBy: 'none' | 'rating' | 'date' = 'none'
 ): Promise<Media[]> => {
   try {
     const apiSortBy = sortBy === 'date'
       ? (type === 'tv' ? 'first_air_date.desc' : 'primary_release_date.desc')
-      : 'vote_average.desc';
+      : sortBy === 'rating'
+        ? 'vote_average.desc'
+        : 'popularity.desc';
 
     // Parámetros para la API de Discover
     let params: Record<string, string | number | boolean> = {

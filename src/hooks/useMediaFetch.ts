@@ -14,7 +14,7 @@ interface FetchMediaOptions {
   mediaType?: 'all' | 'movie' | 'tv';
   spanishFilter?: SpanishFilter;
   dataSource?: 'discover' | 'trending';
-  sortBy?: 'rating' | 'date';
+  sortBy?: 'none' | 'rating' | 'date';
   selectedPlatformIds?: number[];
   forceRefresh?: boolean;
   page?: number;
@@ -76,7 +76,7 @@ export const useMediaFetch = () => {
     forceRefresh?: boolean,
     page?: number,
     append?: boolean,
-    sortBy?: 'rating' | 'date'
+    sortBy?: 'none' | 'rating' | 'date'
   ): Promise<void> => {
     if (typeof optionsOrMediaType === 'object') {
       const options = optionsOrMediaType;
@@ -88,7 +88,7 @@ export const useMediaFetch = () => {
         options.forceRefresh || false,
         options.page || 1,
         options.append || false,
-        options.sortBy || 'rating'
+        options.sortBy || 'none'
       );
     } else {
       return fetchMediaCore(
@@ -99,7 +99,7 @@ export const useMediaFetch = () => {
         forceRefresh || false,
         page || 1,
         append || false,
-        sortBy || 'rating'
+        sortBy || 'none'
       );
     }
   }, [fetchMediaCore]);
@@ -114,7 +114,7 @@ export const useMediaFetch = () => {
       }
       
       if (!savedParams.sortBy) {
-        savedParams.sortBy = 'rating';
+        savedParams.sortBy = 'none';
       }
 
       // Migrate old showSpanishOnly boolean to spanishFilter

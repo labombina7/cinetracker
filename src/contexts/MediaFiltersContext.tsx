@@ -7,7 +7,7 @@ interface MediaFiltersState {
   mediaType: 'all' | 'movie' | 'tv';
   dataSource: 'discover' | 'trending';
   selectedPlatformIds: number[];
-  sortBy: 'rating' | 'date';
+  sortBy: 'none' | 'rating' | 'date';
 }
 
 interface MediaFiltersContextType {
@@ -16,7 +16,7 @@ interface MediaFiltersContextType {
   setSpanishFilter: (value: SpanishFilter) => void;
   setMediaType: (type: 'all' | 'movie' | 'tv') => void;
   setDataSource: (source: 'discover' | 'trending') => void;
-  setSortBy: (sort: 'rating' | 'date') => void;
+  setSortBy: (sort: 'none' | 'rating' | 'date') => void;
   setSelectedPlatformIds: (platforms: number[]) => void;
   filtersChanged: boolean;
   resetFiltersChanged: () => void;
@@ -25,9 +25,9 @@ interface MediaFiltersContextType {
 const initialState: MediaFiltersState = {
   spanishFilter: 'off',
   mediaType: 'all',
-  dataSource: 'discover',
+  dataSource: 'trending',
   selectedPlatformIds: [],
-  sortBy: 'rating',
+  sortBy: 'none',
 };
 
 const MediaFiltersContext = createContext<MediaFiltersContextType>({
@@ -57,13 +57,13 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
         console.log('Loaded filters from localStorage:', parsed);
 
         // Migrate old data source values
-        if (parsed.dataSource === 'combined' || parsed.dataSource === 'new' || parsed.dataSource === 'trending') {
+        if (parsed.dataSource === 'combined' || parsed.dataSource === 'new') {
           parsed.dataSource = 'discover';
         }
 
         // Add sortBy if missing
         if (!parsed.sortBy) {
-          parsed.sortBy = 'rating';
+          parsed.sortBy = 'none';
         }
 
         // Migrate old showSpanishOnly boolean to spanishFilter
@@ -153,7 +153,7 @@ export const MediaFiltersProvider: React.FC<MediaFiltersProviderProps> = ({ chil
     updateFilters({ dataSource: source });
   };
 
-  const setSortBy = (sort: 'rating' | 'date') => {
+  const setSortBy = (sort: 'none' | 'rating' | 'date') => {
     updateFilters({ sortBy: sort });
   };
 

@@ -10,7 +10,7 @@ export const fetchDiscoverStrategy = async (
   validPlatformIds: number[],
   filterByPlatform: (items: Media[], platformIds: number[]) => Media[],
   spanishFilter: SpanishFilter = 'off',
-  sortBy: 'rating' | 'date' = 'rating'
+  sortBy: 'none' | 'rating' | 'date' = 'none'
 ): Promise<Media[]> => {
   console.log(`Fetching discover for ${mediaType}, page ${page}, spanishFilter: ${spanishFilter}`);
   let results: Media[] = [];

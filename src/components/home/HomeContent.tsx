@@ -70,10 +70,10 @@ const HomeContent: React.FC<HomeContentProps> = ({
                   {filtersState.mediaType === 'movie' ? 'Película' : 'Serie'}
                 </span>
               )}
-              {filtersState.sortBy && (
+              {filtersState.sortBy && filtersState.sortBy !== 'none' && (
                 <span className="bg-gray-500/90 text-white text-xs px-1 rounded ml-1">
-                  {filtersState.sortBy === 'rating' ? 
-                    (language === 'es' ? 'Valoración' : 'Rating') : 
+                  {filtersState.sortBy === 'rating' ?
+                    (language === 'es' ? 'Valoración' : 'Rating') :
                     (language === 'es' ? 'Fecha' : 'Date')}
                 </span>
               )}

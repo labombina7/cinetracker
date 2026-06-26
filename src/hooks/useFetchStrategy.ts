@@ -15,7 +15,7 @@ export const useFetchStrategy = () => {
     dataSource: 'discover' | 'trending',
     mediaType: 'all' | 'movie' | 'tv',
     selectedPlatformIds: number[] = [],
-    sortBy: 'rating' | 'date' = 'rating',
+    sortBy: 'none' | 'rating' | 'date' = 'none',
     page: number = 1,
     spanishFilter: SpanishFilter = 'off'
   ): Promise<Media[]> => {

@@ -1,9 +1,14 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar, Globe } from 'lucide-react';
+import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar, Globe, SlidersHorizontal } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Platform } from '@/types/media';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
@@ -15,8 +20,8 @@ interface MediaFiltersProps {
   setMediaType: (type: 'all' | 'movie' | 'tv') => void;
   dataSource: 'discover' | 'trending';
   setDataSource: (source: 'discover' | 'trending') => void;
-  sortBy: 'rating' | 'date';
-  setSortBy: (sort: 'rating' | 'date') => void;
+  sortBy: 'none' | 'rating' | 'date';
+  setSortBy: (sort: 'none' | 'rating' | 'date') => void;
   selectedPlatforms: number[];
   setSelectedPlatforms: (platforms: number[]) => void;
   platforms?: Platform[];
@@ -40,9 +45,6 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
 
   const translations = {
     es: {
-      spanishFilter: 'Idioma:',
-      dataSource: 'Fuente:',
-      sortBy: 'Ordenar:',
       spanishOptions: {
         'off': 'Todo',
         'hispano': 'Hispano',
@@ -53,6 +55,7 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         'discover': 'Descubrir'
       },
       sortByOptions: {
+        'none': 'Sin ordenar',
         'rating': 'Valoración',
         'date': 'Fecha'
       },
@@ -63,9 +66,6 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
       }
     },
     en: {
-      spanishFilter: 'Language:',
-      dataSource: 'Source:',
-      sortBy: 'Sort:',
       spanishOptions: {
         'off': 'All',
         'hispano': 'Hispanic',
@@ -76,6 +76,7 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         'discover': 'Discover'
       },
       sortByOptions: {
+        'none': 'Default',
         'rating': 'Rating',
         'date': 'Release date'
       },
@@ -95,94 +96,111 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
   };
 
   const sortIcons = {
+    'none': <SlidersHorizontal size={16} />,
     'rating': <ArrowDown size={16} />,
     'date': <Calendar size={16} />
   };
 
+  const isLangActive = spanishFilter !== 'off';
+  const isSortActive = sortBy !== 'none';
+
   return (
     <div className="space-y-4 mb-6">
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm whitespace-nowrap">{t.spanishFilter}</span>
-          <Select
-            value={spanishFilter}
-            onValueChange={(value) => setSpanishFilter(value as SpanishFilter)}
-          >
-            <SelectTrigger className="w-[130px] h-9 bg-background">
-              <SelectValue>
-                <div className="flex items-center gap-2">
-                  <Globe size={16} />
-                  <span>{t.spanishOptions[spanishFilter]}</span>
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.entries(t.spanishOptions) as [SpanishFilter, string][]).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  <div className="flex items-center gap-2">
-                    <Globe size={16} />
-                    <span>{label}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="flex flex-wrap items-center gap-3">
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm whitespace-nowrap">{t.dataSource}</span>
-          <Select
-            value={dataSource}
-            onValueChange={(value) => setDataSource(value as 'discover' | 'trending')}
-          >
-            <SelectTrigger className="w-[140px] h-9 bg-background">
-              <SelectValue>
+        {/* Source selector */}
+        <Select
+          value={dataSource}
+          onValueChange={(value) => setDataSource(value as 'discover' | 'trending')}
+        >
+          <SelectTrigger className="w-[145px] h-9 bg-background">
+            <SelectValue>
+              <div className="flex items-center gap-2">
+                {dataSourceIcons[dataSource]}
+                <span>{t.dataSourceOptions[dataSource]}</span>
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(t.dataSourceOptions).map(([key, value]) => (
+              <SelectItem key={key} value={key}>
                 <div className="flex items-center gap-2">
-                  {dataSourceIcons[dataSource]}
-                  <span>{t.dataSourceOptions[dataSource]}</span>
+                  {dataSourceIcons[key as keyof typeof dataSourceIcons]}
+                  <span>{value}</span>
                 </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(t.dataSourceOptions).map(([key, value]) => (
-                <SelectItem key={key} value={key}>
-                  <div className="flex items-center gap-2">
-                    {dataSourceIcons[key as keyof typeof dataSourceIcons]}
-                    <span>{value}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm whitespace-nowrap">{t.sortBy}</span>
-          <Select
-            value={sortBy}
-            onValueChange={(value) => setSortBy(value as 'rating' | 'date')}
-          >
-            <SelectTrigger className="w-[140px] h-9 bg-background">
-              <SelectValue>
-                <div className="flex items-center gap-2">
-                  {sortIcons[sortBy]}
-                  <span>{t.sortByOptions[sortBy]}</span>
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(t.sortByOptions).map(([key, value]) => (
-                <SelectItem key={key} value={key}>
-                  <div className="flex items-center gap-2">
-                    {sortIcons[key as keyof typeof sortIcons]}
-                    <span>{value}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Language icon button + dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={`relative flex items-center justify-center h-9 w-9 rounded-md border transition-colors ${
+                isLangActive
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+              }`}
+              title={language === 'es' ? 'Idioma' : 'Language'}
+            >
+              <Globe size={16} />
+              {isLangActive && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-400" />
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[140px]">
+            {(Object.entries(t.spanishOptions) as [SpanishFilter, string][]).map(([key, label]) => (
+              <DropdownMenuItem
+                key={key}
+                onSelect={() => setSpanishFilter(key)}
+                className={`flex items-center gap-2 cursor-pointer ${spanishFilter === key ? 'font-semibold' : ''}`}
+              >
+                <Globe size={14} className={spanishFilter === key ? 'text-primary' : 'text-muted-foreground'} />
+                <span>{label}</span>
+                {spanishFilter === key && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
+        {/* Sort icon button + dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={`relative flex items-center justify-center h-9 w-9 rounded-md border transition-colors ${
+                isSortActive
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+              }`}
+              title={language === 'es' ? 'Ordenar' : 'Sort'}
+            >
+              <SlidersHorizontal size={16} />
+              {isSortActive && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-400" />
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[150px]">
+            {(Object.entries(t.sortByOptions) as [('none' | 'rating' | 'date'), string][]).map(([key, label]) => (
+              <DropdownMenuItem
+                key={key}
+                onSelect={() => setSortBy(key)}
+                className={`flex items-center gap-2 cursor-pointer ${sortBy === key ? 'font-semibold' : ''}`}
+              >
+                {React.cloneElement(sortIcons[key], {
+                  size: 14,
+                  className: sortBy === key ? 'text-primary' : 'text-muted-foreground'
+                })}
+                <span>{label}</span>
+                {sortBy === key && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Media type buttons */}
         <div className={`flex items-center gap-2 ${isMobile ? 'w-full justify-start mt-2' : 'ml-auto'}`}>
           <button
             className={`px-4 py-2 text-sm rounded-md transition-colors flex items-center gap-2 ${
