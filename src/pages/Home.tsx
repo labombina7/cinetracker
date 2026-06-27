@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useApiKey } from '@/hooks/useApiKey';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useHomeMediaFetch } from '@/hooks/useHomeMediaFetch';
@@ -57,7 +57,12 @@ const Home = () => {
     return <ApiKeySetup onApiKeySet={configureApiKey} />;
   }
 
-  const featuredBackdrop = mediaList[0]?.backdropPath;
+  const featuredBackdrop = useMemo(() => {
+    if (mediaList.length === 0) return null;
+    const pool = mediaList.slice(0, 10).filter(m => m.backdropPath);
+    if (pool.length === 0) return null;
+    return pool[Math.floor(Math.random() * pool.length)].backdropPath;
+  }, [mediaList]);
 
   return (
     <div className="container mx-auto px-4 py-6">
