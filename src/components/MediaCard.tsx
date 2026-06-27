@@ -73,7 +73,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, onClick }) => {
 
   return (
     <Card
-      className="overflow-hidden transition-transform hover:scale-105 hover:shadow-lg cursor-pointer"
+      className="overflow-hidden transition-transform hover:scale-105 hover:shadow-lg cursor-pointer border border-white/10"
       onClick={onClick}
     >
       <div className="relative">

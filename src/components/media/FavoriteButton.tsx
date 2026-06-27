@@ -23,12 +23,17 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   if (variant === 'icon') {
     return (
       <Button
-        variant="outline"
-        className={`rounded-full p-2 h-10 w-10 ${isFavorite ? 'bg-red-500/10' : ''}`}
+        variant="ghost"
+        size="icon"
+        className={`rounded-full backdrop-blur-sm border border-white/15 h-10 w-10 ${
+          isFavorite
+            ? 'bg-red-500/30 hover:bg-red-500/40 text-red-400 border-red-500/30'
+            : 'bg-black/30 hover:bg-black/50 text-white'
+        }`}
         onClick={onToggle}
         aria-label={ariaLabel}
       >
-        <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+        <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-400 text-red-400' : ''}`} />
       </Button>
     );
   }
@@ -38,10 +43,10 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       onClick={onToggle}
       variant="outline"
       aria-label={ariaLabel}
-      className={`w-full ${
+      className={`w-full border-white/20 ${
         isFavorite
-          ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
-          : 'bg-foreground hover:bg-foreground/90 text-background'
+          ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border-red-500/30'
+          : 'bg-white/10 hover:bg-white/20 text-white'
       }`}
     >
       <Heart className={`mr-2 h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />

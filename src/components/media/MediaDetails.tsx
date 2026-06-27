@@ -140,15 +140,18 @@ const MediaDetails = () => {
         <MediaDetailHeader backdropPath={media.backdropPath} />
       </div>
       
+      <div className="fixed top-20 right-4 z-20">
+        <FavoriteButton
+          isFavorite={isFavorite}
+          onToggle={handleFavoriteClick}
+          variant="icon"
+          mediaTitle={media.title}
+        />
+      </div>
+
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/3">
           <MediaPoster posterPath={media.posterPath} title={media.title} />
-          <FavoriteButton
-            isFavorite={isFavorite}
-            onToggle={handleFavoriteClick}
-            variant="full"
-            mediaTitle={media.title}
-          />
         </div>
         
         <div className="md:w-2/3">

@@ -14,7 +14,7 @@ const Navbar = () => {
   const isMobile = useIsMobile();
 
   return (
-    <nav className="bg-background border-b sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
+    <nav className="bg-background/70 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-xl font-bold flex items-center">
