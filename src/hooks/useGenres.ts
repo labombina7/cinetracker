@@ -38,11 +38,10 @@ export const useGenres = (mediaType: 'all' | 'movie' | 'tv'): UseGenresResult =>
   }, [language]);
 
   const genres: Genre[] = (() => {
-    if (mediaType === 'movie') return movieGenres;
     if (mediaType === 'tv') return tvGenres;
-    // 'all' → intersection by id
-    const tvIds = new Set(tvGenres.map(g => g.id));
-    return movieGenres.filter(g => tvIds.has(g.id));
+    // 'movie' and 'all' → movie genres (Action=28, Horror=27, Sci-Fi=878 have different TV IDs
+    // so the intersection would miss them; movie genres are more complete and recognizable)
+    return movieGenres;
   })();
 
   return { genres, loading };

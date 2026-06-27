@@ -74,8 +74,13 @@ const List = () => {
   const activeGenreId = mediaType === 'tv' ? tvGenreId : movieGenreId;
   const handleGenreClick = (genreId: number) => {
     const next = activeGenreId === genreId ? null : genreId;
-    setMovieGenreId(next);
-    setTvGenreId(next);
+    if (mediaType === 'tv') {
+      setTvGenreId(next);
+      setMovieGenreId(null);
+    } else {
+      setMovieGenreId(next);
+      setTvGenreId(null);
+    }
   };
 
   const buildConfig = useCallback((): EditorialFetchConfig => {
