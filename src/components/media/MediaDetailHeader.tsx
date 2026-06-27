@@ -17,25 +17,9 @@ const MediaDetailHeader: React.FC<MediaDetailHeaderProps> = ({ backdropPath }) =
 
   const backLabel = language === 'es' ? 'Volver' : 'Go back';
 
-  if (isMobile) {
-    return (
-      <div className="sticky top-0 z-20 flex items-center p-2 bg-background/80 backdrop-blur-sm">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          aria-label={backLabel}
-          className="rounded-full"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <>
-      {/* Full-viewport backdrop fixed behind the entire page */}
+      {/* Full-viewport backdrop — shared by mobile and desktop */}
       {backdropPath && (
         <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
           <div
@@ -46,20 +30,33 @@ const MediaDetailHeader: React.FC<MediaDetailHeaderProps> = ({ backdropPath }) =
         </div>
       )}
 
-      {/* Back button with clear left margin */}
-      <div className="relative pt-6 ml-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          className="rounded-full bg-black/25 hover:bg-black/45 backdrop-blur-sm border border-white/15"
-          aria-label={backLabel}
-        >
-          <ArrowLeft className="h-4 w-4 text-white" />
-        </Button>
-      </div>
+      {isMobile ? (
+        <div className="sticky top-0 z-20 flex items-center p-2 bg-background/60 backdrop-blur-sm">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            aria-label={backLabel}
+            className="rounded-full"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <div className="relative pt-6 ml-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="rounded-full bg-black/25 hover:bg-black/45 backdrop-blur-sm border border-white/15"
+            aria-label={backLabel}
+          >
+            <ArrowLeft className="h-4 w-4 text-white" />
+          </Button>
+        </div>
+      )}
 
-      <div className="h-4" />
+      {!isMobile && <div className="h-4" />}
     </>
   );
 };
