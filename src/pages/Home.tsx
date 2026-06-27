@@ -4,6 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useHomeMediaFetch } from '@/hooks/useHomeMediaFetch';
 import { useMediaFilters } from '@/contexts/MediaFiltersContext';
 import { useProvidersData } from '@/hooks/useProvidersData';
+import { getBackdropUrl } from '@/services/tmdb/index';
 import ApiKeySetup from '@/components/ApiKeySetup';
 import SearchBar from '@/components/SearchBar';
 import MediaFilters from '@/components/home/MediaFilters';
@@ -56,8 +57,19 @@ const Home = () => {
     return <ApiKeySetup onApiKeySet={configureApiKey} />;
   }
 
+  const featuredBackdrop = mediaList[0]?.backdropPath;
+
   return (
     <div className="container mx-auto px-4 py-6">
+      {featuredBackdrop && (
+        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-top transition-all duration-700"
+            style={{ backgroundImage: `url(${getBackdropUrl(featuredBackdrop)})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-background/80 to-background" />
+        </div>
+      )}
       <h1 className="text-2xl md:text-3xl font-bold mb-6">
         {language === 'es' ? 'Descubre' : 'Discover'}
       </h1>
