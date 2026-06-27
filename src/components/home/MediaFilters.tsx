@@ -158,6 +158,7 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
                   : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
               }`}
               title={language === 'es' ? 'Idioma' : 'Language'}
+              aria-label={language === 'es' ? 'Filtro de idioma' : 'Language filter'}
             >
               <Globe size={16} />
               {isLangActive && (
@@ -190,6 +191,7 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
                   : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
               }`}
               title={language === 'es' ? 'Ordenar' : 'Sort'}
+              aria-label={language === 'es' ? 'Ordenar resultados' : 'Sort results'}
             >
               <SlidersHorizontal size={16} />
               {isSortActive && (

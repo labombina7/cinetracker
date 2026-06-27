@@ -1,27 +1,27 @@
 
 import { TRAKT_API_URL, getTraktHeaders } from './config';
+import { authenticatedFetch } from './client';
 
-// Get user info
-export const getUserInfo = async (): Promise<any> => {
+export interface TraktUser {
+  username: string;
+  name?: string;
+  location?: string;
+  movies?: { watched: number };
+  shows?: { watched: number };
+}
+
+export const getUserInfo = async (): Promise<TraktUser | null> => {
   const token = localStorage.getItem('trakt_token');
   if (!token) return null;
 
   try {
-    const response = await fetch(`${TRAKT_API_URL}/users/me`, {
+    const response = await authenticatedFetch(`${TRAKT_API_URL}/users/me`, {
       headers: getTraktHeaders(),
-      credentials: 'omit'  // Añadido para evitar envío automático de cookies
+      credentials: 'omit',
     });
 
     if (!response.ok) {
       console.error('Error response from Trakt.tv:', response.status, response.statusText);
-      const errorData = await response.text();
-      console.error('Error data:', errorData);
-      
-      // If unauthorized, clear token
-      if (response.status === 401) {
-        localStorage.removeItem('trakt_token');
-      }
-      
       return null;
     }
 

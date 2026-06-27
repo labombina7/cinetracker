@@ -1,41 +1,56 @@
-
 import { useState, useEffect } from 'react';
 import { addToWatchlist } from '../services/trakt';
 import { toast } from '@/components/ui/use-toast';
 
-export const useFavorites = () => {
-  const [favorites, setFavorites] = useState<number[]>([]);
+export type FavoriteItem = { id: number; type: 'movie' | 'tv' };
 
-  // Load favorites from localStorage on component mount
+const parseAndMigrate = (raw: string): FavoriteItem[] => {
+  const parsed = JSON.parse(raw);
+  if (!Array.isArray(parsed)) return [];
+  // Migrate old format (number[]) — assume movie as fallback
+  if (parsed.length > 0 && typeof parsed[0] === 'number') {
+    return parsed.map((id: number) => ({ id, type: 'movie' as const }));
+  }
+  return parsed.filter(
+    (item: unknown): item is FavoriteItem =>
+      typeof (item as FavoriteItem)?.id === 'number' &&
+      ((item as FavoriteItem)?.type === 'movie' || (item as FavoriteItem)?.type === 'tv')
+  );
+};
+
+export const useFavorites = () => {
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+
   useEffect(() => {
     const storedFavorites = localStorage.getItem('favorites');
     if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites));
+      try {
+        setFavorites(parseAndMigrate(storedFavorites));
+      } catch {
+        setFavorites([]);
+      }
     }
   }, []);
 
-  // Save favorites to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
   const toggleFavorite = async (id: number, mediaType: 'movie' | 'tv', title: string, releaseDate?: string) => {
     try {
-      if (favorites.includes(id)) {
-        // Remove from favorites
-        setFavorites(favorites.filter(favId => favId !== id));
+      const isCurrentlyFavorite = favorites.some(fav => fav.id === id && fav.type === mediaType);
+
+      if (isCurrentlyFavorite) {
+        setFavorites(favorites.filter(fav => !(fav.id === id && fav.type === mediaType)));
         toast({
           title: "Eliminado de favoritos",
           description: `"${title}" ha sido eliminado de tu lista de favoritos`,
         });
       } else {
-        // Add to favorites
-        setFavorites([...favorites, id]);
-        
-        // Add to Trakt watchlist if we're authenticated
+        setFavorites([...favorites, { id, type: mediaType }]);
+
         try {
           const added = await addToWatchlist(id, mediaType, title, releaseDate);
-          
           if (added) {
             toast({
               title: "Añadido a favoritos",
@@ -65,7 +80,8 @@ export const useFavorites = () => {
     }
   };
 
-  const isFavorite = (id: number) => favorites.includes(id);
+  const isFavorite = (id: number, type: 'movie' | 'tv') =>
+    favorites.some(fav => fav.id === id && fav.type === type);
 
   return { favorites, toggleFavorite, isFavorite };
 };

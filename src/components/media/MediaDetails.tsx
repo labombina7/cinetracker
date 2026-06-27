@@ -77,8 +77,8 @@ const MediaDetails = () => {
       }
       
       setMedia(mediaDetails);
-      setIsFavorite(checkIsFavorite(Number(id)));
-      
+      setIsFavorite(checkIsFavorite(Number(id), type as 'movie' | 'tv'));
+
       fetchCast(Number(id), type as 'movie' | 'tv');
     } catch (err) {
       console.error('Error fetching media details:', err);
@@ -147,6 +147,7 @@ const MediaDetails = () => {
             isFavorite={isFavorite}
             onToggle={handleFavoriteClick}
             variant="full"
+            mediaTitle={media.title}
           />
         </div>
         

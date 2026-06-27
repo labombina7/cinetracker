@@ -309,9 +309,36 @@
       font-size: 12px; color: var(--muted2); padding-left: 14px; position: relative;
     }
     .oos-list li::before { content: '–'; position: absolute; left: 0; }
+
+    /* ── Project switcher ───────────────────────────────────── */
+    .project-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 20px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .project-btn {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 5px;
+      border: none; cursor: pointer;
+      transition: opacity 0.1s;
+      text-decoration: none; display: inline-block;
+    }
+    .project-btn.active  { background: var(--accent); color: #fff; }
+    .project-btn.inactive { background: #e8e6e1; color: var(--muted); }
+    .project-btn.inactive:hover { color: var(--text); }
   </style>
 </head>
 <body>
+
+<div class="project-bar">
+  <span>Proyecto</span>
+  <span class="project-btn active">🎬 mediaTracker</span>
+  <a class="project-btn inactive" href="file:///Users/xava73/Projects/photoshelf/specs/kanban.html">📷 Photoshelf</a>
+  <a class="project-btn inactive" href="file:///Users/xava73/Projects/diariofeliz/specs/kanban.html">📰 El Periódico de la Felicidad</a>
+</div>
 
 <header>
   <div class="logo">🎬</div>
@@ -424,175 +451,260 @@ const CARDS = {
     ], tech: ['TMDB /movie/:id?append_to_response=credits,watch/providers'], outOfScope: [],
   },
 
+  // ── To Do ────────────────────────────────────────────────────────────────
+
   'US-005': {
-    id: 'US-005', type: 'US', column: 'done', effort: 'S',
-    title: 'Búsqueda de películas y series',
-    summary: 'Barra de búsqueda con resultados en tiempo real.',
-    story: 'Como usuario,\nquiero buscar películas y series por título,\npara encontrar contenido específico que tengo en mente.',
+    id: 'US-005', type: 'US', column: 'todo', effort: 'S',
+    title: 'Botón de regreso en móvil en detalle',
+    summary: 'MediaDetailHeader retorna null en móvil — añadir barra sticky con botón back.',
+    story: 'Como usuario de CineTracker en móvil que ha navegado al detalle de un título,\nquiero ver un botón de regreso visible en pantalla,\npara poder volver al listado sin depender únicamente del gesto del sistema operativo.',
     description: [
-      'Barra de búsqueda en la navbar. Al escribir muestra resultados en /search. Usa el endpoint /search/multi de TMDB.',
+      'MediaDetailHeader.tsx retorna null en móvil (if (isMobile) return null), dejando al usuario sin botón de regreso. Añadir una barra sticky con el botón back cuando isMobile === true. Desktop no cambia.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Barra de búsqueda en la navbar', done: true },
-      { text: 'Resultados en página /search', done: true },
-      { text: 'Muestra películas y series mezcladas', done: true },
+      { text: 'Barra sticky visible en móvil con botón ArrowLeft', done: false },
+      { text: 'El botón llama a navigate(-1)', done: false },
+      { text: 'Fondo semitransparente con backdrop-blur', done: false },
+      { text: 'Desktop sin cambios', done: false },
+      { text: 'aria-label="Volver" en el botón', done: false },
     ]}],
-    dependencies: ['US-001'], components: [
-      { path: 'src/components/SearchBar.tsx', desc: 'Barra de búsqueda', isNew: false },
-      { path: 'src/pages/SearchResults.tsx', desc: 'Página de resultados', isNew: false },
-    ], tech: ['TMDB /search/multi'], outOfScope: [],
+    dependencies: ['US-004'], components: [
+      { path: 'src/components/media/MediaDetailHeader.tsx', desc: 'Eliminar return null en móvil; renderizar barra back sticky', isNew: false },
+    ], tech: ['useIsMobile() ya disponible en src/hooks/use-mobile.tsx'], outOfScope: ['Breadcrumb completo', 'Animación de transición al navegar atrás'],
   },
 
   'US-006': {
-    id: 'US-006', type: 'US', column: 'done', effort: 'S',
-    title: 'Favoritos locales',
-    summary: 'Marcar películas/series como favoritas, persistido en localStorage.',
-    story: 'Como usuario,\nquiero guardar mis favoritos sin necesidad de crear una cuenta,\npara tenerlos accesibles en mi próxima visita.',
+    id: 'US-006', type: 'US', column: 'todo', effort: 'M',
+    title: 'Filtros de plataforma operativos en Home',
+    summary: 'handlePlatformChange es un no-op — conectar los chips al contexto MediaFiltersContext.',
+    story: 'Como usuario de CineTracker que tiene plataformas configuradas,\nquiero ver chips de mis plataformas activas en la pantalla principal y poder activarlas/desactivarlas directamente,\npara filtrar el contenido por plataforma sin tener que ir a Ajustes cada vez.',
     description: [
-      'Botón de corazón en MediaCard y MediaDetail. Los favoritos se guardan en localStorage. Persisten entre sesiones.',
+      'PlatformFilters se renderiza en Home pero handlePlatformChange solo ejecuta un console.log. Conectar al contexto MediaFiltersContext con toggle de IDs. Si no hay plataformas configuradas, mostrar CTA a /settings.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Botón de favorito en tarjeta y en detalle', done: true },
-      { text: 'Estado persiste en localStorage', done: true },
+      { text: 'Click en chip activa/desactiva plataforma en el contexto global', done: false },
+      { text: 'Feed se refresca automáticamente con el nuevo filtro', done: false },
+      { text: 'Chip activo con estilo visual diferenciado', done: false },
+      { text: 'Sin plataformas configuradas: CTA "Ir a Ajustes"', done: false },
+      { text: 'Más de 6 plataformas: botón "+ N más" con popover', done: false },
+      { text: 'Chips muestran logo real (logoPath) con fallback a icono', done: false },
     ]}],
-    dependencies: ['US-001'], components: [
-      { path: 'src/components/media/FavoriteButton.tsx', desc: 'Botón de favorito', isNew: false },
-      { path: 'src/hooks/useFavorites.ts', desc: 'Hook de favoritos', isNew: false },
-    ], tech: [], outOfScope: ['Sincronización en la nube'],
+    dependencies: ['US-003'], components: [
+      { path: 'src/pages/Home.tsx', desc: 'Conectar handlePlatformChange a setSelectedPlatformIds con toggle', isNew: false },
+      { path: 'src/components/home/PlatformFilters.tsx', desc: 'Usar logoPath de Platform; añadir CTA cuando no hay plataformas', isNew: false },
+      { path: 'src/contexts/MediaFiltersContext.tsx', desc: 'Verificar que el toggle funciona como se espera', isNew: false },
+    ], tech: [], outOfScope: ['Reordenación de plataformas', 'Persistencia del estado activo/inactivo de sesión'],
   },
 
   'US-007': {
-    id: 'US-007', type: 'US', column: 'done', effort: 'L',
-    title: 'Integración con Trakt.tv (OAuth2)',
-    summary: 'Login con Trakt para sincronizar watchlist e historial.',
-    story: 'Como usuario que usa Trakt,\nquiero conectar mi cuenta para ver mi watchlist aquí,\npara tener todo en un único lugar.',
+    id: 'US-007', type: 'US', column: 'todo', effort: 'M',
+    title: 'Estado vacío contextual con acción guiada',
+    summary: 'HomeEmptyState muestra siempre el mismo mensaje genérico — distinguir las 3 causas posibles.',
+    story: 'Como usuario de CineTracker que no ve contenido en la pantalla principal,\nquiero recibir un mensaje claro que explique por qué no hay resultados y qué puedo hacer,\npara no quedarme atascado pensando que la app está rota.',
     description: [
-      'OAuth2 con Trakt.tv usando PKCE + state. El usuario introduce sus credenciales de app (Client ID + Secret) en Settings. Flujo: /auth/trakt → Trakt authorization → /auth/callback → token guardado en localStorage.',
-      'Estado de conexión visible en Settings. Perfil de usuario visible tras autenticación.',
+      'HomeEmptyState muestra el mismo mensaje siempre. Refactorizar para distinguir: (1) sin plataformas configuradas → CTA a Ajustes, (2) filtros restrictivos → botón "Limpiar filtros", (3) sin resultados con plataformas → "Prueba con otras plataformas".',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Formulario de Client ID/Secret en Settings', done: true },
-      { text: 'Flujo OAuth2 completo con verificación de state', done: true },
-      { text: 'Token guardado en localStorage', done: true },
-      { text: 'Perfil de usuario Trakt visible', done: true },
+      { text: 'Sin plataformas: "No has configurado ninguna plataforma" + botón a /settings', done: false },
+      { text: 'Filtros activos sin resultados: "Ningún resultado" + "Limpiar filtros"', done: false },
+      { text: 'Sin filtros y 0 resultados: mensaje genérico + "Cambiar plataformas"', done: false },
+      { text: 'Cada variante tiene icono diferente', done: false },
+      { text: 'Textos disponibles en ES/EN', done: false },
     ]}],
-    dependencies: [], components: [
-      { path: 'src/pages/TraktAuth.tsx', desc: 'Inicio del flujo OAuth', isNew: false },
-      { path: 'src/pages/AuthCallback.tsx', desc: 'Callback OAuth', isNew: false },
-      { path: 'src/services/trakt/', desc: 'Cliente Trakt API', isNew: false },
-    ], tech: ['Trakt.tv OAuth2 PIN flow', 'HashRouter para compatibilidad con Apache/NAS'], outOfScope: ['Backend proxy para token exchange'],
+    dependencies: ['US-006'], components: [
+      { path: 'src/components/home/HomeEmptyState.tsx', desc: 'Añadir prop reason: no-platforms | filtered | no-content', isNew: false },
+      { path: 'src/pages/Home.tsx', desc: 'Calcular y pasar la reason correcta a HomeEmptyState', isNew: false },
+    ], tech: [], outOfScope: ['Sugerencias alternativas en el estado vacío', 'Ilustración animada'],
   },
 
   'US-008': {
-    id: 'US-008', type: 'US', column: 'done', effort: 'S',
-    title: 'Filtro de solo contenido español',
-    summary: 'Toggle para mostrar únicamente contenido de origen español.',
-    story: 'Como usuario hispanohablante,\nquiero filtrar para ver solo contenido en español,\npara descubrir series y películas de habla hispana.',
+    id: 'US-008', type: 'US', column: 'todo', effort: 'M',
+    title: 'Refresco automático del token de Trakt',
+    summary: 'El refresh_token se guarda pero nunca se usa — implementar refresco automático al recibir 401.',
+    story: 'Como usuario de CineTracker conectado con Trakt.tv,\nquiero que mi sesión se mantenga activa de forma transparente cuando el token expire,\npara no encontrarme con errores 401 inesperados ni tener que reconectarme manualmente.',
     description: [
-      'Toggle "Solo contenido español" que pasa language=es y with_original_language=es a los endpoints de TMDB. Persiste en localStorage.',
+      'El refresh_token se guarda en localStorage pero nunca se usa. Cuando access_token expira (3 meses), todas las llamadas devuelven 401 y el usuario sigue apareciendo como conectado. Implementar authenticatedFetch() que intercepta 401, refresca el token y reintenta.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Toggle visible junto a los demás filtros', done: true },
-      { text: 'Cambia el idioma y origen de los resultados', done: true },
+      { text: 'Petición con 401 llama automáticamente a POST /oauth/token (refresh)', done: false },
+      { text: 'Si refresco exitoso: guarda tokens y reintenta la petición original (1 vez)', done: false },
+      { text: 'Si refresco falla: logout limpio y toast de aviso al usuario', done: false },
+      { text: 'Refresco transparente si funciona (sin UI)', done: false },
+      { text: 'No hay bucle infinito de reintentos', done: false },
     ]}],
-    dependencies: ['US-002'], components: [
-      { path: 'src/components/home/MediaFilters.tsx', desc: 'Toggle en la barra de filtros', isNew: false },
-    ], tech: [], outOfScope: [],
+    dependencies: ['US-004'], components: [
+      { path: 'src/services/trakt/auth.ts', desc: 'Añadir refreshAccessToken()', isNew: false },
+      { path: 'src/services/trakt/client.ts', desc: 'Añadir authenticatedFetch() con interceptor 401', isNew: false },
+      { path: 'src/services/trakt/watchlist.ts', desc: 'Usar authenticatedFetch()', isNew: false },
+      { path: 'src/services/trakt/user.ts', desc: 'Usar authenticatedFetch()', isNew: false },
+    ], tech: ['POST https://api.trakt.tv/oauth/token con grant_type: refresh_token'], outOfScope: ['Migración a PKCE', 'Notificaciones push de expiración', 'Sync entre pestañas'],
   },
 
   'US-009': {
-    id: 'US-009', type: 'US', column: 'done', effort: 'S',
-    title: 'Ordenación por valoración y fecha',
-    summary: 'Selector para ordenar los resultados por TMDB rating o fecha de estreno.',
-    story: 'Como usuario,\nquiero poder ordenar el catálogo por valoración o fecha de estreno,\npara ver primero lo mejor o lo más reciente.',
+    id: 'US-009', type: 'US', column: 'todo', effort: 'S',
+    title: 'Corrección de colisión de IDs en favoritos',
+    summary: 'Favoritos almacenan solo number[] — una película y una serie con el mismo ID se confunden.',
+    story: 'Como usuario de CineTracker que marca como favorito tanto películas como series,\nquiero que el sistema distinga correctamente entre una película y una serie con el mismo ID numérico,\npara que mis favoritos no se mezclen ni se marquen incorrectamente.',
     description: [
-      'Selector "Ordenar por" con opciones Valoración y Fecha de estreno. Ordena los resultados localmente tras recibirlos de TMDB.',
+      'TMDB usa espacios de IDs independientes para películas y series: puede existir movie:123 y tv:123. useFavorites guarda solo number[] sin el tipo, provocando que marcar movie:123 marque también tv:123. Migrar a Array<{id, type}>.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Selector con dos opciones', done: true },
-      { text: 'El orden cambia el grid correctamente', done: true },
+      { text: 'Favoritos almacenados como Array<{id: number, type: movie|tv}>', done: false },
+      { text: 'isFavorite(id, type) solo retorna true con ambos campos coincidentes', done: false },
+      { text: 'toggleFavorite(id, type) usa ambos campos como clave', done: false },
+      { text: 'Migración automática del formato antiguo (number[]) a movie por defecto', done: false },
+      { text: 'Datos malformados en localStorage: inicializar con [] sin crashear', done: false },
     ]}],
-    dependencies: ['US-002'], components: [
-      { path: 'src/utils/mediaSorting.ts', desc: 'Lógica de ordenación', isNew: false },
-    ], tech: [], outOfScope: [],
+    dependencies: ['US-004'], components: [
+      { path: 'src/hooks/useFavorites.ts', desc: 'Cambiar estado a {id, type}[], añadir migración', isNew: false },
+      { path: 'src/components/MediaCard.tsx', desc: 'isFavorite(id) → isFavorite(id, type)', isNew: false },
+      { path: 'src/components/media/MediaDetails.tsx', desc: 'Actualizar llamadas a isFavorite y toggleFavorite', isNew: false },
+    ], tech: [], outOfScope: ['Deduplicación retroactiva', 'Exportación de favoritos'],
   },
 
   'US-010': {
-    id: 'US-010', type: 'US', column: 'done', effort: 'M',
-    title: 'Despliegue en NAS Synology con HashRouter',
-    summary: 'App desplegada en NAS Synology mediante Docker + Apache + proxy inverso.',
-    story: 'Como usuario doméstico,\nquiero acceder a la app desde fuera de mi red local,\npara usarla desde cualquier lugar.',
+    id: 'US-010', type: 'US', column: 'todo', effort: 'S',
+    title: 'Logos reales de plataformas en filtros',
+    summary: 'PlatformFilters usa iconos Lucide genéricos — usar logo_path de TMDB que ya existe en el tipo Platform.',
+    story: 'Como usuario de CineTracker que filtra por plataforma de streaming,\nquiero ver los logos oficiales de Netflix, Disney+, Max y demás servicios en los chips de filtro,\npara identificar de un vistazo mis plataformas sin leer el texto.',
     description: [
-      'Build de producción con Vite. Docker con Apache httpd:2.4 sirviendo el dist/. Proxy inverso en DSM (puerto 5554) con HTTPS Let\'s Encrypt. HashRouter para que el callback OAuth de Trakt funcione correctamente con Apache.',
+      'PlatformFilters usa getIconForPlatform() con iconos Lucide genéricos. TMDB ya devuelve logo_path en /watch/providers y se mapea a Platform.logoPath. Solo falta renderizarlo: imagen si hay logoPath, icono Lucide como fallback.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'App accesible en https://xava73.synology.me:5554', done: true },
-      { text: 'OAuth callback de Trakt funciona', done: true },
-      { text: 'HTTPS con certificado válido', done: true },
+      { text: 'Chip muestra imagen del logo cuando platform.logoPath tiene valor', done: false },
+      { text: 'Logo 20×20px con border-radius consistente', done: false },
+      { text: 'URL construida como IMAGE_BASE_URL + /w45 + logoPath', done: false },
+      { text: 'Fallback a icono Lucide si logoPath vacío o imagen falla (onError)', done: false },
+      { text: 'En móvil: logo + nombre truncado (máx. 8 chars)', done: false },
+      { text: 'alt={platform.name} en las imágenes', done: false },
     ]}],
-    dependencies: ['US-007'], components: [
-      { path: 'docs/deploy-synology.md', desc: 'Guía de despliegue', isNew: false },
-    ], tech: ['Docker httpd:2.4', 'Synology DSM reverse proxy', 'Let\'s Encrypt HTTPS'], outOfScope: [],
+    dependencies: ['US-003'], components: [
+      { path: 'src/components/home/PlatformFilters.tsx', desc: 'Renderizado condicional: imagen o icono Lucide según logoPath', isNew: false },
+    ], tech: ['logoPath ya existe en src/types/media.ts y se rellena en src/services/tmdb/providers.ts'], outOfScope: ['Logos con fondo blanco / modo oscuro', 'Selector con búsqueda por texto'],
   },
 
-  // ── To Do ────────────────────────────────────────────────────────────────
-
   'US-011': {
-    id: 'US-011', type: 'US', column: 'todo', effort: 'M',
-    title: 'Vista de Favoritos',
-    summary: 'Página dedicada donde ver y gestionar todas las películas/series marcadas como favoritas.',
-    story: 'Como usuario,\nquiero una página de Favoritos,\npara revisar fácilmente mi lista de contenido guardado.',
+    id: 'US-011', type: 'US', column: 'todo', effort: 'S',
+    title: 'Accesibilidad — aria-labels en botones icon-only',
+    summary: 'Botones de favorito, regreso y dropdowns de filtros sin aria-label — opacos para lectores de pantalla.',
+    story: 'Como usuario de CineTracker que usa un lector de pantalla o navega por teclado,\nquiero que todos los botones sin texto visible tengan una descripción accesible,\npara entender qué hace cada botón sin necesidad de ver la pantalla.',
     description: [
-      'Ruta /favorites con grid de tarjetas de los ítems favoritos guardados en localStorage. Opción de eliminar de favoritos desde la propia vista. Estado vacío con CTA.',
+      'Varios botones críticos son icon-only sin aria-label: favorito en MediaCard, botón regreso en detalle, dropdowns de idioma y ordenación. Intervención aditiva de bajo riesgo: añadir aria-label descriptivos.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Ruta /favorites accesible desde la navbar', done: false },
-      { text: 'Grid con el mismo estilo que Home', done: false },
-      { text: 'Estado vacío con mensaje y CTA a Home', done: false },
-      { text: 'Botón de eliminar en cada tarjeta', done: false },
+      { text: 'MediaCard: aria-label dinámico "Añadir {title} a favoritos" / "Quitar..."', done: false },
+      { text: 'MediaDetailHeader: aria-label="Volver" (ES) / "Go back" (EN)', done: false },
+      { text: 'Botón idioma: aria-label="Filtro de idioma"', done: false },
+      { text: 'Botón ordenación: aria-label="Ordenar resultados"', done: false },
+      { text: 'MediaCastCarousel: alt="Foto de {actor} como {personaje}"', done: false },
     ]}],
-    dependencies: ['US-006'], components: [
-      { path: 'src/pages/Favorites.tsx', desc: 'Página de favoritos', isNew: true },
-      { path: 'src/components/Navbar.tsx', desc: 'Añadir enlace a Favorites', isNew: false },
-    ], tech: [], outOfScope: ['Favoritos sincronizados con Trakt'],
+    dependencies: ['US-005'], components: [
+      { path: 'src/components/MediaCard.tsx', desc: 'aria-label dinámico al botón de favorito', isNew: false },
+      { path: 'src/components/media/MediaDetailHeader.tsx', desc: 'aria-label="Volver" al Button', isNew: false },
+      { path: 'src/components/home/MediaFilters.tsx', desc: 'aria-label a botones idioma y sort', isNew: false },
+      { path: 'src/components/media/MediaCastCarousel.tsx', desc: 'Actualizar alt de imágenes de actores', isNew: false },
+      { path: 'src/components/media/FavoriteButton.tsx', desc: 'aria-label al Button en ambas variantes', isNew: false },
+    ], tech: [], outOfScope: ['Auditoría WCAG completa', 'Tests automatizados con axe-core'],
   },
 
   'US-012': {
     id: 'US-012', type: 'US', column: 'todo', effort: 'L',
-    title: 'Watchlist de Trakt sincronizada',
-    summary: 'Ver la watchlist de Trakt directamente en mediaTracker.',
-    story: 'Como usuario conectado a Trakt,\nquiero ver mi watchlist de Trakt en la app,\npara tener en un lugar el contenido que quiero ver.',
+    title: 'Onboarding wizard de 2 pasos (API key + plataformas)',
+    summary: 'Reemplazar ApiKeySetup con wizard progresivo: paso 1 API key, paso 2 selección de plataformas.',
+    story: 'Como usuario nuevo de CineTracker que acaba de abrir la app por primera vez,\nquiero ser guiado paso a paso para configurar mi API key y mis plataformas de streaming,\npara empezar a ver contenido personalizado sin tener que descubrir dónde están los ajustes.',
     description: [
-      'Pestaña o sección "Mi lista" que muestra la watchlist de Trakt cuando el usuario está autenticado. Enriquece los datos con pósters y metadata de TMDB (cross-referencia por ID).',
+      'Flujo opaco actual: formulario de API key sin contexto, usuario nunca configura plataformas. Wizard de 2 pasos: (1) API key con copy mejorado e instrucciones, (2) selector de plataformas. Al completar, llega a Home con configuración activa.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Sección visible solo si está autenticado en Trakt', done: false },
-      { text: 'Lista de watchlist con póster TMDB', done: false },
-      { text: 'Posibilidad de añadir/quitar de watchlist', done: false },
+      { text: 'Stepper visual "Paso 1 de 2 / Paso 2 de 2" con check en completado', done: false },
+      { text: 'Paso 1: copy explicativo + enlace a themoviedb.org/settings/api + instrucciones 3 pasos', done: false },
+      { text: 'Paso 1: botón "Continuar" activo solo si key ≥ 20 chars', done: false },
+      { text: 'Paso 2: mismo grid de checkboxes que Ajustes + "Seleccionar todas"', done: false },
+      { text: 'Paso 2: botón "Omitir por ahora" (muestra estado vacío de US-007)', done: false },
+      { text: 'Si ya tiene API key: ir directamente a Home (wizard no se muestra)', done: false },
     ]}],
     dependencies: ['US-007'], components: [
-      { path: 'src/services/trakt/watchlist.ts', desc: 'Ya existe, expandir', isNew: false },
-      { path: 'src/pages/Watchlist.tsx', desc: 'Vista de watchlist', isNew: true },
-    ], tech: ['Trakt /sync/watchlist', 'Cross-reference con TMDB ids'], outOfScope: ['Historial de Trakt visto'],
+      { path: 'src/components/OnboardingWizard.tsx', desc: 'Nuevo wizard con stepper, paso 1 y paso 2', isNew: true },
+      { path: 'src/components/onboarding/OnboardingStep1ApiKey.tsx', desc: 'Formulario API key con copy mejorado', isNew: true },
+      { path: 'src/components/onboarding/OnboardingStep2Platforms.tsx', desc: 'Selector plataformas (reutiliza lógica de Settings)', isNew: true },
+      { path: 'src/pages/Home.tsx', desc: 'Renderizar OnboardingWizard en lugar de ApiKeySetup', isNew: false },
+    ], tech: ['useProvidersData ya carga las plataformas disponibles'], outOfScope: ['Paso 3 Trakt en el wizard', 'Tour interactivo'],
   },
 
   'US-013': {
     id: 'US-013', type: 'US', column: 'todo', effort: 'S',
-    title: 'Soporte para múltiples idiomas de interfaz',
-    summary: 'Selector de idioma (ES/EN) persistido. Ya hay lógica parcial en el código.',
-    story: 'Como usuario anglófono,\nquiero cambiar el idioma de la interfaz a inglés,\npara entender todos los controles.',
+    title: '"Sorpréndeme" — Sugerencia aleatoria con filtros activos',
+    summary: 'Botón de dado en la barra de filtros que navega a un título aleatorio del pool actual.',
+    story: 'Como usuario de CineTracker que no sabe qué ver esta noche,\nquiero pulsar un botón que me sugiera un título aleatorio entre el contenido disponible con mis filtros actuales,\npara tomar una decisión sin tener que hacer scroll durante minutos.',
     description: [
-      'El hook useLanguage y las traducciones en src/utils/translations/ ya existen parcialmente. Completar la cobertura de todas las cadenas de texto y añadir un selector en Settings.',
+      'Botón con icono Dice5 (Lucide) en la barra de filtros. Selecciona aleatoriamente un item de mediaList y navega a su detalle. Fisher-Yates en memoria para no repetir hasta agotar el pool. Se resetea al cambiar filtros.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Selector de idioma en Settings', done: false },
-      { text: 'Todas las cadenas de UI traducidas a ES/EN', done: false },
-      { text: 'Idioma persiste en localStorage', done: false },
+      { text: 'Botón "Sorpréndeme" (icono dado) en la barra de filtros', done: false },
+      { text: 'En móvil: solo icono con aria-label="Sorpréndeme"', done: false },
+      { text: 'Al pulsar: navega a /media/:type/:id de un item aleatorio de mediaList', done: false },
+      { text: 'Si mediaList vacío/cargando: botón desactivado con tooltip', done: false },
+      { text: 'No repite item hasta agotar el pool; resetea al cambiar filtros', done: false },
+      { text: 'Animación de rotación 360° del dado al pulsar (300ms)', done: false },
     ]}],
-    dependencies: [], components: [
-      { path: 'src/hooks/useLanguage.ts', desc: 'Hook ya existente', isNew: false },
-      { path: 'src/utils/translations/', desc: 'Traducciones ya existentes', isNew: false },
-    ], tech: [], outOfScope: ['i18n library, usar las traducciones ya presentes'],
+    dependencies: ['US-001'], components: [
+      { path: 'src/components/home/SurpriseMeButton.tsx', desc: 'Nuevo botón con lógica de selección aleatoria', isNew: true },
+      { path: 'src/pages/Home.tsx', desc: 'Añadir <SurpriseMeButton mediaList={mediaList} />', isNew: false },
+    ], tech: [], outOfScope: ['Recomendación basada en favoritos', '"No me interesa" para excluir item'],
+  },
+
+  'US-014': {
+    id: 'US-014', type: 'US', column: 'todo', effort: 'L',
+    title: 'Página de perfil de actor con filmografía',
+    summary: 'Items del carrusel de cast no son clickables — añadir ruta /actor/:id con perfil y créditos.',
+    story: 'Como usuario de CineTracker que ve la ficha de un título,\nquiero poder pulsar en el nombre o foto de un actor del reparto para ver su perfil completo,\npara descubrir otras películas y series en las que aparece ese actor.',
+    description: [
+      'El carrusel de cast muestra actores con foto y personaje pero los items no son clickables. Añadir página /actor/:actorId con foto, nombre, fecha nacimiento, biografía truncada (expandible) y carrusel "Conocido por" con los 20 créditos más populares.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Items de MediaCastCarousel clickables → navegan a /actor/:actorId', done: false },
+      { text: 'Hover effect en la foto del actor (overlay oscuro)', done: false },
+      { text: 'Página muestra foto, nombre, fecha nacimiento, país', done: false },
+      { text: 'Biografía truncada 4 líneas + botón "Leer más"', done: false },
+      { text: 'Carrusel "Conocido por" con máx. 20 créditos (solo cast), clickables', done: false },
+      { text: 'Skeleton durante carga; mensaje 404 si no se encuentra', done: false },
+      { text: 'Biografía en el idioma activo con fallback a inglés', done: false },
+    ]}],
+    dependencies: ['US-004'], components: [
+      { path: 'src/pages/ActorProfile.tsx', desc: 'Nueva página de perfil de actor', isNew: true },
+      { path: 'src/components/media/MediaCastCarousel.tsx', desc: 'Hacer items clickables; añadir hover effect', isNew: false },
+      { path: 'src/services/tmdb/actors.ts', desc: 'fetchActorDetails(id) y fetchActorCredits(id)', isNew: true },
+      { path: 'src/hooks/useActorProfile.ts', desc: 'Hook que combina detalles y créditos', isNew: true },
+      { path: 'src/App.tsx', desc: 'Registrar ruta /actor/:actorId', isNew: false },
+    ], tech: ['TMDB GET /person/:id', 'TMDB GET /person/:id/combined_credits'], outOfScope: ['Filmografía paginada', 'Filtro por tipo en filmografía', 'Seguir a un actor'],
+  },
+
+  'US-015': {
+    id: 'US-015', type: 'US', column: 'todo', effort: 'L',
+    title: 'Lista "Pendientes" — Watchlist local separada de favoritos',
+    summary: 'Añadir marcador Bookmark para "quiero verlo", distinto del Heart de favoritos.',
+    story: 'Como usuario de CineTracker que guarda contenido para ver más tarde,\nquiero una lista "Pendientes" independiente de mis favoritos,\npara distinguir entre lo que ya me gusta y lo que quiero ver pronto.',
+    description: [
+      'Un solo botón de favorito mezcla "me gusta" y "quiero verlo". Añadir un segundo marcador (Bookmark) que persiste en localStorage como Array<{id, type}> (mismo patrón que US-009). Sincronización opcional con watchlist de Trakt si conectado.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Botón Bookmark en MediaDetail junto al botón de favorito', done: false },
+      { text: 'Al pulsar: icono cambia a BookmarkCheck + toast de confirmación', done: false },
+      { text: 'Página /watchlist con grid de títulos pendientes', done: false },
+      { text: 'Cada card tiene botón para eliminar de la lista', done: false },
+      { text: 'Lista persiste entre sesiones (localStorage)', done: false },
+      { text: 'Estado vacío con CTA para explorar contenido', done: false },
+      { text: 'Si Trakt conectado: sincroniza automáticamente (best-effort)', done: false },
+      { text: 'Favoritos (Heart rojo) y Pendientes (Bookmark primario) independientes', done: false },
+    ]}],
+    dependencies: ['US-009'], components: [
+      { path: 'src/hooks/useWatchlist.ts', desc: 'Análogo a useFavorites para pendientes', isNew: true },
+      { path: 'src/pages/Watchlist.tsx', desc: 'Nueva página /watchlist', isNew: true },
+      { path: 'src/components/media/WatchlistButton.tsx', desc: 'Botón Bookmark para añadir/quitar', isNew: true },
+      { path: 'src/components/media/MediaDetails.tsx', desc: 'Añadir <WatchlistButton> junto a <FavoriteButton>', isNew: false },
+      { path: 'src/components/Navbar.tsx', desc: 'Añadir enlace /watchlist con icono Bookmark', isNew: false },
+      { path: 'src/App.tsx', desc: 'Registrar ruta /watchlist', isNew: false },
+    ], tech: ['Trakt POST /sync/watchlist para sincronización'], outOfScope: ['Ordenación de pendientes', 'Compartir lista', 'Import desde Trakt'],
   },
 
   // ── Ideas ────────────────────────────────────────────────────────────────

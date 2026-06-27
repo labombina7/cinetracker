@@ -2,9 +2,10 @@
 import React from 'react';
 import { Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TraktUser } from '@/services/trakt/user';
 
 interface TraktUserProfileProps {
-  userInfo: any;
+  userInfo: TraktUser;
   onConfigureCredentials: () => void;
 }
 

@@ -1,10 +1,8 @@
-
-import React from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
 import { Monitor, Play, Video, Apple } from 'lucide-react';
 import { Platform } from '@/types/media';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { TMDB_CONFIG } from '@/config/tmdb.config';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface PlatformFiltersProps {
   platforms: Platform[];
@@ -13,59 +11,63 @@ interface PlatformFiltersProps {
   onPlatformChange: (platformId: number) => void;
 }
 
-// Map platform names to icons
-const getIconForPlatform = (platformName: string): React.ReactNode => {
+const getFallbackIcon = (platformName: string): React.ReactNode => {
   const name = platformName?.toLowerCase() || '';
-  if (name.includes('netflix')) return <Play className="h-5 w-5" />;
-  if (name.includes('amazon') || name.includes('prime')) return <Video className="h-5 w-5" />;
-  if (name.includes('disney')) return <Monitor className="h-5 w-5" />;
-  if (name.includes('hbo') || name.includes('max')) return <Monitor className="h-5 w-5" />;
-  if (name.includes('apple')) return <Apple className="h-5 w-5" />;
-  if (name.includes('movistar')) return <Video className="h-5 w-5" />;
-  // Default icon
-  return <Monitor className="h-5 w-5" />;
+  if (name.includes('netflix')) return <Play className="h-3 w-3" />;
+  if (name.includes('amazon') || name.includes('prime')) return <Video className="h-3 w-3" />;
+  if (name.includes('disney')) return <Monitor className="h-3 w-3" />;
+  if (name.includes('hbo') || name.includes('max')) return <Monitor className="h-3 w-3" />;
+  if (name.includes('apple')) return <Apple className="h-3 w-3" />;
+  return <Monitor className="h-3 w-3" />;
 };
 
-const PlatformFilters: React.FC<PlatformFiltersProps> = ({ 
-  platforms, 
-  loading, 
-  selectedPlatformIds, 
-  onPlatformChange 
+const PlatformFilters: React.FC<PlatformFiltersProps> = ({
+  platforms,
+  loading,
+  selectedPlatformIds,
 }) => {
-  const isMobile = useIsMobile();
+  const { language } = useLanguage();
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
-  if (loading) {
-    return (
-      <div className="flex gap-2 flex-wrap">
-        {[1, 2, 3, 4, 5].map((item) => (
-          <Skeleton key={item} className="h-10 w-20" />
-        ))}
-      </div>
-    );
-  }
+  if (loading || selectedPlatformIds.length === 0) return null;
 
-  // Ensure platforms is always an array
-  const safePlatforms = Array.isArray(platforms) ? platforms : [];
-  
-  // Filter out any platforms that don't have an id or name
-  const validPlatforms = safePlatforms.filter(
-    platform => platform && typeof platform === 'object' && platform.id && platform.name
+  const activePlatforms = platforms.filter(
+    p => p && p.id && selectedPlatformIds.includes(p.id)
   );
 
+  if (activePlatforms.length === 0) return null;
+
   return (
-    <div className="flex gap-2 flex-wrap">
-      {validPlatforms.map((platform) => (
-        <Button
-          key={platform.id}
-          variant={selectedPlatformIds.includes(platform.id) ? "default" : "outline"}
-          size="sm"
-          onClick={() => onPlatformChange(platform.id)}
-          className={`flex items-center gap-2 ${isMobile ? 'px-3 py-1' : ''}`}
-        >
-          {getIconForPlatform(platform.name)}
-          <span className={isMobile ? "hidden" : "hidden sm:inline"}>{platform.name}</span>
-        </Button>
-      ))}
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs text-muted-foreground">
+        {language === 'es' ? 'Plataformas activas' : 'Active platforms'}
+      </span>
+      {activePlatforms.map((platform) => {
+        const hasLogo = !!platform.logoPath && !imageErrors.has(platform.id);
+        const logoUrl = `${TMDB_CONFIG.IMAGE_BASE_URL}/w45${platform.logoPath}`;
+
+        return (
+          <div
+            key={platform.id}
+            title={platform.name}
+            className="flex items-center justify-center h-6 w-6 rounded-sm bg-muted overflow-hidden"
+          >
+            {hasLogo ? (
+              <img
+                src={logoUrl}
+                alt={platform.name}
+                className="h-5 w-5 object-contain"
+                loading="lazy"
+                onError={() => setImageErrors(prev => new Set([...prev, platform.id]))}
+              />
+            ) : (
+              <span className="text-muted-foreground">
+                {getFallbackIcon(platform.name)}
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

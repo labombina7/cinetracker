@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { 
-  getTraktAuthUrl, isAuthenticated, getUserInfo, logout, 
-  hasClientCredentials, saveClientCredentials, clearAllTraktData 
+import {
+  getTraktAuthUrl, isAuthenticated, getUserInfo, logout,
+  hasClientCredentials, saveClientCredentials, clearAllTraktData
 } from '@/services/trakt';
+import { TraktUser } from '@/services/trakt/user';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
@@ -17,7 +18,7 @@ import TraktLoadingState from '@/components/trakt/TraktLoadingState';
 import TraktConnectPrompt from '@/components/trakt/TraktConnectPrompt';
 
 const TraktAuth = () => {
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<TraktUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showClientForm, setShowClientForm] = useState(false);
