@@ -30,6 +30,13 @@ const Home = () => {
   } = useMediaFilters();
   const { platforms, loading: platformsLoading } = useProvidersData();
 
+  const featuredBackdrop = useMemo(() => {
+    if (mediaList.length === 0) return null;
+    const pool = mediaList.slice(0, 10).filter(m => m.backdropPath);
+    if (pool.length === 0) return null;
+    return pool[Math.floor(Math.random() * pool.length)].backdropPath;
+  }, [mediaList]);
+
   const handlePlatformChange = (platformId: number) => {
     const current = filtersState.selectedPlatformIds;
     const updated = current.includes(platformId)
@@ -56,13 +63,6 @@ const Home = () => {
   if (!isConfigured) {
     return <ApiKeySetup onApiKeySet={configureApiKey} />;
   }
-
-  const featuredBackdrop = useMemo(() => {
-    if (mediaList.length === 0) return null;
-    const pool = mediaList.slice(0, 10).filter(m => m.backdropPath);
-    if (pool.length === 0) return null;
-    return pool[Math.floor(Math.random() * pool.length)].backdropPath;
-  }, [mediaList]);
 
   return (
     <div className="container mx-auto px-4 py-6">
