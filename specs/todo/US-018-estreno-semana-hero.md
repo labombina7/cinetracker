@@ -1,4 +1,4 @@
-# Feature: Módulo "Estreno de la semana" — Hero destacado
+# US-018 — Módulo "Estreno de la semana": Hero destacado
 
 ## Historia de usuario
 

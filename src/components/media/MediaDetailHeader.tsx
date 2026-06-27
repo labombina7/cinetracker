@@ -25,6 +25,7 @@ const MediaDetailHeader: React.FC<MediaDetailHeaderProps> = ({ backdropPath }) =
           size="icon"
           onClick={() => navigate(-1)}
           aria-label={backLabel}
+          className="rounded-full"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -33,32 +34,33 @@ const MediaDetailHeader: React.FC<MediaDetailHeaderProps> = ({ backdropPath }) =
   }
 
   return (
-    <div className="relative">
-      <div className="absolute top-0 left-0 right-0 h-[300px] overflow-hidden rounded-xl">
-        {backdropPath && (
+    <>
+      {/* Full-viewport backdrop fixed behind the entire page */}
+      {backdropPath && (
+        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
           <div
-            className="bg-cover bg-center h-full w-full"
+            className="absolute inset-0 bg-cover bg-top"
             style={{ backgroundImage: `url(${getBackdropUrl(backdropPath)})` }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background"></div>
-          </div>
-        )}
-      </div>
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-background/85 to-background" />
+        </div>
+      )}
 
-      <div className="relative z-10 pt-6">
+      {/* Back button with clear left margin */}
+      <div className="relative pt-6 ml-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate(-1)}
-          className="mb-4 bg-transparent hover:bg-white/10 backdrop-blur-sm"
+          className="rounded-full bg-black/25 hover:bg-black/45 backdrop-blur-sm border border-white/15"
           aria-label={backLabel}
         >
           <ArrowLeft className="h-4 w-4 text-white" />
         </Button>
       </div>
 
-      <div className="h-[250px]"></div>
-    </div>
+      <div className="h-4" />
+    </>
   );
 };
 

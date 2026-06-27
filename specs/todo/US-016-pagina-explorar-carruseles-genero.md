@@ -1,4 +1,4 @@
-# Feature: Página Explorar — Carruseles de contenido por género
+# US-016 — Página Explorar: Carruseles de contenido por género
 
 ## Historia de usuario
 

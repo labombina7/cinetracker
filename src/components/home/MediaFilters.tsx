@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar, Globe, SlidersHorizontal } from 'lucide-react';
+import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar, Globe, ListFilter } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu,
@@ -111,7 +111,7 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
   };
 
   const sortIcons = {
-    'none': <SlidersHorizontal size={16} />,
+    'none': <ListFilter size={16} />,
     'rating': <ArrowDown size={16} />,
     'date': <Calendar size={16} />
   };
@@ -152,17 +152,17 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className={`relative flex items-center justify-center h-9 w-9 rounded-md border transition-colors ${
+              className={`relative flex items-center justify-center h-9 w-9 rounded-md transition-colors ${
                 isLangActive
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+                  ? 'text-yellow-400'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title={language === 'es' ? 'Idioma' : 'Language'}
               aria-label={language === 'es' ? 'Filtro de idioma' : 'Language filter'}
             >
               <Globe size={16} />
               {isLangActive && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-400" />
+                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-yellow-400" />
               )}
             </button>
           </DropdownMenuTrigger>
@@ -185,17 +185,17 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className={`relative flex items-center justify-center h-9 w-9 rounded-md border transition-colors ${
+              className={`relative flex items-center justify-center h-9 w-9 rounded-md transition-colors ${
                 isSortActive
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+                  ? 'text-yellow-400'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title={language === 'es' ? 'Ordenar' : 'Sort'}
               aria-label={language === 'es' ? 'Ordenar resultados' : 'Sort results'}
             >
-              <SlidersHorizontal size={16} />
+              <ListFilter size={16} />
               {isSortActive && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-400" />
+                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-yellow-400" />
               )}
             </button>
           </DropdownMenuTrigger>
@@ -218,40 +218,29 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         </DropdownMenu>
 
         {/* Media type buttons */}
-        <div className={`flex items-center gap-2 ${isMobile ? 'w-full justify-start mt-2' : 'ml-auto'}`}>
-          <button
-            className={`px-4 py-2 text-sm rounded-md transition-colors flex items-center gap-2 ${
-              mediaType === 'all'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-            }`}
-            onClick={() => setMediaType('all')}
-          >
-            <Layers size={16} />
-            <span>{t.mediaTypeOptions.all}</span>
-          </button>
-          <button
-            className={`px-4 py-2 text-sm rounded-md transition-colors flex items-center gap-2 ${
-              mediaType === 'movie'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-            }`}
-            onClick={() => setMediaType('movie')}
-          >
-            <Film size={16} />
-            <span>{t.mediaTypeOptions.movie}</span>
-          </button>
-          <button
-            className={`px-4 py-2 text-sm rounded-md transition-colors flex items-center gap-2 ${
-              mediaType === 'tv'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-            }`}
-            onClick={() => setMediaType('tv')}
-          >
-            <Tv size={16} />
-            <span>{t.mediaTypeOptions.tv}</span>
-          </button>
+        <div className={`flex items-center gap-1 ${isMobile ? 'w-full justify-start mt-2' : 'ml-auto'}`}>
+          {([
+            { value: 'all' as const, icon: <Layers size={18} />, label: t.mediaTypeOptions.all },
+            { value: 'movie' as const, icon: <Film size={18} />, label: t.mediaTypeOptions.movie },
+            { value: 'tv' as const, icon: <Tv size={18} />, label: t.mediaTypeOptions.tv },
+          ] as const).map(({ value, icon, label }) => (
+            <button
+              key={value}
+              className={`relative flex items-center justify-center h-9 w-9 rounded-md transition-colors ${
+                mediaType === value
+                  ? 'text-yellow-400'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              onClick={() => setMediaType(value)}
+              title={label}
+              aria-label={label}
+            >
+              {icon}
+              {mediaType === value && (
+                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-yellow-400" />
+              )}
+            </button>
+          ))}
         </div>
       </div>
 

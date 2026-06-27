@@ -711,6 +711,98 @@ const CARDS = {
 
   // ── Ideas ────────────────────────────────────────────────────────────────
 
+  'US-016': {
+    id: 'US-016', type: 'US', column: 'ideas', effort: 'L',
+    title: 'Página Explorar — Carruseles por género',
+    summary: 'Nueva ruta /explore con filas horizontales por género (Embla Carousel), carga lazy por sección y "Ver más" por categoría.',
+    story: 'Como usuario de CineTracker que quiere descubrir contenido nuevo,\nquiero una página "Explorar" que muestre filas de películas y series organizadas por género,\npara encontrar fácilmente algo que ver según el tipo de contenido que me apetece.',
+    description: [
+      'Página /explore con carruseles horizontales por género (Embla Carousel ya instalado). Cada género carga su propio carrusel de forma lazy (IntersectionObserver) para no bloquear el primer render. 6-8 géneros populares por defecto. "Ver más →" navega a /explore?genre=ID reutilizando la vista lista de Home con el filtro aplicado.',
+      'Los géneros disponibles vienen de fetchGenres() ya cacheado. Entre secciones de género se insertan bloques editoriales (US-017, US-018). Selector global Todos/Películas/Series recalcula géneros y refresca secciones.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Ruta /explore accesible desde Navbar', done: false },
+      { text: 'Carrusel horizontal por género con flechas en desktop y swipe en móvil', done: false },
+      { text: 'Carga lazy: fetch de un género solo cuando entra en viewport', done: false },
+      { text: 'Skeleton de 5 MediaCard mientras carga cada carrusel', done: false },
+      { text: '"Ver más →" navega a la vista lista filtrada por ese género', done: false },
+      { text: 'Selector Todos/Películas/Series refresca todas las secciones', done: false },
+      { text: 'Géneros con 0 resultados se ocultan silenciosamente', done: false },
+    ]}],
+    dependencies: [], components: [
+      { path: 'src/pages/Explore.tsx', desc: 'Nueva página de exploración', isNew: true },
+      { path: 'src/components/explore/GenreSection.tsx', desc: 'Sección por género con lazy load', isNew: true },
+      { path: 'src/components/explore/GenreCarousel.tsx', desc: 'Carrusel Embla + skeletons', isNew: true },
+      { path: 'src/hooks/useExploreGenres.ts', desc: 'Géneros a mostrar y orden', isNew: true },
+      { path: 'src/hooks/useGenreCarousel.ts', desc: 'Fetch por género, activado al entrar en viewport', isNew: true },
+      { path: 'src/components/Navbar.tsx', desc: 'Añadir enlace /explore', isNew: false },
+    ], tech: [
+      'TMDB GET /discover/movie?with_genres=ID&sort_by=popularity.desc',
+      'TMDB GET /discover/tv?with_genres=ID (equivalente para series)',
+      'Embla Carousel ya disponible en src/components/ui/carousel.tsx',
+      'IntersectionObserver para carga lazy de secciones',
+    ], outOfScope: ['Personalización del orden de géneros', 'Infinite scroll dentro de un carrusel', 'Filtros adicionales dentro de Explorar'],
+  },
+
+  'US-017': {
+    id: 'US-017', type: 'US', column: 'ideas', effort: 'M',
+    title: 'Bloque editorial "No te puedes perder"',
+    summary: 'Sección insertada entre géneros en Explorar con top_rated (≥8.0, ≥1000 votos), cabecera diferenciada y carrusel de tarjetas grandes.',
+    story: 'Como usuario de CineTracker que quiere descubrir joyas consolidadas,\nquiero ver una sección editorial destacada con el contenido mejor valorado del momento,\npara no perderme títulos imprescindibles que quizás haya pasado por alto.',
+    description: [
+      'Bloque editorial entre la 2ª y 3ª sección de género en la página Explorar (US-016). Cabecera con fondo sutil y ⭐ para diferenciarlo visualmente. Tarjetas más grandes que las de los carruseles de género.',
+      'Contenido: /movie/top_rated + /tv/top_rated filtrado a vote_average ≥ 8.0 y vote_count ≥ 1000. Selección aleatoria con semilla diaria (mismos items todo el día). Se adapta al filtro Películas/Series/Todos.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Bloque con cabecera diferenciada (fondo sutil, icono ⭐)', done: false },
+      { text: '6-10 items en carrusel horizontal o grid 2×3', done: false },
+      { text: 'Solo items con vote_average ≥ 8.0 y vote_count ≥ 1000', done: false },
+      { text: 'Selección aleatoria con semilla diaria (Fisher-Yates determinístico)', done: false },
+      { text: 'Skeleton de 4 tarjetas mientras carga', done: false },
+      { text: 'Se adapta al filtro de tipo (Películas/Series/Todos)', done: false },
+    ]}],
+    dependencies: ['US-016'], components: [
+      { path: 'src/components/explore/MustWatchBlock.tsx', desc: 'Bloque editorial completo', isNew: true },
+      { path: 'src/hooks/useMustWatch.ts', desc: 'Fetch top_rated, filtro y mezcla con semilla diaria', isNew: true },
+      { path: 'src/services/tmdb/topRated.ts', desc: 'Wrappers /movie/top_rated y /tv/top_rated', isNew: true },
+    ], tech: [
+      'TMDB GET /movie/top_rated?language=es-ES (vote_average + vote_count en respuesta)',
+      'TMDB GET /tv/top_rated?language=es-ES',
+      'Semilla diaria: Math.floor(Date.now() / 86400000) como seed en Fisher-Yates',
+    ], outOfScope: ['Marcar como visto para filtrar del bloque', 'Ranking propio de CineTracker', 'Integración con Trakt para filtrar lo ya visto'],
+  },
+
+  'US-018': {
+    id: 'US-018', type: 'US', column: 'ideas', effort: 'L',
+    title: 'Módulo "Estreno de la semana" — Hero',
+    summary: 'Hero a ancho completo en la cima de Explorar con backdrop, autoplay cada 8s y thumbnails para navegar entre los 5-7 estrenos más relevantes de la semana.',
+    story: 'Como usuario de CineTracker que quiere estar al día de los estrenos,\nquiero ver un bloque hero prominente con el estreno más destacado de la semana,\npara saber de un vistazo qué ha salido recientemente y si merece mi atención.',
+    description: [
+      'Hero de ancho completo (50vh desktop / 40vh mobile) encima de los carruseles de Explorar (US-016). Backdrop /w1280 con gradiente oscuro. Muestra título, año, puntuación, sinopsis 2 líneas, badge "ESTRENO" si < 7 días. Botones "Ver detalles" y favorito.',
+      'Fila de 5-7 thumbnails debajo para navegar entre estrenos. Autoplay cada 8s (pausa al hover). Respeta prefers-reduced-motion. Datos: /trending/movie/week + /tv/on_the_air filtrado por fecha reciente, ordenados por popularity.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Hero 50vh desktop / 40vh mobile con backdrop /w1280', done: false },
+      { text: 'Gradiente oscuro + título, año, puntuación, sinopsis 2 líneas', done: false },
+      { text: 'Badge "ESTRENO" si fecha < 7 días', done: false },
+      { text: 'Botones "Ver detalles" (→ detalle) y favorito funcionales', done: false },
+      { text: 'Fila de 5-7 thumbnails; clic cambia el item activo', done: false },
+      { text: 'Autoplay 8s; pausa en hover; respeta prefers-reduced-motion', done: false },
+      { text: 'Skeleton con proporción correcta mientras carga (sin layout shift)', done: false },
+    ]}],
+    dependencies: ['US-016'], components: [
+      { path: 'src/components/explore/HeroRelease.tsx', desc: 'Bloque hero con backdrop y autoplay', isNew: true },
+      { path: 'src/components/explore/HeroThumbnails.tsx', desc: 'Fila de miniaturas con ítem activo', isNew: true },
+      { path: 'src/hooks/useWeeklyReleases.ts', desc: 'Combina trending/week + tv/on_the_air; ordena por popularity', isNew: true },
+      { path: 'src/services/tmdb/nowPlaying.ts', desc: 'Wrappers /movie/now_playing, /movie/upcoming, /tv/on_the_air', isNew: true },
+    ], tech: [
+      'TMDB GET /trending/movie/week?language=es-ES (ya usado en fetchRealTrending)',
+      'TMDB GET /tv/on_the_air?language=es-ES&first_air_date.gte=YYYY-MM-DD',
+      'getBackdropUrl(path, "w1280") ya disponible en src/services/tmdb/utils.ts',
+      'En mobile usar /w780 en lugar de /w1280 para optimizar carga',
+    ], outOfScope: ['Trailer en el hero', '"No me interesa" para ocultar items', 'Notificaciones push de estrenos', 'Filtro por plataforma en el hero'],
+  },
+
   'IDEA-historial': {
     id: 'IDEA-historial', type: 'IDEA', column: 'ideas',
     title: 'Historial de visualización',

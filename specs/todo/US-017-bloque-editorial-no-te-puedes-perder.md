@@ -1,4 +1,4 @@
-# Feature: Bloque editorial "No te puedes perder"
+# US-017 — Bloque editorial "No te puedes perder"
 
 ## Historia de usuario
 

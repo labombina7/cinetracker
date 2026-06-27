@@ -45,7 +45,7 @@ export const fetchMediaDetails = async (id: number, type: 'movie' | 'tv', langua
       type: mediaType,
       country: item.original_language === 'es' ? 'ES' : null,
       runtime: type === 'movie' ? item.runtime : null,
-      episodeRuntime: type === 'tv' ? (item.episode_run_time?.[0] || 0) : null,
+      episodeRuntime: type === 'tv' ? (item.episode_run_time?.[0] || null) : null,
       numberOfEpisodes: type === 'tv' ? item.number_of_episodes : null,
       numberOfSeasons: type === 'tv' ? item.number_of_seasons : null,
       availableForRent: false,
