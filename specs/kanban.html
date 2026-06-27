@@ -712,36 +712,153 @@ const CARDS = {
   // ── Ideas ────────────────────────────────────────────────────────────────
 
   'US-016': {
-    id: 'US-016', type: 'US', column: 'ideas', effort: 'L',
-    title: 'Página Explorar — Carruseles por género',
-    summary: 'Nueva ruta /explore con filas horizontales por género (Embla Carousel), carga lazy por sección y "Ver más" por categoría.',
-    story: 'Como usuario de CineTracker que quiere descubrir contenido nuevo,\nquiero una página "Explorar" que muestre filas de películas y series organizadas por género,\npara encontrar fácilmente algo que ver según el tipo de contenido que me apetece.',
+    id: 'US-016', type: 'US', column: 'done', effort: 'L',
+    title: 'Página Explorar — Carruseles editoriales y por género',
+    summary: 'Ruta /explore con carruseles editoriales (tendencias, estrenos, top rated) + 8 carruseles de género, carga lazy y "Ver más" con filtros aplicados.',
+    story: 'Como usuario de CineTracker que quiere descubrir contenido nuevo,\nquiero una página "Explorar" que muestre filas de películas y series organizadas por categoría,\npara encontrar fácilmente algo que ver según el tipo de contenido que me apetece.',
     description: [
-      'Página /explore con carruseles horizontales por género (Embla Carousel ya instalado). Cada género carga su propio carrusel de forma lazy (IntersectionObserver) para no bloquear el primer render. 6-8 géneros populares por defecto. "Ver más →" navega a /explore?genre=ID reutilizando la vista lista de Home con el filtro aplicado.',
-      'Los géneros disponibles vienen de fetchGenres() ya cacheado. Entre secciones de género se insertan bloques editoriales (US-017, US-018). Selector global Todos/Películas/Series recalcula géneros y refresca secciones.',
+      'Página /explore con sticky header (buscador + FilterBar + anchor chips de género). Tres carruseles editoriales fijos (Tendencias, Estrenos recientes, Mejor valoradas) seguidos de 8 carruseles de género (Acción, Comedia, Drama, Terror, Sci-Fi, Animación, Thriller, Documentales). Carga lazy via IntersectionObserver con rootMargin 400px. Home redirige directamente a /explore.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Ruta /explore accesible desde Navbar', done: false },
-      { text: 'Carrusel horizontal por género con flechas en desktop y swipe en móvil', done: false },
-      { text: 'Carga lazy: fetch de un género solo cuando entra en viewport', done: false },
-      { text: 'Skeleton de 5 MediaCard mientras carga cada carrusel', done: false },
-      { text: '"Ver más →" navega a la vista lista filtrada por ese género', done: false },
-      { text: 'Selector Todos/Películas/Series refresca todas las secciones', done: false },
-      { text: 'Géneros con 0 resultados se ocultan silenciosamente', done: false },
+      { text: 'Ruta /explore accesible desde Navbar; Home redirige a /explore', done: true },
+      { text: 'Carruseles horizontales con scroll nativo y "Ver más" al final', done: true },
+      { text: 'Carga lazy: fetch de cada sección solo cuando entra en viewport', done: true },
+      { text: 'Skeleton mientras carga cada carrusel', done: true },
+      { text: '"Ver más" navega a /list con filtros del carrusel aplicados (género, sortBy)', done: true },
+      { text: 'FilterBar con tipo, idioma, ordenar y chips de plataforma', done: true },
+      { text: 'Buscador en sticky header con debounce → navega a /list', done: true },
+      { text: 'Anchor chips de género para scroll suave a cada sección', done: true },
+      { text: 'Foco exclusivo de plataforma (US-022) integrado', done: true },
+      { text: 'Secciones con 0 resultados se ocultan silenciosamente', done: true },
     ]}],
     dependencies: [], components: [
-      { path: 'src/pages/Explore.tsx', desc: 'Nueva página de exploración', isNew: true },
-      { path: 'src/components/explore/GenreSection.tsx', desc: 'Sección por género con lazy load', isNew: true },
-      { path: 'src/components/explore/GenreCarousel.tsx', desc: 'Carrusel Embla + skeletons', isNew: true },
-      { path: 'src/hooks/useExploreGenres.ts', desc: 'Géneros a mostrar y orden', isNew: true },
-      { path: 'src/hooks/useGenreCarousel.ts', desc: 'Fetch por género, activado al entrar en viewport', isNew: true },
-      { path: 'src/components/Navbar.tsx', desc: 'Añadir enlace /explore', isNew: false },
+      { path: 'src/pages/Explore.tsx', desc: 'Página principal con sticky header, carruseles editoriales y de género', isNew: true },
+      { path: 'src/components/explore/EditorialSection.tsx', desc: 'Carrusel reutilizable con lazy load y "Ver más"', isNew: true },
+      { path: 'src/hooks/useEditorialCarousel.ts', desc: 'Hook de fetch lazy por estrategia (trending/editorial/genre)', isNew: true },
+      { path: 'src/services/tmdb/discover/fetchEditorial.ts', desc: 'Servicio de discover con watchProviders enriquecidos', isNew: true },
+      { path: 'src/components/Navbar.tsx', desc: 'Botón Explorar; eliminado botón Inicio', isNew: false },
+      { path: 'src/App.tsx', desc: 'Ruta / redirige a /explore', isNew: false },
     ], tech: [
-      'TMDB GET /discover/movie?with_genres=ID&sort_by=popularity.desc',
-      'TMDB GET /discover/tv?with_genres=ID (equivalente para series)',
-      'Embla Carousel ya disponible en src/components/ui/carousel.tsx',
-      'IntersectionObserver para carga lazy de secciones',
-    ], outOfScope: ['Personalización del orden de géneros', 'Infinite scroll dentro de un carrusel', 'Filtros adicionales dentro de Explorar'],
+      'TMDB GET /discover/movie + /discover/tv con with_genres, sort_by, watch_providers',
+      'TMDB GET /trending/all/week para carrusel de tendencias',
+      'IntersectionObserver con rootMargin 400px para carga lazy',
+      'navigate(\'/list\', { state: { sortBy, movieGenreId, tvGenreId } }) para "Ver más"',
+    ], outOfScope: ['Embla Carousel (se usó scroll nativo)', 'Personalización del orden de géneros', 'Infinite scroll dentro de un carrusel'],
+  },
+
+  'US-019': {
+    id: 'US-019', type: 'US', column: 'done', effort: 'S',
+    title: 'Tema oscuro permanente (dark mode nativo)',
+    summary: 'Tokens CSS de shadcn/ui con fondo blanco por defecto reemplazados por valores dark; header glass con backdrop-blur.',
+    story: 'Como usuario de CineTracker que navega por una app con fondos cinematográficos,\nquiero que toda la interfaz use un tema oscuro consistente,\npara que los elementos UI no rompan la atmósfera visual generada por el backdrop dinámico.',
+    description: [
+      'Variables CSS de :root en index.css cambiadas a valores del tema oscuro. Las variables de .dark pasan a ser las únicas (se elimina dualidad). Navbar con fondo semitransparente y backdrop-blur para efecto glass sobre contenido.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Tokens :root en index.css usan valores oscuros (background, card, border…)', done: true },
+      { text: 'Header con fondo semitransparente + backdrop-blur', done: true },
+      { text: 'Buscador y tarjetas con fondo glass oscuro', done: true },
+      { text: 'No hay toggle de tema (dark permanente)', done: true },
+    ]}],
+    dependencies: [], components: [
+      { path: 'src/index.css', desc: 'Reemplazar valores :root por dark; eliminar .dark redundante', isNew: false },
+      { path: 'src/components/Navbar.tsx', desc: 'Fondo semitransparente con backdrop-blur', isNew: false },
+    ], tech: [], outOfScope: ['Toggle light/dark', 'prefers-color-scheme'],
+  },
+
+  'US-020': {
+    id: 'US-020', type: 'US', column: 'done', effort: 'M',
+    title: 'Logos de plataforma e indicadores en la tarjeta del grid',
+    summary: 'Superposición de logos de plataforma flatrate y badge de valoración en cada tarjeta del catálogo.',
+    story: 'Como usuario que navega el catálogo,\nquiero ver en cada tarjeta qué plataformas ofrecen el título y su valoración,\npara decidir si vale la pena entrar al detalle sin tener que hacerlo.',
+    description: [
+      'MediaCard muestra en la esquina inferior: logos de plataformas flatrate disponibles en ES (máx. 3, con "+N" si hay más) y badge de vote_average. Los datos de providers se enriquecen en fetchEditorial para los carruseles y en fetchWatchProviders para cards individuales.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Logos de plataforma superpuestos en la esquina inferior de la tarjeta', done: true },
+      { text: 'Máximo 3 logos; "+N" si hay más', done: true },
+      { text: 'Badge de valoración visible en la tarjeta', done: true },
+      { text: 'Fallback silencioso si no hay providers (no rompe la tarjeta)', done: true },
+      { text: 'Logos obtenidos de flatrate (suscripción) de la región ES', done: true },
+    ]}],
+    dependencies: ['US-003'], components: [
+      { path: 'src/components/MediaCard.tsx', desc: 'Overlay con logos de plataforma y rating', isNew: false },
+      { path: 'src/services/tmdb/discover/fetchEditorial.ts', desc: 'Enriquece cada item con watchProviders', isNew: false },
+    ], tech: ['TMDB GET /movie/:id/watch/providers y /tv/:id/watch/providers'], outOfScope: ['Logos en la página de detalle (se eliminó; ya tiene chips propios)'],
+  },
+
+  'US-021': {
+    id: 'US-021', type: 'US', column: 'done', effort: 'L',
+    title: 'Página de lista drill-down con scroll infinito',
+    summary: 'Ruta /list con grid infinito, sticky header con búsqueda + FilterBar + chips de género, accesible desde "Ver más" en Explorar.',
+    story: 'Como usuario que quiere ver más contenido de una categoría,\nquiero una página de lista con scroll infinito accesible desde "Ver más" en los carruseles,\npara explorar en profundidad sin perder los filtros del carrusel de origen.',
+    description: [
+      'Ruta /list no accesible desde navbar, solo desde "Ver más" de Explorar. Recibe estado de navegación (sortBy, movieGenreId, tvGenreId, searchText) e inicializa filtros locales con esos valores. Sticky header: botón atrás + buscador + FilterBar + chips de género. Grid infinito 3-5 columnas según viewport.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Ruta /list inicializa filtros desde location.state del navigate de Explorar', done: true },
+      { text: 'Sticky header con botón atrás, buscador, FilterBar y chips de género', done: true },
+      { text: 'Grid de tarjetas 3 col (móvil) / 4 col (tablet) / 5 col (desktop)', done: true },
+      { text: 'Scroll infinito: carga siguiente página al llegar al sentinel', done: true },
+      { text: 'Buscador local con debounce 300ms; usa searchMedia()', done: true },
+      { text: 'Chips de género: marcados según filtro incoming; toggle activo/inactivo', done: true },
+      { text: 'Skeleton durante carga inicial y al cargar más', done: true },
+      { text: 'Estado vacío con mensaje contextual', done: true },
+      { text: 'Guard apiKeyLoading para evitar redirect prematuro a /', done: true },
+    ]}],
+    dependencies: ['US-016', 'US-023'], components: [
+      { path: 'src/pages/List.tsx', desc: 'Página drill-down completa con filtros locales y scroll infinito', isNew: true },
+      { path: 'src/hooks/useGenres.ts', desc: 'Para chips de género; \'all\' usa géneros de película', isNew: false },
+      { path: 'src/hooks/useApiKey.ts', desc: 'isLoading guard para evitar redirect en primer render', isNew: false },
+    ], tech: [
+      'navigate(\'/list\', { state }) desde Explore; location.state en List',
+      'IntersectionObserver sobre sentinelRef para scroll infinito',
+      'fetchEditorial() con paginación (page param)',
+    ], outOfScope: ['Breadcrumb multinivel', 'Guardar posición de scroll al volver'],
+  },
+
+  'US-022': {
+    id: 'US-022', type: 'US', column: 'done', effort: 'S',
+    title: 'Foco exclusivo de plataforma en Explorar',
+    summary: 'Click en chip de plataforma activa en Explorar filtra todos los carruseles a esa plataforma sin modificar el estado global.',
+    story: 'Como usuario quiero pinchar en una plataforma en Explorar para ver solo su contenido en todos los carruseles sin cambiar mi configuración global de plataformas.',
+    description: [
+      'Estado local focusPlatformId en Explore.tsx. Click en chip: toggle entre foco exclusivo (solo esa plataforma) y sin foco (todas las plataformas activas del contexto). Todos los EditorialSection reciben overridePlatformIds derivado del foco. El foco no persiste fuera de Explore.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Click en chip activa foco exclusivo sobre esa plataforma', done: true },
+      { text: 'Segundo click sobre el mismo chip desactiva el foco', done: true },
+      { text: 'Chip en foco: borde blanco + scale-110; resto: opacidad 35%', done: true },
+      { text: 'Todos los carruseles se re-fetchean con [focusPlatformId]', done: true },
+      { text: 'No modifica selectedPlatformIds del contexto global', done: true },
+      { text: 'Al salir de Explore el foco se descarta (estado local)', done: true },
+    ]}],
+    dependencies: ['US-016'], components: [
+      { path: 'src/pages/Explore.tsx', desc: 'Estado focusPlatformId; effectivePlatformIds derivado', isNew: false },
+      { path: 'src/components/FilterBar.tsx', desc: 'Prop focusPlatformId para estilo diferenciado', isNew: false },
+    ], tech: [], outOfScope: ['Persistencia del foco entre sesiones', 'Multi-foco (varias plataformas)'],
+  },
+
+  'US-023': {
+    id: 'US-023', type: 'US', column: 'done', effort: 'M',
+    title: 'Barra de filtros compacta reutilizable (FilterBar)',
+    summary: 'Componente FilterBar en una línea con tipo / idioma / ordenar a la izquierda y chips de plataforma a la derecha; usado en Explore y List.',
+    story: 'Como usuario quiero que los filtros de tipo, idioma y ordenar estén en la misma línea que las plataformas activas para no ocupar espacio innecesario en pantalla.',
+    description: [
+      'Componente src/components/FilterBar.tsx reutilizable. Agrupa todos los controles en una única línea horizontal: botones Todos/Películas/Series, dropdowns Idioma y Ordenar, espaciador flex, chips de plataforma con foco. Sticky en Explore y en List.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Botones Todos/Películas/Series con variante default/ghost', done: true },
+      { text: 'Dropdown Idioma (Todo/Hispano/España) con indicador amarillo cuando activo', done: true },
+      { text: 'Dropdown Ordenar (Popularidad/Valoración/Fecha) con indicador amarillo cuando activo', done: true },
+      { text: 'Chips de plataforma con logo real; foco visual si focusPlatformId activo', done: true },
+      { text: 'En mobile: wrap a dos líneas', done: true },
+      { text: 'Sticky en Explore (top-[57px]) y en List (dentro del sticky header)', done: true },
+      { text: 'Reutilizado en Explore.tsx y List.tsx sin duplicar lógica', done: true },
+    ]}],
+    dependencies: ['US-016'], components: [
+      { path: 'src/components/FilterBar.tsx', desc: 'Componente nuevo reutilizable', isNew: true },
+    ], tech: [], outOfScope: ['Más de 6 plataformas con popover "+N más"', 'Ordenación personalizada de plataformas'],
   },
 
   'US-017': {
