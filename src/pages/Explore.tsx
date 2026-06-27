@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { useApiKey } from '@/hooks/useApiKey';
@@ -76,6 +76,18 @@ const Explore = () => {
 
   const [focusPlatformId, setFocusPlatformId] = useState<number | null>(null);
   const [searchText, setSearchText] = useState('');
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = (value: string) => {
+    setSearchText(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (value.trim()) {
+      searchTimerRef.current = setTimeout(() => {
+        navigate('/list', { state: { searchText: value.trim() } });
+        setSearchText('');
+      }, 400);
+    }
+  };
 
   const effectivePlatformIds = focusPlatformId !== null
     ? [focusPlatformId]
@@ -88,15 +100,6 @@ const Explore = () => {
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
-
-  useEffect(() => {
-    if (!searchText.trim()) return;
-    const t = setTimeout(() => {
-      navigate('/list', { state: { searchText: searchText.trim() } });
-      setSearchText('');
-    }, 400);
-    return () => clearTimeout(t);
-  }, [searchText, navigate]);
 
   const handleShowMore = (config: CarouselConfig) => {
     navigate('/list', {
@@ -125,7 +128,7 @@ const Explore = () => {
               <input
                 type="text"
                 value={searchText}
-                onChange={e => setSearchText(e.target.value)}
+                onChange={e => handleSearchChange(e.target.value)}
                 placeholder={language === 'es' ? 'Buscar películas y series...' : 'Search movies and shows...'}
                 className="w-full h-9 pl-9 pr-4 rounded-lg bg-white/10 border border-white/10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/30"
               />
