@@ -7,7 +7,7 @@ export { discoverMedia, discoverSpanishMedia, fetchMediaByPlatforms } from './di
 export { fetchGenres } from './genres';
 export { fetchWatchProviders, isAvailableOnStreaming } from './providers';
 export { fetchProvidersList, fetchPopularProviders } from './providers/index';
-export { getPosterUrl, getBackdropUrl } from './utils';
+export { getPosterUrl, getBackdropUrl, getProviderLogoUrl } from './utils';
 export { buildApiUrl } from './config';
 export { 
   fetchRealTrending, 

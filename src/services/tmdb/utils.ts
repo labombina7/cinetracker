@@ -22,6 +22,12 @@ export const getPosterUrl = (path: string | null, size: 'small' | 'medium' | 'la
   return `${TMDB_CONFIG.IMAGE_BASE_URL}/${sizeStr}${path}`;
 };
 
+// Obtener URL de logo de proveedor (plataforma)
+export const getProviderLogoUrl = (path: string | null): string => {
+  if (!path) return '';
+  return `${TMDB_CONFIG.IMAGE_BASE_URL}/w45${path}`;
+};
+
 // Obtener URL de backdrop
 export const getBackdropUrl = (path: string | null, size: 'small' | 'medium' | 'large' = 'medium'): string => {
   if (!path) return '';

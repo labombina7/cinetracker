@@ -14,8 +14,7 @@ export const fetchTrendingStrategy = async (
   console.log(`Fetching trending for ${mediaType}, page ${page}, platforms: ${validPlatformIds.join(',') || 'all'}, spanishFilter: ${spanishFilter}`);
   
   try {
-    const needsProviders = validPlatformIds.length > 0;
-    let results = await fetchRealTrending(mediaType, page, 'week', spanishFilter, needsProviders);
+    let results = await fetchRealTrending(mediaType, page, 'week', spanishFilter, true);
     console.log(`Got ${results.length} trending items before platform filtering for page ${page}`);
     
     // Si no obtuvimos resultados, devolver array vacío para evitar errores
@@ -53,7 +52,7 @@ export const fetchTrendingStrategy = async (
           const nextPage = page + i;
           console.log(`Fetching additional trending page ${nextPage}`);
           
-          const additionalResults = await fetchRealTrending(mediaType, nextPage, 'week', spanishFilter, needsProviders);
+          const additionalResults = await fetchRealTrending(mediaType, nextPage, 'week', spanishFilter, true);
           console.log(`Got ${additionalResults.length} additional trending items from page ${nextPage}`);
           
           // Filter these results too

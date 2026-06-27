@@ -24,15 +24,26 @@ const Navbar = () => {
           
           <div className="flex items-center space-x-2">
             {!isMobile && (
-              <Button
-                variant={isActive('/') ? 'default' : 'ghost'}
-                asChild
-                size="sm"
-              >
-                <Link to="/">
-                  {language === 'es' ? 'Explorar' : 'Explore'}
-                </Link>
-              </Button>
+              <>
+                <Button
+                  variant={isActive('/') ? 'default' : 'ghost'}
+                  asChild
+                  size="sm"
+                >
+                  <Link to="/">
+                    {language === 'es' ? 'Inicio' : 'Home'}
+                  </Link>
+                </Button>
+                <Button
+                  variant={isActive('/explore') ? 'default' : 'ghost'}
+                  asChild
+                  size="sm"
+                >
+                  <Link to="/explore">
+                    {language === 'es' ? 'Explorar' : 'Explore'}
+                  </Link>
+                </Button>
+              </>
             )}
             
             <Button
