@@ -314,10 +314,12 @@
     .project-bar {
       display: flex; align-items: center; gap: 6px;
       padding: 6px 20px;
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      color: var(--muted);
+      background: #1a1917;
+    }
+    .project-bar > span:first-child {
+      font-size: 10px; color: #78716c;
+      font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; margin-right: 4px;
     }
     .project-btn {
       font-size: 11px; font-weight: 600;
@@ -327,8 +329,8 @@
       text-decoration: none; display: inline-block;
     }
     .project-btn.active  { background: var(--accent); color: #fff; }
-    .project-btn.inactive { background: #e8e6e1; color: var(--muted); }
-    .project-btn.inactive:hover { color: var(--text); }
+    .project-btn.inactive { background: #292524; color: #a8a29e; }
+    .project-btn.inactive:hover { color: #e7e5e4; }
   </style>
 </head>
 <body>
@@ -454,7 +456,7 @@ const CARDS = {
   // ── To Do ────────────────────────────────────────────────────────────────
 
   'US-005': {
-    id: 'US-005', type: 'US', column: 'todo', effort: 'S',
+    id: 'US-005', type: 'US', column: 'done', effort: 'S',
     title: 'Botón de regreso en móvil en detalle',
     summary: 'MediaDetailHeader retorna null en móvil — añadir barra sticky con botón back.',
     story: 'Como usuario de CineTracker en móvil que ha navegado al detalle de un título,\nquiero ver un botón de regreso visible en pantalla,\npara poder volver al listado sin depender únicamente del gesto del sistema operativo.',
@@ -462,11 +464,11 @@ const CARDS = {
       'MediaDetailHeader.tsx retorna null en móvil (if (isMobile) return null), dejando al usuario sin botón de regreso. Añadir una barra sticky con el botón back cuando isMobile === true. Desktop no cambia.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Barra sticky visible en móvil con botón ArrowLeft', done: false },
-      { text: 'El botón llama a navigate(-1)', done: false },
-      { text: 'Fondo semitransparente con backdrop-blur', done: false },
-      { text: 'Desktop sin cambios', done: false },
-      { text: 'aria-label="Volver" en el botón', done: false },
+      { text: 'Barra sticky visible en móvil con botón ArrowLeft', done: true },
+      { text: 'El botón llama a navigate(-1)', done: true },
+      { text: 'Fondo semitransparente con backdrop-blur', done: true },
+      { text: 'Desktop sin cambios', done: true },
+      { text: 'aria-label="Volver" en el botón', done: true },
     ]}],
     dependencies: ['US-004'], components: [
       { path: 'src/components/media/MediaDetailHeader.tsx', desc: 'Eliminar return null en móvil; renderizar barra back sticky', isNew: false },
@@ -474,7 +476,7 @@ const CARDS = {
   },
 
   'US-006': {
-    id: 'US-006', type: 'US', column: 'todo', effort: 'M',
+    id: 'US-006', type: 'US', column: 'done', effort: 'M',
     title: 'Filtros de plataforma operativos en Home',
     summary: 'handlePlatformChange es un no-op — conectar los chips al contexto MediaFiltersContext.',
     story: 'Como usuario de CineTracker que tiene plataformas configuradas,\nquiero ver chips de mis plataformas activas en la pantalla principal y poder activarlas/desactivarlas directamente,\npara filtrar el contenido por plataforma sin tener que ir a Ajustes cada vez.',
@@ -482,12 +484,12 @@ const CARDS = {
       'PlatformFilters se renderiza en Home pero handlePlatformChange solo ejecuta un console.log. Conectar al contexto MediaFiltersContext con toggle de IDs. Si no hay plataformas configuradas, mostrar CTA a /settings.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Click en chip activa/desactiva plataforma en el contexto global', done: false },
-      { text: 'Feed se refresca automáticamente con el nuevo filtro', done: false },
-      { text: 'Chip activo con estilo visual diferenciado', done: false },
-      { text: 'Sin plataformas configuradas: CTA "Ir a Ajustes"', done: false },
+      { text: 'Click en chip activa/desactiva plataforma en el contexto global', done: true },
+      { text: 'Feed se refresca automáticamente con el nuevo filtro', done: true },
+      { text: 'Chip activo con estilo visual diferenciado', done: true },
+      { text: 'Sin plataformas configuradas: CTA "Ir a Ajustes"', done: true },
       { text: 'Más de 6 plataformas: botón "+ N más" con popover', done: false },
-      { text: 'Chips muestran logo real (logoPath) con fallback a icono', done: false },
+      { text: 'Chips muestran logo real (logoPath) con fallback a icono', done: true },
     ]}],
     dependencies: ['US-003'], components: [
       { path: 'src/pages/Home.tsx', desc: 'Conectar handlePlatformChange a setSelectedPlatformIds con toggle', isNew: false },
@@ -497,7 +499,7 @@ const CARDS = {
   },
 
   'US-007': {
-    id: 'US-007', type: 'US', column: 'todo', effort: 'M',
+    id: 'US-007', type: 'US', column: 'done', effort: 'M',
     title: 'Estado vacío contextual con acción guiada',
     summary: 'HomeEmptyState muestra siempre el mismo mensaje genérico — distinguir las 3 causas posibles.',
     story: 'Como usuario de CineTracker que no ve contenido en la pantalla principal,\nquiero recibir un mensaje claro que explique por qué no hay resultados y qué puedo hacer,\npara no quedarme atascado pensando que la app está rota.',
@@ -505,11 +507,11 @@ const CARDS = {
       'HomeEmptyState muestra el mismo mensaje siempre. Refactorizar para distinguir: (1) sin plataformas configuradas → CTA a Ajustes, (2) filtros restrictivos → botón "Limpiar filtros", (3) sin resultados con plataformas → "Prueba con otras plataformas".',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Sin plataformas: "No has configurado ninguna plataforma" + botón a /settings', done: false },
-      { text: 'Filtros activos sin resultados: "Ningún resultado" + "Limpiar filtros"', done: false },
-      { text: 'Sin filtros y 0 resultados: mensaje genérico + "Cambiar plataformas"', done: false },
-      { text: 'Cada variante tiene icono diferente', done: false },
-      { text: 'Textos disponibles en ES/EN', done: false },
+      { text: 'Sin plataformas: "No has configurado ninguna plataforma" + botón a /settings', done: true },
+      { text: 'Filtros activos sin resultados: "Ningún resultado" + "Limpiar filtros"', done: true },
+      { text: 'Sin filtros y 0 resultados: mensaje genérico + "Cambiar plataformas"', done: true },
+      { text: 'Cada variante tiene icono diferente', done: true },
+      { text: 'Textos disponibles en ES/EN', done: true },
     ]}],
     dependencies: ['US-006'], components: [
       { path: 'src/components/home/HomeEmptyState.tsx', desc: 'Añadir prop reason: no-platforms | filtered | no-content', isNew: false },
@@ -518,7 +520,7 @@ const CARDS = {
   },
 
   'US-008': {
-    id: 'US-008', type: 'US', column: 'todo', effort: 'M',
+    id: 'US-008', type: 'US', column: 'done', effort: 'M',
     title: 'Refresco automático del token de Trakt',
     summary: 'El refresh_token se guarda pero nunca se usa — implementar refresco automático al recibir 401.',
     story: 'Como usuario de CineTracker conectado con Trakt.tv,\nquiero que mi sesión se mantenga activa de forma transparente cuando el token expire,\npara no encontrarme con errores 401 inesperados ni tener que reconectarme manualmente.',
@@ -526,11 +528,11 @@ const CARDS = {
       'El refresh_token se guarda en localStorage pero nunca se usa. Cuando access_token expira (3 meses), todas las llamadas devuelven 401 y el usuario sigue apareciendo como conectado. Implementar authenticatedFetch() que intercepta 401, refresca el token y reintenta.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Petición con 401 llama automáticamente a POST /oauth/token (refresh)', done: false },
-      { text: 'Si refresco exitoso: guarda tokens y reintenta la petición original (1 vez)', done: false },
-      { text: 'Si refresco falla: logout limpio y toast de aviso al usuario', done: false },
-      { text: 'Refresco transparente si funciona (sin UI)', done: false },
-      { text: 'No hay bucle infinito de reintentos', done: false },
+      { text: 'Petición con 401 llama automáticamente a POST /oauth/token (refresh)', done: true },
+      { text: 'Si refresco exitoso: guarda tokens y reintenta la petición original (1 vez)', done: true },
+      { text: 'Si refresco falla: logout limpio y toast de aviso al usuario', done: true },
+      { text: 'Refresco transparente si funciona (sin UI)', done: true },
+      { text: 'No hay bucle infinito de reintentos', done: true },
     ]}],
     dependencies: ['US-004'], components: [
       { path: 'src/services/trakt/auth.ts', desc: 'Añadir refreshAccessToken()', isNew: false },
@@ -541,7 +543,7 @@ const CARDS = {
   },
 
   'US-009': {
-    id: 'US-009', type: 'US', column: 'todo', effort: 'S',
+    id: 'US-009', type: 'US', column: 'done', effort: 'S',
     title: 'Corrección de colisión de IDs en favoritos',
     summary: 'Favoritos almacenan solo number[] — una película y una serie con el mismo ID se confunden.',
     story: 'Como usuario de CineTracker que marca como favorito tanto películas como series,\nquiero que el sistema distinga correctamente entre una película y una serie con el mismo ID numérico,\npara que mis favoritos no se mezclen ni se marquen incorrectamente.',
@@ -549,11 +551,11 @@ const CARDS = {
       'TMDB usa espacios de IDs independientes para películas y series: puede existir movie:123 y tv:123. useFavorites guarda solo number[] sin el tipo, provocando que marcar movie:123 marque también tv:123. Migrar a Array<{id, type}>.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Favoritos almacenados como Array<{id: number, type: movie|tv}>', done: false },
-      { text: 'isFavorite(id, type) solo retorna true con ambos campos coincidentes', done: false },
-      { text: 'toggleFavorite(id, type) usa ambos campos como clave', done: false },
-      { text: 'Migración automática del formato antiguo (number[]) a movie por defecto', done: false },
-      { text: 'Datos malformados en localStorage: inicializar con [] sin crashear', done: false },
+      { text: 'Favoritos almacenados como Array<{id: number, type: movie|tv}>', done: true },
+      { text: 'isFavorite(id, type) solo retorna true con ambos campos coincidentes', done: true },
+      { text: 'toggleFavorite(id, type) usa ambos campos como clave', done: true },
+      { text: 'Migración automática del formato antiguo (number[]) a movie por defecto', done: true },
+      { text: 'Datos malformados en localStorage: inicializar con [] sin crashear', done: true },
     ]}],
     dependencies: ['US-004'], components: [
       { path: 'src/hooks/useFavorites.ts', desc: 'Cambiar estado a {id, type}[], añadir migración', isNew: false },
@@ -563,7 +565,7 @@ const CARDS = {
   },
 
   'US-010': {
-    id: 'US-010', type: 'US', column: 'todo', effort: 'S',
+    id: 'US-010', type: 'US', column: 'done', effort: 'S',
     title: 'Logos reales de plataformas en filtros',
     summary: 'PlatformFilters usa iconos Lucide genéricos — usar logo_path de TMDB que ya existe en el tipo Platform.',
     story: 'Como usuario de CineTracker que filtra por plataforma de streaming,\nquiero ver los logos oficiales de Netflix, Disney+, Max y demás servicios en los chips de filtro,\npara identificar de un vistazo mis plataformas sin leer el texto.',
@@ -571,12 +573,12 @@ const CARDS = {
       'PlatformFilters usa getIconForPlatform() con iconos Lucide genéricos. TMDB ya devuelve logo_path en /watch/providers y se mapea a Platform.logoPath. Solo falta renderizarlo: imagen si hay logoPath, icono Lucide como fallback.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Chip muestra imagen del logo cuando platform.logoPath tiene valor', done: false },
-      { text: 'Logo 20×20px con border-radius consistente', done: false },
-      { text: 'URL construida como IMAGE_BASE_URL + /w45 + logoPath', done: false },
-      { text: 'Fallback a icono Lucide si logoPath vacío o imagen falla (onError)', done: false },
+      { text: 'Chip muestra imagen del logo cuando platform.logoPath tiene valor', done: true },
+      { text: 'Logo 20×20px con border-radius consistente', done: true },
+      { text: 'URL construida como IMAGE_BASE_URL + /w45 + logoPath', done: true },
+      { text: 'Fallback a icono Lucide si logoPath vacío o imagen falla (onError)', done: true },
       { text: 'En móvil: logo + nombre truncado (máx. 8 chars)', done: false },
-      { text: 'alt={platform.name} en las imágenes', done: false },
+      { text: 'alt={platform.name} en las imágenes', done: true },
     ]}],
     dependencies: ['US-003'], components: [
       { path: 'src/components/home/PlatformFilters.tsx', desc: 'Renderizado condicional: imagen o icono Lucide según logoPath', isNew: false },
@@ -584,7 +586,7 @@ const CARDS = {
   },
 
   'US-011': {
-    id: 'US-011', type: 'US', column: 'todo', effort: 'S',
+    id: 'US-011', type: 'US', column: 'done', effort: 'S',
     title: 'Accesibilidad — aria-labels en botones icon-only',
     summary: 'Botones de favorito, regreso y dropdowns de filtros sin aria-label — opacos para lectores de pantalla.',
     story: 'Como usuario de CineTracker que usa un lector de pantalla o navega por teclado,\nquiero que todos los botones sin texto visible tengan una descripción accesible,\npara entender qué hace cada botón sin necesidad de ver la pantalla.',
@@ -592,11 +594,11 @@ const CARDS = {
       'Varios botones críticos son icon-only sin aria-label: favorito en MediaCard, botón regreso en detalle, dropdowns de idioma y ordenación. Intervención aditiva de bajo riesgo: añadir aria-label descriptivos.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'MediaCard: aria-label dinámico "Añadir {title} a favoritos" / "Quitar..."', done: false },
-      { text: 'MediaDetailHeader: aria-label="Volver" (ES) / "Go back" (EN)', done: false },
-      { text: 'Botón idioma: aria-label="Filtro de idioma"', done: false },
-      { text: 'Botón ordenación: aria-label="Ordenar resultados"', done: false },
-      { text: 'MediaCastCarousel: alt="Foto de {actor} como {personaje}"', done: false },
+      { text: 'MediaCard: aria-label dinámico "Añadir {title} a favoritos" / "Quitar..."', done: true },
+      { text: 'MediaDetailHeader: aria-label="Volver" (ES) / "Go back" (EN)', done: true },
+      { text: 'Botón idioma: aria-label="Filtro de idioma"', done: true },
+      { text: 'Botón ordenación: aria-label="Ordenar resultados"', done: true },
+      { text: 'MediaCastCarousel: alt="Foto de {actor} como {personaje}"', done: true },
     ]}],
     dependencies: ['US-005'], components: [
       { path: 'src/components/MediaCard.tsx', desc: 'aria-label dinámico al botón de favorito', isNew: false },
