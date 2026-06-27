@@ -31,7 +31,7 @@ const MediaDetailHeader: React.FC<MediaDetailHeaderProps> = ({ backdropPath }) =
       )}
 
       {isMobile ? (
-        <div className="fixed top-16 left-4 z-20">
+        <div className="fixed top-20 left-4 z-20">
           <Button
             variant="ghost"
             size="icon"
