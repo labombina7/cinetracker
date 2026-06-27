@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Clapperboard } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Media, Genre } from '@/types/media';
@@ -110,6 +110,19 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, onClick }) => {
             const flatrate = media.watchProviders?.flatrate ?? [];
             const visible = flatrate.slice(0, 3);
             const extra = flatrate.length - visible.length;
+            const inTheaters = media.type === 'movie'
+              && media.watchProviders !== undefined
+              && flatrate.length === 0;
+
+            if (inTheaters) {
+              return (
+                <span className="flex items-center gap-1 text-yellow-400/80 text-xs" title="En cines">
+                  <Clapperboard className="h-3.5 w-3.5" />
+                  <span>Cines</span>
+                </span>
+              );
+            }
+
             if (visible.length === 0) return null;
             return (
               <div className="flex items-center gap-1">
