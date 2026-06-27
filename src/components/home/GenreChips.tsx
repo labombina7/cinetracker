@@ -52,7 +52,7 @@ const GenreChips: React.FC<GenreChipsProps> = ({ genres, selectedGenreId, onSele
         className={`shrink-0 px-3 h-8 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
           selectedGenreId === null
             ? 'bg-yellow-400 text-black'
-            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
         }`}
       >
         {allLabel}
@@ -66,7 +66,7 @@ const GenreChips: React.FC<GenreChipsProps> = ({ genres, selectedGenreId, onSele
           className={`shrink-0 px-3 h-8 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
             selectedGenreId === genre.id
               ? 'bg-yellow-400 text-black'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
           }`}
         >
           {genre.name}

@@ -59,7 +59,7 @@ const MediaInfo: React.FC<MediaInfoProps> = ({
             {platforms.map((p, index) => (
               <div 
                 key={`${p.id}-${index}`} 
-                className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-800 rounded px-2 py-1"
+                className="flex items-center gap-1 text-xs bg-white/10 text-white rounded px-2 py-1"
               >
                 {p.logoPath && (
                   <img 
@@ -89,7 +89,7 @@ const MediaInfo: React.FC<MediaInfoProps> = ({
         <div className="mt-4">
           <h3 className="text-sm font-semibold mb-2">Disponible en:</h3>
           <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-800 rounded px-2 py-1">
+            <div className="flex items-center gap-1 text-xs bg-white/10 text-white rounded px-2 py-1">
               <span>{platform.name}</span>
             </div>
           </div>

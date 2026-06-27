@@ -24,7 +24,7 @@ const SearchBar: React.FC = () => {
           placeholder="Buscar películas y series..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="pr-10"
+          className="pr-10 bg-white/10 border-white/20 placeholder:text-white/40 text-white focus-visible:ring-white/30"
         />
         <Button 
           type="submit" 
