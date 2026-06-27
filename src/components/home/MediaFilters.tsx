@@ -120,7 +120,7 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
   const isSortActive = sortBy !== 'none';
 
   return (
-    <div className="space-y-3 mb-6">
+    <div className="space-y-3 mb-6 rounded-xl px-3 py-2 bg-background/60 backdrop-blur-md">
       <div className="flex flex-wrap items-center gap-3">
 
         {/* Source selector */}

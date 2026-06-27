@@ -31,13 +31,13 @@ const MediaDetailHeader: React.FC<MediaDetailHeaderProps> = ({ backdropPath }) =
       )}
 
       {isMobile ? (
-        <div className="sticky top-0 z-20 flex items-center p-2 bg-background/60 backdrop-blur-sm">
+        <div className="fixed top-16 left-4 z-20">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
             aria-label={backLabel}
-            className="rounded-full"
+            className="rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/15 text-white"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
