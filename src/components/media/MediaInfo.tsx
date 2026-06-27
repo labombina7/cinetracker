@@ -100,28 +100,13 @@ const MediaInfo: React.FC<MediaInfoProps> = ({
     return null;
   };
 
-  const subscriptionPlatforms = platforms?.filter(p => p.type === 'subscription') ?? [];
-
   return (
     <div className="mb-6">
-      {/* Rating + plataformas de suscripción */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Rating */}
+      <div className="flex items-center gap-2 mb-4">
         <div className="bg-yellow-500/90 text-black font-bold text-sm px-2 py-1 rounded">
           {voteAverage.toFixed(1)}
         </div>
-        {subscriptionPlatforms.length > 0 && (
-          <div className="flex items-center gap-1.5">
-            {subscriptionPlatforms.slice(0, 5).map((p, i) => (
-              <img
-                key={`${p.id}-${i}`}
-                src={`${TMDB_CONFIG.IMAGE_BASE_URL}/w45${p.logoPath}`}
-                alt={p.name}
-                title={p.name}
-                className="w-8 h-8 rounded-lg border border-white/20 object-cover"
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Info grid */}
