@@ -3,6 +3,7 @@ import { Media } from '../../../types/media';
 import { TMDBDiscoverResponse } from '../../../types/tmdb';
 import { buildApiUrl } from '../config';
 import { convertToMedia } from '../utils';
+import { fetchWatchProviders } from '../providers';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
 import { cachedFetch } from '../apiCache';
 
@@ -75,16 +76,26 @@ export const fetchMediaByPlatforms = async (
 
       console.log(`Found ${data.results.length} ${type} items for platforms: ${platformIds.join(', ')}`);
 
-      // Convertir resultados al formato Media
       const mediaPromises = data.results.map(async item => {
-        // Fix: Convert 'movie' or 'tv' string to proper type
-        const mediaType = type as 'movie' | 'tv';
-        return await convertToMedia({...item, media_type: mediaType}, mediaType);
+        const mType = type as 'movie' | 'tv';
+        const media = await convertToMedia({...item, media_type: mType}, mType);
+        if (media) {
+          try {
+            const providers = await fetchWatchProviders(media.id, media.type);
+            if (providers?.results?.ES) {
+              media.watchProviders = {
+                flatrate: providers.results.ES.flatrate || [],
+                rent: providers.results.ES.rent || [],
+                buy: providers.results.ES.buy || []
+              };
+            }
+          } catch { /* ignorar errores de providers */ }
+        }
+        return media;
       });
 
       const mediaItems = await Promise.all(mediaPromises);
-      
-      // Filtrar elementos nulos
+
       const validItems = mediaItems.filter((item): item is Media => item !== null);
       
       // Añadir a los resultados

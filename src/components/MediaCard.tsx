@@ -3,7 +3,7 @@ import { Heart, ShoppingCart, CreditCard } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Media, Genre } from '@/types/media';
-import { getPosterUrl } from '@/services/tmdb/index';
+import { getPosterUrl, getProviderLogoUrl } from '@/services/tmdb/index';
 import { useFavorites } from '@/hooks/useFavorites';
 import { fetchGenres } from '@/services/tmdb/genres';
 
@@ -93,6 +93,29 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, onClick }) => {
           />
         </button>
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+          {(() => {
+            const flatrate = media.watchProviders?.flatrate ?? [];
+            const visible = flatrate.slice(0, 3);
+            const extra = flatrate.length - visible.length;
+            if (visible.length === 0) return null;
+            return (
+              <div className="flex items-center gap-1 mb-2">
+                {visible.map((p) => (
+                  <img
+                    key={p.provider_id}
+                    src={getProviderLogoUrl(p.logo_path)}
+                    alt={p.provider_name}
+                    title={p.provider_name}
+                    className="w-6 h-6 rounded-md border border-white/30 object-cover"
+                    loading="lazy"
+                  />
+                ))}
+                {extra > 0 && (
+                  <span className="text-white/70 text-xs font-medium">+{extra}</span>
+                )}
+              </div>
+            );
+          })()}
           <div className="flex items-center justify-between">
             <Badge variant="secondary" className="bg-yellow-500/90 text-black font-bold">
               {displayRating}

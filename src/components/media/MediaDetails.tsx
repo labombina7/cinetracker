@@ -99,9 +99,8 @@ const MediaDetails = () => {
   };
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchData();
-    
-    console.log('Opening media details, preserving search results in session');
   }, [id, type, favorites, language]);
 
   const handleFavoriteClick = () => {

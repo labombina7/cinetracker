@@ -12,6 +12,7 @@ import AuthCallback from "./pages/AuthCallback";
 import Navbar from "./components/Navbar";
 import SearchResults from "./pages/SearchResults";
 import Settings from "./pages/Settings";
+import Explore from "./pages/Explore";
 import { MediaFiltersProvider } from "./contexts/MediaFiltersContext";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => {
                 <Route path="/auth/trakt" element={<TraktAuth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/explore" element={<Explore />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

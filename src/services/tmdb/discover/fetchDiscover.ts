@@ -3,6 +3,7 @@ import { Media } from '../../../types/media';
 import { TMDBDiscoverResponse } from '../../../types/tmdb';
 import { buildApiUrl } from '../config';
 import { convertToMedia } from '../utils';
+import { fetchWatchProviders } from '../providers';
 import { SpanishFilter } from '@/hooks/mediaFetch/types';
 import { cachedFetch } from '../apiCache';
 
@@ -59,12 +60,23 @@ export const discoverMedia = async (
     const data: TMDBDiscoverResponse = await response.json();
     console.log(`Received ${data.results.length} results for ${type}`);
     
-    // Convertir y filtrar los resultados
     const mediaPromises = data.results.map(async item => {
       const media = await convertToMedia({...item, media_type: type}, type);
+      if (media) {
+        try {
+          const providers = await fetchWatchProviders(media.id, media.type);
+          if (providers?.results?.ES) {
+            media.watchProviders = {
+              flatrate: providers.results.ES.flatrate || [],
+              rent: providers.results.ES.rent || [],
+              buy: providers.results.ES.buy || []
+            };
+          }
+        } catch { /* ignorar errores de providers */ }
+      }
       return media;
     });
-    
+
     const mediaItems = await Promise.all(mediaPromises);
     
     const validMedia = mediaItems.filter((item): item is Media => item !== null);
