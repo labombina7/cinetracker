@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import MediaDetail from "./pages/MediaDetail";
@@ -13,6 +13,7 @@ import Navbar from "./components/Navbar";
 import SearchResults from "./pages/SearchResults";
 import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
+import List from "./pages/List";
 import { MediaFiltersProvider } from "./contexts/MediaFiltersContext";
 
 const queryClient = new QueryClient();
@@ -30,13 +31,14 @@ const App = () => {
             <Navbar />
             <main className="min-h-[calc(100vh-64px)]">
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Navigate to="/explore" replace />} />
                 <Route path="/details/:type/:id" element={<MediaDetail />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/auth/trakt" element={<TraktAuth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/explore" element={<Explore />} />
+                <Route path="/list" element={<List />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

@@ -1,94 +1,196 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { useApiKey } from '@/hooks/useApiKey';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMediaFilters } from '@/contexts/MediaFiltersContext';
 import { useProvidersData } from '@/hooks/useProvidersData';
 import ApiKeySetup from '@/components/ApiKeySetup';
-import MediaFilters from '@/components/home/MediaFilters';
-import PlatformFilters from '@/components/home/PlatformFilters';
 import HomeLoadingSkeleton from '@/components/home/HomeLoadingSkeleton';
-import PlatformSection from '@/components/explore/PlatformSection';
+import EditorialSection from '@/components/explore/EditorialSection';
+import FilterBar from '@/components/FilterBar';
+import { CarouselConfig } from '@/hooks/useEditorialCarousel';
+
+const sixtyDaysAgo = (): string => {
+  const d = new Date();
+  d.setDate(d.getDate() - 60);
+  return d.toISOString().split('T')[0];
+};
+
+const EDITORIAL_CAROUSELS: CarouselConfig[] = [
+  {
+    id: 'trending',
+    titleEs: 'Tendencias esta semana',
+    titleEn: 'Trending this week',
+    strategy: 'trending',
+    sortByMovie: 'popularity.desc',
+    sortByTv: 'popularity.desc',
+    sortByForMore: 'none',
+  },
+  {
+    id: 'new-releases',
+    titleEs: 'Estrenos recientes',
+    titleEn: 'New releases',
+    strategy: 'editorial',
+    sortByMovie: 'primary_release_date.desc',
+    sortByTv: 'first_air_date.desc',
+    releaseDateGteMovie: sixtyDaysAgo(),
+    releaseDateGteTv: sixtyDaysAgo(),
+    minVoteCount: 5,
+    sortByForMore: 'date',
+  },
+  {
+    id: 'top-rated',
+    titleEs: 'Mejor valoradas',
+    titleEn: 'Top rated',
+    strategy: 'editorial',
+    sortByMovie: 'vote_average.desc',
+    sortByTv: 'vote_average.desc',
+    minVoteCount: 500,
+    sortByForMore: 'rating',
+  },
+];
+
+const GENRE_CAROUSELS: CarouselConfig[] = [
+  { id: 'genre-action',    titleEs: 'Acción',          titleEn: 'Action',         strategy: 'genre', movieGenreId: 28,  tvGenreId: 10759, sortByForMore: 'none' },
+  { id: 'genre-comedy',    titleEs: 'Comedia',         titleEn: 'Comedy',         strategy: 'genre', movieGenreId: 35,  tvGenreId: 35,    sortByForMore: 'none' },
+  { id: 'genre-drama',     titleEs: 'Drama',           titleEn: 'Drama',          strategy: 'genre', movieGenreId: 18,  tvGenreId: 18,    sortByForMore: 'none' },
+  { id: 'genre-horror',    titleEs: 'Terror',          titleEn: 'Horror',         strategy: 'genre', movieGenreId: 27,  tvGenreId: 9648,  sortByForMore: 'none' },
+  { id: 'genre-scifi',     titleEs: 'Ciencia ficción', titleEn: 'Sci-Fi',         strategy: 'genre', movieGenreId: 878, tvGenreId: 10765, sortByForMore: 'none' },
+  { id: 'genre-animation', titleEs: 'Animación',       titleEn: 'Animation',      strategy: 'genre', movieGenreId: 16,  tvGenreId: 16,    sortByForMore: 'none' },
+  { id: 'genre-thriller',  titleEs: 'Thriller',        titleEn: 'Thriller',       strategy: 'genre', movieGenreId: 53,  tvGenreId: 80,    sortByForMore: 'none' },
+  { id: 'genre-docs',      titleEs: 'Documentales',    titleEn: 'Documentaries',  strategy: 'genre', movieGenreId: 99,  tvGenreId: 99,    sortByForMore: 'none' },
+];
 
 const Explore = () => {
   const { isConfigured, configureApiKey, isLoading } = useApiKey();
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const {
     filtersState,
     setSpanishFilter,
     setMediaType,
-    setDataSource,
     setSortBy,
-    setSelectedGenreId,
-    setSelectedPlatformIds,
   } = useMediaFilters();
-  const { platforms, loading: platformsLoading } = useProvidersData();
+  const { platforms } = useProvidersData();
 
-  const handlePlatformChange = (platformId: number) => {
-    const current = filtersState.selectedPlatformIds;
-    const updated = current.includes(platformId)
-      ? current.filter(id => id !== platformId)
-      : [...current, platformId];
-    setSelectedPlatformIds(updated);
-  };
+  const [focusPlatformId, setFocusPlatformId] = useState<number | null>(null);
+  const [searchText, setSearchText] = useState('');
+
+  const effectivePlatformIds = focusPlatformId !== null
+    ? [focusPlatformId]
+    : filtersState.selectedPlatformIds;
 
   const selectedPlatforms = platforms.filter(p =>
     filtersState.selectedPlatformIds.includes(p.id)
   );
 
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  useEffect(() => {
+    if (!searchText.trim()) return;
+    const t = setTimeout(() => {
+      navigate('/list', { state: { searchText: searchText.trim() } });
+      setSearchText('');
+    }, 400);
+    return () => clearTimeout(t);
+  }, [searchText, navigate]);
+
+  const handleShowMore = (config: CarouselConfig) => {
+    navigate('/list', {
+      state: {
+        sortBy: config.sortByForMore ?? 'none',
+        ...(config.strategy === 'genre' && {
+          movieGenreId: config.movieGenreId,
+          tvGenreId: config.tvGenreId,
+        }),
+      },
+    });
+  };
+
   if (isLoading) return <HomeLoadingSkeleton />;
   if (!isConfigured) return <ApiKeySetup onApiKeySet={configureApiKey} />;
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6">
-        {language === 'es' ? 'Explorar' : 'Explore'}
-      </h1>
-
-      <MediaFilters
-        spanishFilter={filtersState.spanishFilter}
-        setSpanishFilter={setSpanishFilter}
-        mediaType={filtersState.mediaType}
-        setMediaType={setMediaType}
-        dataSource={filtersState.dataSource}
-        setDataSource={setDataSource}
-        sortBy={filtersState.sortBy}
-        setSortBy={setSortBy}
-        selectedGenreId={filtersState.selectedGenreId}
-        setSelectedGenreId={setSelectedGenreId}
-        selectedPlatforms={filtersState.selectedPlatformIds}
-        setSelectedPlatforms={() => {}}
-        onPlatformChange={handlePlatformChange}
-      />
-
-      <div className="mb-6">
-        <PlatformFilters
-          platforms={platforms}
-          loading={platformsLoading}
-          selectedPlatformIds={filtersState.selectedPlatformIds}
-          onPlatformChange={handlePlatformChange}
+    <>
+      {/* ── Header sticky ── */}
+      <div className="sticky top-[57px] z-10">
+        {/* Search bar */}
+        <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 px-4 py-2">
+          <div className="container mx-auto">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                placeholder={language === 'es' ? 'Buscar películas y series...' : 'Search movies and shows...'}
+                className="w-full h-9 pl-9 pr-4 rounded-lg bg-white/10 border border-white/10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/30"
+              />
+            </div>
+          </div>
+        </div>
+        <FilterBar
+          mediaType={filtersState.mediaType}
+          onMediaTypeChange={setMediaType}
+          spanishFilter={filtersState.spanishFilter}
+          onSpanishFilterChange={setSpanishFilter}
+          sortBy={filtersState.sortBy}
+          onSortChange={setSortBy}
+          activePlatforms={selectedPlatforms}
+          onPlatformClick={(id) => setFocusPlatformId(prev => prev === id ? null : id)}
+          focusPlatformId={focusPlatformId}
         />
+        {/* ── Anchor chips de género ── */}
+        <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 px-4 py-2">
+          <div className="container mx-auto flex gap-2 overflow-x-auto scrollbar-hide">
+            {GENRE_CAROUSELS.map(c => (
+              <button
+                key={c.id}
+                onClick={() => scrollToSection(c.id)}
+                className="shrink-0 px-3 h-7 rounded-full text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors whitespace-nowrap"
+              >
+                {language === 'es' ? c.titleEs : c.titleEn}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {selectedPlatforms.length === 0 ? (
-        <div className="py-16 text-center space-y-3">
-          <p className="text-muted-foreground">
-            {language === 'es'
-              ? 'Selecciona al menos una plataforma arriba para ver su contenido.'
-              : 'Select at least one platform above to browse its content.'}
-          </p>
-          <Link to="/settings" className="text-primary underline text-sm">
-            {language === 'es' ? 'Gestionar plataformas en Configuración' : 'Manage platforms in Settings'}
-          </Link>
+    <div className="container mx-auto px-4 py-6">
+      {/* ── Carruseles editoriales ── */}
+      {EDITORIAL_CAROUSELS.map(config => (
+        <EditorialSection
+          key={config.id}
+          config={config}
+          overridePlatformIds={effectivePlatformIds}
+          onShowMore={() => handleShowMore(config)}
+        />
+      ))}
+
+      {/* ── Divisor ── */}
+      <div className="flex items-center gap-3 my-8">
+        <div className="flex-1 border-t border-white/10" />
+        <span className="text-xs text-muted-foreground uppercase tracking-widest">
+          {language === 'es' ? 'Por categoría' : 'By category'}
+        </span>
+        <div className="flex-1 border-t border-white/10" />
+      </div>
+
+      {/* ── Carruseles de género ── */}
+      {GENRE_CAROUSELS.map(config => (
+        <div key={config.id} id={config.id}>
+          <EditorialSection
+            config={config}
+            overridePlatformIds={effectivePlatformIds}
+            onShowMore={() => handleShowMore(config)}
+          />
         </div>
-      ) : (
-        <div className="mt-4">
-          {selectedPlatforms.map(platform => (
-            <PlatformSection key={platform.id} platform={platform} />
-          ))}
-        </div>
-      )}
+      ))}
     </div>
+    </>
   );
 };
 

@@ -1,8 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Film, Tv, Layers, TrendingUp, Compass, ArrowDown, Calendar, Globe, ListFilter } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Film, Tv, Layers, ArrowDown, Calendar, Globe, ListFilter } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +19,6 @@ interface MediaFiltersProps {
   setSpanishFilter: (value: SpanishFilter) => void;
   mediaType: 'all' | 'movie' | 'tv';
   setMediaType: (type: 'all' | 'movie' | 'tv') => void;
-  dataSource: 'discover' | 'trending';
-  setDataSource: (source: 'discover' | 'trending') => void;
   sortBy: 'none' | 'rating' | 'date';
   setSortBy: (sort: 'none' | 'rating' | 'date') => void;
   selectedGenreId: number | null;
@@ -37,8 +34,6 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
   setSpanishFilter,
   mediaType,
   setMediaType,
-  dataSource,
-  setDataSource,
   sortBy,
   setSortBy,
   selectedGenreId,
@@ -65,10 +60,6 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         'hispano': 'Hispano',
         'spain': 'España'
       },
-      dataSourceOptions: {
-        'trending': 'Tendencias',
-        'discover': 'Descubrir'
-      },
       sortByOptions: {
         'none': 'Sin ordenar',
         'rating': 'Valoración',
@@ -86,10 +77,6 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
         'hispano': 'Hispanic',
         'spain': 'Spain'
       },
-      dataSourceOptions: {
-        'trending': 'Trending',
-        'discover': 'Discover'
-      },
       sortByOptions: {
         'none': 'Default',
         'rating': 'Rating',
@@ -105,11 +92,6 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
 
   const t = translations[language === 'es' ? 'es' : 'en'];
 
-  const dataSourceIcons = {
-    'trending': <TrendingUp size={16} />,
-    'discover': <Compass size={16} />
-  };
-
   const sortIcons = {
     'none': <ListFilter size={16} />,
     'rating': <ArrowDown size={16} />,
@@ -122,31 +104,6 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
   return (
     <div className="space-y-3 mb-6 rounded-xl px-3 py-2 bg-white/5 backdrop-blur-md border border-white/10">
       <div className="flex flex-wrap items-center gap-3">
-
-        {/* Source selector */}
-        <Select
-          value={dataSource}
-          onValueChange={(value) => setDataSource(value as 'discover' | 'trending')}
-        >
-          <SelectTrigger className="w-[145px] h-9 bg-background">
-            <SelectValue>
-              <div className="flex items-center gap-2">
-                {dataSourceIcons[dataSource]}
-                <span>{t.dataSourceOptions[dataSource]}</span>
-              </div>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(t.dataSourceOptions).map(([key, value]) => (
-              <SelectItem key={key} value={key}>
-                <div className="flex items-center gap-2">
-                  {dataSourceIcons[key as keyof typeof dataSourceIcons]}
-                  <span>{value}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         {/* Language icon button + dropdown */}
         <DropdownMenu>

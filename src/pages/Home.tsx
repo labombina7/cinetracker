@@ -23,7 +23,6 @@ const Home = () => {
     filtersState,
     setSpanishFilter,
     setMediaType,
-    setDataSource,
     setSortBy,
     setSelectedGenreId,
     setSelectedPlatformIds,
@@ -86,8 +85,6 @@ const Home = () => {
         setSpanishFilter={setSpanishFilter}
         mediaType={filtersState.mediaType}
         setMediaType={setMediaType}
-        dataSource={filtersState.dataSource}
-        setDataSource={setDataSource}
         sortBy={filtersState.sortBy}
         setSortBy={setSortBy}
         selectedGenreId={filtersState.selectedGenreId}
