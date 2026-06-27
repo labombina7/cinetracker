@@ -23,27 +23,27 @@ const Navbar = () => {
           </Link>
           
           <div className="flex items-center space-x-2">
-            {!isMobile && (
+            {!isMobile ? (
               <>
-                <Button
-                  variant={isActive('/') ? 'default' : 'ghost'}
-                  asChild
-                  size="sm"
-                >
-                  <Link to="/">
-                    {language === 'es' ? 'Inicio' : 'Home'}
-                  </Link>
-                </Button>
                 <Button
                   variant={isActive('/explore') ? 'default' : 'ghost'}
                   asChild
                   size="sm"
                 >
-                  <Link to="/explore">
-                    {language === 'es' ? 'Explorar' : 'Explore'}
-                  </Link>
+                  <Link to="/explore">{language === 'es' ? 'Explorar' : 'Explore'}</Link>
                 </Button>
               </>
+            ) : (
+              <Button
+                variant={isActive('/explore') ? 'default' : 'ghost'}
+                asChild
+                size="icon"
+              >
+                <Link to="/explore">
+                  <Film className="h-4 w-4" />
+                  <span className="sr-only">{language === 'es' ? 'Explorar' : 'Explore'}</span>
+                </Link>
+              </Button>
             )}
             
             <Button
