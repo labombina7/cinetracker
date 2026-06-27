@@ -32,7 +32,7 @@ const List = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { language } = useLanguage();
-  const { isConfigured } = useApiKey();
+  const { isConfigured, isLoading: apiKeyLoading } = useApiKey();
   const { filtersState } = useMediaFilters();
   const { platforms } = useProvidersData();
 
@@ -151,6 +151,7 @@ const List = () => {
     else navigate('/explore');
   };
 
+  if (apiKeyLoading) return null;
   if (!isConfigured) { navigate('/'); return null; }
 
   return (
