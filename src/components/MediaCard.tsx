@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, ShoppingCart, CreditCard } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Media, Genre } from '@/types/media';
@@ -92,80 +92,44 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, onClick }) => {
             className={`h-5 w-5 ${favorite ? 'fill-red-500 text-red-500' : 'text-white'}`}
           />
         </button>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+        {isSpanishContent && (
+          <div className="absolute bottom-2 right-2">
+            <Badge variant="outline" className="bg-red-500/90 text-white" title="Producción en español">
+              ES
+            </Badge>
+          </div>
+        )}
+      </div>
+      <CardContent className="p-3">
+        <h3 className="font-semibold text-base truncate">{media.title}</h3>
+        <div className="flex items-center justify-between mt-1.5">
+          <Badge variant="secondary" className="bg-yellow-500/90 text-black font-bold">
+            {displayRating}
+          </Badge>
           {(() => {
             const flatrate = media.watchProviders?.flatrate ?? [];
             const visible = flatrate.slice(0, 3);
             const extra = flatrate.length - visible.length;
             if (visible.length === 0) return null;
             return (
-              <div className="flex items-center gap-1 mb-2">
+              <div className="flex items-center gap-1">
                 {visible.map((p) => (
                   <img
                     key={p.provider_id}
                     src={getProviderLogoUrl(p.logo_path)}
                     alt={p.provider_name}
                     title={p.provider_name}
-                    className="w-6 h-6 rounded-md border border-white/30 object-cover"
+                    className="w-5 h-5 rounded-md border border-white/20 object-cover"
                     loading="lazy"
                   />
                 ))}
                 {extra > 0 && (
-                  <span className="text-white/70 text-xs font-medium">+{extra}</span>
+                  <span className="text-muted-foreground text-xs">+{extra}</span>
                 )}
               </div>
             );
           })()}
-          <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="bg-yellow-500/90 text-black font-bold">
-              {displayRating}
-            </Badge>
-
-            <div className="flex gap-1">
-              {media.availableForRent && (
-                <Badge
-                  variant="outline"
-                  className="bg-blue-500/90 text-white flex items-center gap-1 px-2"
-                  title="Disponible para alquilar"
-                >
-                  <CreditCard className="h-3 w-3" />
-                </Badge>
-              )}
-              {media.availableForPurchase && (
-                <Badge
-                  variant="outline"
-                  className="bg-green-500/90 text-white flex items-center gap-1 px-2"
-                  title="Disponible para comprar"
-                >
-                  <ShoppingCart className="h-3 w-3" />
-                </Badge>
-              )}
-              {isSpanishContent && (
-                <Badge
-                  variant="outline"
-                  className="bg-red-500/90 text-white"
-                  title="Producción en español"
-                >
-                  ES
-                </Badge>
-              )}
-            </div>
-          </div>
         </div>
-      </div>
-      <CardContent className="p-3">
-        <h3 className="font-semibold text-base truncate">{media.title}</h3>
-        {genresLoaded && genres.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {genres.map((genre) => (
-              genre && genre.id && genre.name ? (
-                <Badge key={genre.id} variant="outline" className="text-xs font-normal">
-                  {genre.name}
-                </Badge>
-              ) : null
-            ))}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
