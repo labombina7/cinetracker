@@ -1,10 +1,15 @@
 import { TMDB_CONFIG } from '@/config/tmdb.config';
+import type { WatchProvider } from '@/contexts/FavoritesContext';
 
 export type FavoriteEnrichment = {
   posterPath: string;
   title: string;
   year?: number;
+  voteAverage?: number;
+  watchProviders?: WatchProvider[];
 };
+
+const COUNTRY = 'ES';
 
 export const enrichFavorite = async (
   id: number,
@@ -14,22 +19,35 @@ export const enrichFavorite = async (
   const apiKey = TMDB_CONFIG.API_KEY;
   if (!apiKey) return null;
 
+  const endpoint = type === 'movie' ? 'movie' : 'tv';
+  const base = TMDB_CONFIG.BASE_URL;
+
   try {
-    const endpoint = type === 'movie' ? 'movie' : 'tv';
-    const url = `${TMDB_CONFIG.BASE_URL}/${endpoint}/${id}?api_key=${apiKey}&language=${language}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
+    const [detailsRes, providersRes] = await Promise.all([
+      fetch(`${base}/${endpoint}/${id}?api_key=${apiKey}&language=${language}`),
+      fetch(`${base}/${endpoint}/${id}/watch/providers?api_key=${apiKey}`),
+    ]);
 
-    const data = await res.json();
-    const title = type === 'movie' ? (data.title ?? '') : (data.name ?? '');
-    const releaseDate = type === 'movie' ? data.release_date : data.first_air_date;
+    if (!detailsRes.ok) return null;
+
+    const details = await detailsRes.json();
+    const title = type === 'movie' ? (details.title ?? '') : (details.name ?? '');
+    const releaseDate = type === 'movie' ? details.release_date : details.first_air_date;
     const year = releaseDate ? parseInt(releaseDate.substring(0, 4)) : undefined;
+    const voteAverage: number | undefined =
+      typeof details.vote_average === 'number' && details.vote_average > 0
+        ? details.vote_average
+        : undefined;
 
-    return {
-      posterPath: data.poster_path ?? '',
-      title,
-      year,
-    };
+    let watchProviders: WatchProvider[] | undefined;
+    if (providersRes.ok) {
+      const providersData = await providersRes.json();
+      const countryData = providersData?.results?.[COUNTRY];
+      const flatrate: WatchProvider[] = countryData?.flatrate ?? [];
+      if (flatrate.length > 0) watchProviders = flatrate;
+    }
+
+    return { posterPath: details.poster_path ?? '', title, year, voteAverage, watchProviders };
   } catch {
     return null;
   }
