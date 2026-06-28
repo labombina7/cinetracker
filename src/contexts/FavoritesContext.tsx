@@ -5,12 +5,16 @@ import { getWatchlist, addToWatchlist, removeFromWatchlist } from '@/services/tr
 import { findByImdbId } from '@/services/tmdb/findByImdb';
 import { enrichFavorite } from '@/services/tmdb/enrichFavorite';
 
+export type WatchProvider = { provider_id: number; provider_name: string; logo_path: string };
+
 export type FavoriteItem = {
   id: number;
   type: 'movie' | 'tv';
   title: string;
   posterPath: string;
   year?: number;
+  voteAverage?: number;
+  watchProviders?: WatchProvider[];
 };
 
 const STORAGE_KEY = 'favorites';
@@ -52,7 +56,7 @@ interface FavoritesContextValue {
   favorites: FavoriteItem[];
   isSyncing: boolean;
   isFavorite: (id: number, type: 'movie' | 'tv') => boolean;
-  toggleFavorite: (id: number, type: 'movie' | 'tv', title: string, releaseDate?: string, posterPath?: string) => Promise<void>;
+  toggleFavorite: (id: number, type: 'movie' | 'tv', title: string, releaseDate?: string, posterPath?: string, voteAverage?: number, watchProviders?: WatchProvider[]) => Promise<void>;
   clearTraktFavorites: () => void;
 }
 
@@ -132,8 +136,15 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!enrichment || signal.aborted) continue;
       setFavorites((prev) =>
         prev.map((f) =>
-          f.id === item.id && f.type === item.type && !f.posterPath
-            ? { ...f, posterPath: enrichment.posterPath, title: f.title || enrichment.title, year: f.year ?? enrichment.year }
+          f.id === item.id && f.type === item.type
+            ? {
+                ...f,
+                posterPath: f.posterPath || enrichment.posterPath,
+                title: f.title || enrichment.title,
+                year: f.year ?? enrichment.year,
+                voteAverage: f.voteAverage ?? enrichment.voteAverage,
+                watchProviders: f.watchProviders ?? enrichment.watchProviders,
+              }
             : f
         )
       );
@@ -166,7 +177,9 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     type: 'movie' | 'tv',
     title: string,
     releaseDate?: string,
-    posterPath = ''
+    posterPath = '',
+    voteAverage?: number,
+    watchProviders?: WatchProvider[]
   ) => {
     const year = releaseDate ? parseInt(releaseDate.substring(0, 4)) : undefined;
     const wasAlreadyFavorite = favorites.some((f) => f.id === id && f.type === type);
@@ -178,7 +191,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const ok = await removeFromWatchlist(id, type);
         if (!ok) {
           // Revert on Trakt error
-          setFavorites((prev) => [...prev, { id, type, title, posterPath, year }]);
+          setFavorites((prev) => [...prev, { id, type, title, posterPath, year, voteAverage, watchProviders }]);
           toast.error(`No se pudo quitar "${title}" de Trakt. Inténtalo de nuevo.`);
           return;
         }
@@ -187,7 +200,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       toast.success(`"${title}" eliminado de favoritos`);
     } else {
       // Optimistic add
-      setFavorites((prev) => [...prev, { id, type, title, posterPath, year }]);
+      setFavorites((prev) => [...prev, { id, type, title, posterPath, year, voteAverage, watchProviders }]);
 
       // Show warning on first favorite without Trakt
       if (!isAuthenticated() && !localStorage.getItem(WARNING_SEEN_KEY)) {

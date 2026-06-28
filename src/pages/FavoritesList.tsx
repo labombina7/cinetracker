@@ -15,9 +15,10 @@ const favoriteToMedia = (fav: FavoriteItem): Media => ({
   title: fav.title || String(fav.id),
   posterPath: fav.posterPath || '',
   overview: '',
-  voteAverage: 0,
+  voteAverage: fav.voteAverage ?? 0,
   genres: [],
   releaseDate: fav.year ? `${fav.year}-01-01` : undefined,
+  watchProviders: fav.watchProviders ? { flatrate: fav.watchProviders } : undefined,
 });
 
 type TabType = 'all' | 'movie' | 'tv';
