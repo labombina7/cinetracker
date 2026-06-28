@@ -246,7 +246,7 @@ const List = () => {
         )}
 
         {!error && (
-          <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
             {loading
               ? Array.from({ length: 15 }).map((_, i) => (
                   <Skeleton key={i} className="aspect-[2/3] rounded-lg" />
