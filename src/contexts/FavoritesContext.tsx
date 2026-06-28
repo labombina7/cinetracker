@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { toast } from 'sonner';
 import { isAuthenticated } from '@/services/trakt';
 import { getWatchlist, addToWatchlist, removeFromWatchlist } from '@/services/trakt';
+import { findByImdbId } from '@/services/tmdb/findByImdb';
 
 export type FavoriteItem = {
   id: number;
@@ -75,31 +76,37 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setIsSyncing(true);
 
     getWatchlist()
-      .then((traktItems) => {
+      .then(({ resolved, unresolved }) => {
         if (controller.signal.aborted) return;
 
         setFavorites((local) => {
-          // Save snapshot of what we had before merging
           preTraktSnapshot.current = new Set(local.map((f) => `${f.id}:${f.type}`));
 
           const merged = [...local];
-          for (const item of traktItems) {
+          const resolvedKeys = new Set(resolved.map((r) => `${r.id}:${r.type}`));
+
+          // Merge resolved Trakt items (have TMDB ID)
+          for (const item of resolved) {
             const key = `${item.id}:${item.type}`;
             if (!preTraktSnapshot.current.has(key)) {
-              merged.push(item);
+              merged.push({ id: item.id, type: item.type, title: '', posterPath: '' });
             }
           }
 
           // Upload locals missing in Trakt (fire-and-forget)
-          const traktKeys = new Set(traktItems.map((f) => `${f.id}:${f.type}`));
           for (const localItem of local) {
-            if (!traktKeys.has(`${localItem.id}:${localItem.type}`)) {
-              addToWatchlist(localItem.id, localItem.type, '', undefined);
+            if (!resolvedKeys.has(`${localItem.id}:${localItem.type}`)) {
+              addToWatchlist(localItem.id, localItem.type, localItem.title, undefined);
             }
           }
 
           return merged;
         });
+
+        // Resolve unresolved items via TMDB /find/{imdb_id} in background
+        if (unresolved.length > 0) {
+          resolveByImdb(unresolved, controller.signal);
+        }
       })
       .catch(() => {
         toast.error('No se pudo sincronizar con Trakt. Se usará la lista local.');
@@ -110,6 +117,24 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     return () => controller.abort();
   }, []);
+
+  const resolveByImdb = async (
+    items: { imdbId: string; type: 'movie' | 'tv' }[],
+    signal: AbortSignal
+  ) => {
+    for (const item of items) {
+      if (signal.aborted) break;
+      const result = await findByImdbId(item.imdbId);
+      if (!result || signal.aborted) continue;
+
+      setFavorites((prev) => {
+        // Skip if already in list
+        if (prev.some((f) => f.id === result.id && f.type === result.type)) return prev;
+        const year = result.releaseDate ? parseInt(result.releaseDate.substring(0, 4)) : undefined;
+        return [...prev, { id: result.id, type: result.type, title: result.title, posterPath: result.posterPath, year }];
+      });
+    }
+  };
 
   const isFavorite = (id: number, type: 'movie' | 'tv') =>
     favorites.some((f) => f.id === id && f.type === type);

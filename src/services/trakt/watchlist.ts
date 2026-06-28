@@ -1,12 +1,16 @@
-
-import { TRAKT_API_URL, getClientId, getTraktHeaders } from './config';
+import { TRAKT_API_URL, getTraktHeaders } from './config';
 import { authenticatedFetch } from './client';
 
-type WatchlistItem = { id: number; type: 'movie' | 'tv' };
+export type ResolvedWatchlistItem = { id: number; type: 'movie' | 'tv' };
+export type UnresolvedWatchlistItem = { imdbId: string; type: 'movie' | 'tv' };
+export type WatchlistResult = {
+  resolved: ResolvedWatchlistItem[];
+  unresolved: UnresolvedWatchlistItem[];
+};
 
-export const getWatchlist = async (): Promise<WatchlistItem[]> => {
+export const getWatchlist = async (): Promise<WatchlistResult> => {
   const token = localStorage.getItem('trakt_token');
-  if (!token) return [];
+  if (!token) return { resolved: [], unresolved: [] };
 
   const headers = getTraktHeaders();
 
@@ -15,13 +19,19 @@ export const getWatchlist = async (): Promise<WatchlistItem[]> => {
     authenticatedFetch(`${TRAKT_API_URL}/users/me/watchlist/shows`, { headers, credentials: 'omit' }),
   ]);
 
-  const results: FavoriteItem[] = [];
+  const resolved: ResolvedWatchlistItem[] = [];
+  const unresolved: UnresolvedWatchlistItem[] = [];
 
   if (moviesRes.ok) {
     const movies = await moviesRes.json();
     for (const entry of movies) {
       const tmdbId = entry?.movie?.ids?.tmdb;
-      if (typeof tmdbId === 'number') results.push({ id: tmdbId, type: 'movie' });
+      const imdbId = entry?.movie?.ids?.imdb;
+      if (typeof tmdbId === 'number') {
+        resolved.push({ id: tmdbId, type: 'movie' });
+      } else if (typeof imdbId === 'string' && imdbId) {
+        unresolved.push({ imdbId, type: 'movie' });
+      }
     }
   }
 
@@ -29,21 +39,28 @@ export const getWatchlist = async (): Promise<WatchlistItem[]> => {
     const shows = await showsRes.json();
     for (const entry of shows) {
       const tmdbId = entry?.show?.ids?.tmdb;
-      if (typeof tmdbId === 'number') results.push({ id: tmdbId, type: 'tv' });
+      const imdbId = entry?.show?.ids?.imdb;
+      if (typeof tmdbId === 'number') {
+        resolved.push({ id: tmdbId, type: 'tv' });
+      } else if (typeof imdbId === 'string' && imdbId) {
+        unresolved.push({ imdbId, type: 'tv' });
+      }
     }
   }
 
-  return results;
+  return { resolved, unresolved };
 };
 
-export const addToWatchlist = async (mediaId: number, mediaType: 'movie' | 'tv', title: string, releaseDate?: string): Promise<boolean> => {
+export const addToWatchlist = async (
+  mediaId: number,
+  mediaType: 'movie' | 'tv',
+  title: string,
+  releaseDate?: string
+): Promise<boolean> => {
   const token = localStorage.getItem('trakt_token');
   if (!token) return false;
 
   try {
-    const clientId = getClientId();
-    if (!clientId) throw new Error('No se ha configurado un Client ID para Trakt.tv');
-
     const traktType = mediaType === 'movie' ? 'movies' : 'shows';
     const body: Record<string, unknown> = {
       [traktType]: [{ title, ids: { tmdb: mediaId } }],
@@ -87,7 +104,6 @@ export const removeFromWatchlist = async (mediaId: number, mediaType: 'movie' | 
     if (!response.ok) return false;
 
     const data = await response.json();
-    // not_found === 1 means it wasn't in Trakt — that's fine, local state is already correct
     return data.deleted?.movies > 0 || data.deleted?.shows > 0 || data.not_found != null;
   } catch {
     return false;
