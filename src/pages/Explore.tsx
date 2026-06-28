@@ -140,17 +140,6 @@ const Explore = () => {
             </div>
           </div>
         </div>
-        <FilterBar
-          mediaType={filtersState.mediaType}
-          onMediaTypeChange={setMediaType}
-          spanishFilter={filtersState.spanishFilter}
-          onSpanishFilterChange={setSpanishFilter}
-          sortBy={filtersState.sortBy}
-          onSortChange={setSortBy}
-          activePlatforms={selectedPlatforms}
-          onPlatformClick={(id) => setFocusPlatformId(prev => prev === id ? null : id)}
-          focusPlatformId={focusPlatformId}
-        />
         {/* ── Anchor chips de género ── */}
         <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 py-2">
           <div className="container mx-auto px-4 flex gap-2 overflow-x-auto scrollbar-hide">
@@ -165,6 +154,17 @@ const Explore = () => {
             ))}
           </div>
         </div>
+        <FilterBar
+          mediaType={filtersState.mediaType}
+          onMediaTypeChange={setMediaType}
+          spanishFilter={filtersState.spanishFilter}
+          onSpanishFilterChange={setSpanishFilter}
+          sortBy={filtersState.sortBy}
+          onSortChange={setSortBy}
+          activePlatforms={selectedPlatforms}
+          onPlatformClick={(id) => setFocusPlatformId(prev => prev === id ? null : id)}
+          focusPlatformId={focusPlatformId}
+        />
       </div>
 
     <div className="container mx-auto px-4 py-6">
