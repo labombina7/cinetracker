@@ -163,10 +163,10 @@ const List = () => {
     <div className="flex flex-col" style={{ height: 'calc(100vh - 57px)' }}>
       {/* ── Filter bar — not in the scroll area, always visible ── */}
       <div className="flex-shrink-0 bg-background border-b border-white/10">
-        <div className="container mx-auto px-4 pt-3 pb-2 space-y-2">
+        <div className="pt-3 pb-2 space-y-3">
 
           {/* Row 1: back + search */}
-          <div className="flex items-center gap-2">
+          <div className="px-4 flex items-center gap-2">
             <button
               onClick={handleBack}
               className="shrink-0 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -182,7 +182,8 @@ const List = () => {
                 value={searchText}
                 onChange={e => setSearchText(e.target.value)}
                 placeholder={language === 'es' ? 'Buscar...' : 'Search...'}
-                className="w-full h-8 pl-8 pr-8 rounded-md bg-white/10 border border-white/10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/30"
+                style={{ fontSize: '16px' }}
+                className="w-full h-8 pl-8 pr-8 rounded-md bg-white/10 border border-white/10 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/30"
               />
               {searchText && (
                 <button
@@ -195,24 +196,9 @@ const List = () => {
             </div>
           </div>
 
-          {/* Row 2: filter bar */}
-          <FilterBar
-            mediaType={mediaType}
-            onMediaTypeChange={setMediaType}
-            spanishFilter={spanishFilter}
-            onSpanishFilterChange={setSpanishFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            activePlatforms={selectedPlatforms}
-            onPlatformClick={(id) => setPlatformIds(prev =>
-              prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-            )}
-            focusPlatformId={null}
-          />
-
-          {/* Row 3: genre chips */}
+          {/* Row 2: genre chips — before platforms */}
           {genres.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <div className="px-4 flex gap-2 overflow-x-auto scrollbar-hide">
               {genres.map(g => (
                 <button
                   key={g.id}
@@ -228,6 +214,21 @@ const List = () => {
               ))}
             </div>
           )}
+
+          {/* Row 3: filter bar (with platform chips) */}
+          <FilterBar
+            mediaType={mediaType}
+            onMediaTypeChange={setMediaType}
+            spanishFilter={spanishFilter}
+            onSpanishFilterChange={setSpanishFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            activePlatforms={selectedPlatforms}
+            onPlatformClick={(id) => setPlatformIds(prev =>
+              prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+            )}
+            focusPlatformId={null}
+          />
         </div>
       </div>
 
@@ -245,7 +246,7 @@ const List = () => {
         )}
 
         {!error && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-2">
             {loading
               ? Array.from({ length: 15 }).map((_, i) => (
                   <Skeleton key={i} className="aspect-[2/3] rounded-lg" />

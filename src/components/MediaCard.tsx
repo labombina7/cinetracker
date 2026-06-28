@@ -80,7 +80,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, onClick }) => {
         <img
           src={getPosterUrl(media.posterPath)}
           alt={media.title}
-          className="w-full h-[350px] object-cover"
+          className="w-full aspect-[2/3] object-cover"
           loading="lazy"
         />
         <button
