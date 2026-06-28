@@ -49,12 +49,12 @@ const Navbar = () => {
             )}
             
             <Button
-              variant={isActive('/list') ? 'default' : 'ghost'}
+              variant={isActive('/favorites') ? 'default' : 'ghost'}
               asChild
               size="icon"
               className="relative"
             >
-              <Link to="/list">
+              <Link to="/favorites">
                 <Heart className="h-4 w-4" />
                 {!isSyncing && favorites.length > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center leading-none">

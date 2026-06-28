@@ -60,7 +60,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, onClick }) => {
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleFavorite(media.id, media.type, media.title, media.releaseDate);
+    toggleFavorite(media.id, media.type, media.title, media.releaseDate, media.posterPath);
   };
 
   const displayRating = media.voteAverage !== undefined && media.voteAverage !== null

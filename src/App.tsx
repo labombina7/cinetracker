@@ -14,6 +14,8 @@ import SearchResults from "./pages/SearchResults";
 import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
 import List from "./pages/List";
+import Favorites from "./pages/Favorites";
+import FavoritesList from "./pages/FavoritesList";
 import { MediaFiltersProvider } from "./contexts/MediaFiltersContext";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
 
@@ -41,6 +43,8 @@ const App = () => {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/list" element={<List />} />
+                <Route path="/favorites" element={<Favorites />} />
+                <Route path="/favorites/list" element={<FavoritesList />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
