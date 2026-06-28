@@ -102,7 +102,7 @@ const MediaDetails = () => {
 
   const handleFavoriteClick = () => {
     if (!media) return;
-    toggleFavorite(media.id, media.type, media.title, media.releaseDate);
+    toggleFavorite(media.id, media.type, media.title, media.releaseDate, media.posterPath);
   };
 
   if (loading) {
