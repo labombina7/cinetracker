@@ -57,7 +57,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
     : <ListFilter size={13} />;
 
   return (
-    <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 px-4 py-2 bg-background/95 backdrop-blur-sm border-b border-white/10">
+    <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 py-2">
+      <div className="container mx-auto px-4 flex flex-wrap sm:flex-nowrap items-center gap-1.5">
 
       {/* Left: type + idioma + sort */}
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -152,6 +153,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           })}
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -9,7 +9,9 @@ import ApiKeySetup from '@/components/ApiKeySetup';
 import HomeLoadingSkeleton from '@/components/home/HomeLoadingSkeleton';
 import EditorialSection from '@/components/explore/EditorialSection';
 import MustWatchBlock from '@/components/explore/MustWatchBlock';
+import HeroRelease from '@/components/explore/HeroRelease';
 import FilterBar from '@/components/FilterBar';
+import { useWeeklyReleases } from '@/hooks/useWeeklyReleases';
 import { CarouselConfig } from '@/hooks/useEditorialCarousel';
 
 const sixtyDaysAgo = (): string => {
@@ -123,8 +125,8 @@ const Explore = () => {
       {/* ── Header sticky ── */}
       <div className="sticky top-[57px] z-10">
         {/* Search bar */}
-        <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 px-4 py-2">
-          <div className="container mx-auto">
+        <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 py-2">
+          <div className="container mx-auto px-4">
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <input
@@ -150,8 +152,8 @@ const Explore = () => {
           focusPlatformId={focusPlatformId}
         />
         {/* ── Anchor chips de género ── */}
-        <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 px-4 py-2">
-          <div className="container mx-auto flex gap-2 overflow-x-auto scrollbar-hide">
+        <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 py-2">
+          <div className="container mx-auto px-4 flex gap-2 overflow-x-auto scrollbar-hide">
             {GENRE_CAROUSELS.map(c => (
               <button
                 key={c.id}
