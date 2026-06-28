@@ -1,7 +1,7 @@
 import { TRAKT_API_URL, getTraktHeaders } from './config';
 import { authenticatedFetch } from './client';
 
-export type ResolvedWatchlistItem = { id: number; type: 'movie' | 'tv' };
+export type ResolvedWatchlistItem = { id: number; type: 'movie' | 'tv'; title: string; year?: number };
 export type UnresolvedWatchlistItem = { imdbId: string; type: 'movie' | 'tv' };
 export type WatchlistResult = {
   resolved: ResolvedWatchlistItem[];
@@ -27,8 +27,10 @@ export const getWatchlist = async (): Promise<WatchlistResult> => {
     for (const entry of movies) {
       const tmdbId = entry?.movie?.ids?.tmdb;
       const imdbId = entry?.movie?.ids?.imdb;
+      const title = entry?.movie?.title ?? '';
+      const year = entry?.movie?.year ?? undefined;
       if (typeof tmdbId === 'number') {
-        resolved.push({ id: tmdbId, type: 'movie' });
+        resolved.push({ id: tmdbId, type: 'movie', title, year });
       } else if (typeof imdbId === 'string' && imdbId) {
         unresolved.push({ imdbId, type: 'movie' });
       }
@@ -40,8 +42,10 @@ export const getWatchlist = async (): Promise<WatchlistResult> => {
     for (const entry of shows) {
       const tmdbId = entry?.show?.ids?.tmdb;
       const imdbId = entry?.show?.ids?.imdb;
+      const title = entry?.show?.title ?? '';
+      const year = entry?.show?.year ?? undefined;
       if (typeof tmdbId === 'number') {
-        resolved.push({ id: tmdbId, type: 'tv' });
+        resolved.push({ id: tmdbId, type: 'tv', title, year });
       } else if (typeof imdbId === 'string' && imdbId) {
         unresolved.push({ imdbId, type: 'tv' });
       }

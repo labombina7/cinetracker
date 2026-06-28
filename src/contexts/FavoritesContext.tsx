@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { isAuthenticated } from '@/services/trakt';
 import { getWatchlist, addToWatchlist, removeFromWatchlist } from '@/services/trakt';
 import { findByImdbId } from '@/services/tmdb/findByImdb';
+import { enrichFavorite } from '@/services/tmdb/enrichFavorite';
 
 export type FavoriteItem = {
   id: number;
@@ -85,11 +86,11 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           const merged = [...local];
           const resolvedKeys = new Set(resolved.map((r) => `${r.id}:${r.type}`));
 
-          // Merge resolved Trakt items (have TMDB ID)
+          // Merge resolved Trakt items — use title/year from Trakt, posterPath enriched later
           for (const item of resolved) {
             const key = `${item.id}:${item.type}`;
             if (!preTraktSnapshot.current.has(key)) {
-              merged.push({ id: item.id, type: item.type, title: '', posterPath: '' });
+              merged.push({ id: item.id, type: item.type, title: item.title, posterPath: '', year: item.year });
             }
           }
 
@@ -102,6 +103,9 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
           return merged;
         });
+
+        // Enrich posterPath for all resolved items in background
+        enrichResolved(resolved, controller.signal);
 
         // Resolve unresolved items via TMDB /find/{imdb_id} in background
         if (unresolved.length > 0) {
@@ -117,6 +121,24 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     return () => controller.abort();
   }, []);
+
+  const enrichResolved = async (
+    items: { id: number; type: 'movie' | 'tv' }[],
+    signal: AbortSignal
+  ) => {
+    for (const item of items) {
+      if (signal.aborted) break;
+      const enrichment = await enrichFavorite(item.id, item.type);
+      if (!enrichment || signal.aborted) continue;
+      setFavorites((prev) =>
+        prev.map((f) =>
+          f.id === item.id && f.type === item.type && !f.posterPath
+            ? { ...f, posterPath: enrichment.posterPath, title: f.title || enrichment.title, year: f.year ?? enrichment.year }
+            : f
+        )
+      );
+    }
+  };
 
   const resolveByImdb = async (
     items: { imdbId: string; type: 'movie' | 'tv' }[],
