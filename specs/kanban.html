@@ -862,7 +862,7 @@ const CARDS = {
   },
 
   'US-017': {
-    id: 'US-017', type: 'US', column: 'ideas', effort: 'M',
+    id: 'US-017', type: 'US', column: 'done', effort: 'M',
     title: 'Bloque editorial "No te puedes perder"',
     summary: 'Sección insertada entre géneros en Explorar con top_rated (≥8.0, ≥1000 votos), cabecera diferenciada y carrusel de tarjetas grandes.',
     story: 'Como usuario de CineTracker que quiere descubrir joyas consolidadas,\nquiero ver una sección editorial destacada con el contenido mejor valorado del momento,\npara no perderme títulos imprescindibles que quizás haya pasado por alto.',
@@ -871,12 +871,12 @@ const CARDS = {
       'Contenido: /movie/top_rated + /tv/top_rated filtrado a vote_average ≥ 8.0 y vote_count ≥ 1000. Selección aleatoria con semilla diaria (mismos items todo el día). Se adapta al filtro Películas/Series/Todos.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Bloque con cabecera diferenciada (fondo sutil, icono ⭐)', done: false },
-      { text: '6-10 items en carrusel horizontal o grid 2×3', done: false },
-      { text: 'Solo items con vote_average ≥ 8.0 y vote_count ≥ 1000', done: false },
-      { text: 'Selección aleatoria con semilla diaria (Fisher-Yates determinístico)', done: false },
-      { text: 'Skeleton de 4 tarjetas mientras carga', done: false },
-      { text: 'Se adapta al filtro de tipo (Películas/Series/Todos)', done: false },
+      { text: 'Bloque con cabecera diferenciada (fondo sutil, icono ⭐)', done: true },
+      { text: '6-10 items en carrusel horizontal o grid 2×3', done: true },
+      { text: 'Solo items con vote_average ≥ 8.0 y vote_count ≥ 1000', done: true },
+      { text: 'Selección aleatoria con semilla diaria (Fisher-Yates determinístico)', done: true },
+      { text: 'Skeleton de 4 tarjetas mientras carga', done: true },
+      { text: 'Se adapta al filtro de tipo (Películas/Series/Todos)', done: true },
     ]}],
     dependencies: ['US-016'], components: [
       { path: 'src/components/explore/MustWatchBlock.tsx', desc: 'Bloque editorial completo', isNew: true },
@@ -890,7 +890,7 @@ const CARDS = {
   },
 
   'US-018': {
-    id: 'US-018', type: 'US', column: 'ideas', effort: 'L',
+    id: 'US-018', type: 'US', column: 'done', effort: 'L',
     title: 'Módulo "Estreno de la semana" — Hero',
     summary: 'Hero a ancho completo en la cima de Explorar con backdrop, autoplay cada 8s y thumbnails para navegar entre los 5-7 estrenos más relevantes de la semana.',
     story: 'Como usuario de CineTracker que quiere estar al día de los estrenos,\nquiero ver un bloque hero prominente con el estreno más destacado de la semana,\npara saber de un vistazo qué ha salido recientemente y si merece mi atención.',
@@ -899,13 +899,13 @@ const CARDS = {
       'Fila de 5-7 thumbnails debajo para navegar entre estrenos. Autoplay cada 8s (pausa al hover). Respeta prefers-reduced-motion. Datos: /trending/movie/week + /tv/on_the_air filtrado por fecha reciente, ordenados por popularity.',
     ],
     criteria: [{ group: 'Aceptación', items: [
-      { text: 'Hero 50vh desktop / 40vh mobile con backdrop /w1280', done: false },
-      { text: 'Gradiente oscuro + título, año, puntuación, sinopsis 2 líneas', done: false },
-      { text: 'Badge "ESTRENO" si fecha < 7 días', done: false },
-      { text: 'Botones "Ver detalles" (→ detalle) y favorito funcionales', done: false },
-      { text: 'Fila de 5-7 thumbnails; clic cambia el item activo', done: false },
-      { text: 'Autoplay 8s; pausa en hover; respeta prefers-reduced-motion', done: false },
-      { text: 'Skeleton con proporción correcta mientras carga (sin layout shift)', done: false },
+      { text: 'Hero 50vh desktop / 40vh mobile con backdrop /w1280', done: true },
+      { text: 'Gradiente oscuro + título, año, puntuación, sinopsis 2 líneas', done: true },
+      { text: 'Badge "ESTRENO" si fecha < 7 días', done: true },
+      { text: 'Botones "Ver detalles" (→ detalle) y favorito funcionales', done: true },
+      { text: 'Fila de 5-7 thumbnails; clic cambia el item activo', done: true },
+      { text: 'Autoplay 8s; pausa en hover; respeta prefers-reduced-motion', done: true },
+      { text: 'Skeleton con proporción correcta mientras carga (sin layout shift)', done: true },
     ]}],
     dependencies: ['US-016'], components: [
       { path: 'src/components/explore/HeroRelease.tsx', desc: 'Bloque hero con backdrop y autoplay', isNew: true },
