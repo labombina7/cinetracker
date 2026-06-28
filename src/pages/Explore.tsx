@@ -8,8 +8,11 @@ import { useProvidersData } from '@/hooks/useProvidersData';
 import ApiKeySetup from '@/components/ApiKeySetup';
 import HomeLoadingSkeleton from '@/components/home/HomeLoadingSkeleton';
 import EditorialSection from '@/components/explore/EditorialSection';
+import MustWatchBlock from '@/components/explore/MustWatchBlock';
+import HeroRelease from '@/components/explore/HeroRelease';
 import FilterBar from '@/components/FilterBar';
 import { CarouselConfig } from '@/hooks/useEditorialCarousel';
+import { useWeeklyReleases } from '@/hooks/useWeeklyReleases';
 
 const sixtyDaysAgo = (): string => {
   const d = new Date();
@@ -73,6 +76,7 @@ const Explore = () => {
     setSortBy,
   } = useMediaFilters();
   const { platforms } = useProvidersData();
+  const { items: heroItems, loading: heroLoading } = useWeeklyReleases(filtersState.mediaType);
 
   const [focusPlatformId, setFocusPlatformId] = useState<number | null>(null);
   const [searchText, setSearchText] = useState('');
@@ -164,6 +168,9 @@ const Explore = () => {
       </div>
 
     <div className="container mx-auto px-4 py-6">
+      {/* ── Hero estreno de la semana ── */}
+      <HeroRelease items={heroItems} loading={heroLoading} />
+
       {/* ── Carruseles editoriales ── */}
       {EDITORIAL_CAROUSELS.map(config => (
         <EditorialSection
@@ -184,14 +191,19 @@ const Explore = () => {
       </div>
 
       {/* ── Carruseles de género ── */}
-      {GENRE_CAROUSELS.map(config => (
-        <div key={config.id} id={config.id}>
-          <EditorialSection
-            config={config}
-            overridePlatformIds={effectivePlatformIds}
-            onShowMore={() => handleShowMore(config)}
-          />
-        </div>
+      {GENRE_CAROUSELS.map((config, index) => (
+        <React.Fragment key={config.id}>
+          {index === 2 && (
+            <MustWatchBlock mediaType={filtersState.mediaType} />
+          )}
+          <div id={config.id}>
+            <EditorialSection
+              config={config}
+              overridePlatformIds={effectivePlatformIds}
+              onShowMore={() => handleShowMore(config)}
+            />
+          </div>
+        </React.Fragment>
       ))}
     </div>
     </>
