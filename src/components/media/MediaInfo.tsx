@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CalendarIcon, Clock, Film, Tv, ShoppingCart, CreditCard } from 'lucide-react';
+import { CalendarIcon, Clock, Film, Tv, ShoppingCart, CreditCard, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Platform } from '@/types/media';
@@ -104,9 +104,10 @@ const MediaInfo: React.FC<MediaInfoProps> = ({
     <div className="mb-6">
       {/* Rating */}
       <div className="flex items-center gap-2 mb-4">
-        <div className="bg-yellow-500/90 text-black font-bold text-sm px-2 py-1 rounded">
+        <span className="flex items-center gap-1 text-sm text-yellow-400">
+          <Star className="w-4 h-4 fill-yellow-400" />
           {voteAverage.toFixed(1)}
-        </div>
+        </span>
       </div>
 
       {/* Info grid */}

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, Clapperboard } from 'lucide-react';
+import { Heart, Clapperboard, Star } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
 import { Media, Genre } from '@/types/media';
 import { getPosterUrl, getProviderLogoUrl } from '@/services/tmdb/index';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -103,9 +104,10 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, onClick }) => {
       <CardContent className="p-3">
         <h3 className="font-semibold text-base truncate">{media.title}</h3>
         <div className="flex items-center justify-between mt-1.5">
-          <Badge variant="secondary" className="bg-yellow-500/90 text-black font-bold">
+          <span className="flex items-center gap-1 text-xs text-yellow-400">
+            <Star className="w-3 h-3 fill-yellow-400" />
             {displayRating}
-          </Badge>
+          </span>
           {(() => {
             const flatrate = media.watchProviders?.flatrate ?? [];
             const visible = flatrate.slice(0, 3);
