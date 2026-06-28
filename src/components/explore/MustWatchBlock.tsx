@@ -8,12 +8,13 @@ import MediaCard from '@/components/MediaCard';
 
 interface MustWatchBlockProps {
   mediaType: 'all' | 'movie' | 'tv';
+  platformIds?: number[];
 }
 
 const SKELETON_COUNT = 4;
 
-const MustWatchBlock: React.FC<MustWatchBlockProps> = ({ mediaType }) => {
-  const { media, loading } = useMustWatch(mediaType);
+const MustWatchBlock: React.FC<MustWatchBlockProps> = ({ mediaType, platformIds = [] }) => {
+  const { media, loading } = useMustWatch(mediaType, platformIds);
   const navigate = useNavigate();
   const { language } = useLanguage();
 
