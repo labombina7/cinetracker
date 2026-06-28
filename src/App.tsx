@@ -15,6 +15,7 @@ import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
 import List from "./pages/List";
 import { MediaFiltersProvider } from "./contexts/MediaFiltersContext";
+import { FavoritesProvider } from "./contexts/FavoritesContext";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => {
       <HashRouter>
         <TooltipProvider>
           <MediaFiltersProvider>
+            <FavoritesProvider>
             <Toaster />
             <Sonner />
             <Navbar />
@@ -42,6 +44,7 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
+            </FavoritesProvider>
           </MediaFiltersProvider>
         </TooltipProvider>
       </HashRouter>

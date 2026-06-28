@@ -6,12 +6,14 @@ import { Film, Heart, User, Globe, Settings } from 'lucide-react';
 import { isAuthenticated } from '@/services/trakt';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const Navbar = () => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
   const { language, toggleLanguage } = useLanguage();
   const isMobile = useIsMobile();
+  const { favorites, isSyncing } = useFavorites();
 
   return (
     <nav className="bg-background/70 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
@@ -46,6 +48,23 @@ const Navbar = () => {
               </Button>
             )}
             
+            <Button
+              variant={isActive('/list') ? 'default' : 'ghost'}
+              asChild
+              size="icon"
+              className="relative"
+            >
+              <Link to="/list">
+                <Heart className="h-4 w-4" />
+                {!isSyncing && favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center leading-none">
+                    {favorites.length > 99 ? '99+' : favorites.length}
+                  </span>
+                )}
+                <span className="sr-only">{language === 'es' ? 'Favoritos' : 'Favorites'}</span>
+              </Link>
+            </Button>
+
             <Button
               variant={isActive('/auth/trakt') ? 'default' : 'ghost'}
               asChild

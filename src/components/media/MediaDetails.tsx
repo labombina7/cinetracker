@@ -21,8 +21,7 @@ const MediaDetails = () => {
   const [media, setMedia] = useState<Media | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const { favorites, isFavorite: checkIsFavorite, toggleFavorite } = useFavorites();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite: checkIsFavorite, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
   const { language } = useLanguage();
   const [cast, setCast] = useState<CastMember[]>([]);
@@ -77,8 +76,6 @@ const MediaDetails = () => {
       }
       
       setMedia(mediaDetails);
-      setIsFavorite(checkIsFavorite(Number(id), type as 'movie' | 'tv'));
-
       fetchCast(Number(id), type as 'movie' | 'tv');
     } catch (err) {
       console.error('Error fetching media details:', err);
@@ -101,12 +98,11 @@ const MediaDetails = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchData();
-  }, [id, type, favorites, language]);
+  }, [id, type, language]);
 
   const handleFavoriteClick = () => {
     if (!media) return;
     toggleFavorite(media.id, media.type, media.title, media.releaseDate);
-    setIsFavorite(!isFavorite);
   };
 
   if (loading) {
@@ -141,7 +137,7 @@ const MediaDetails = () => {
       
       <div className="fixed top-20 right-4 z-20">
         <FavoriteButton
-          isFavorite={isFavorite}
+          isFavorite={media ? checkIsFavorite(media.id, media.type) : false}
           onToggle={handleFavoriteClick}
           variant="icon"
           mediaTitle={media.title}

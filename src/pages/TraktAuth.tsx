@@ -16,6 +16,7 @@ import TraktConnectionInstructions from '@/components/trakt/TraktConnectionInstr
 import TraktErrorState from '@/components/trakt/TraktErrorState';
 import TraktLoadingState from '@/components/trakt/TraktLoadingState';
 import TraktConnectPrompt from '@/components/trakt/TraktConnectPrompt';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const TraktAuth = () => {
   const [userInfo, setUserInfo] = useState<TraktUser | null>(null);
@@ -23,6 +24,7 @@ const TraktAuth = () => {
   const [error, setError] = useState<string | null>(null);
   const [showClientForm, setShowClientForm] = useState(false);
   const navigate = useNavigate();
+  const { clearTraktFavorites } = useFavorites();
 
   const fetchUserInfo = async () => {
     setLoading(true);
@@ -80,6 +82,7 @@ const TraktAuth = () => {
   };
 
   const handleLogout = () => {
+    clearTraktFavorites();
     logout();
     setUserInfo(null);
     setError(null);
@@ -106,6 +109,7 @@ const TraktAuth = () => {
   };
 
   const handleClearAll = () => {
+    clearTraktFavorites();
     clearAllTraktData();
     setUserInfo(null);
     setError(null);
