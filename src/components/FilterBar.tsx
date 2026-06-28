@@ -58,9 +58,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
   return (
     <div className="bg-background/95 backdrop-blur-sm border-b border-white/10 py-2">
-      <div className="container mx-auto px-4 flex flex-wrap sm:flex-nowrap items-center gap-1.5">
+      <div className="container mx-auto px-4 flex flex-col sm:flex-row sm:flex-nowrap sm:items-center gap-y-2 sm:gap-y-0 gap-x-1.5">
 
-      {/* Left: type + idioma + sort */}
+      {/* Categories: type + idioma + sort */}
       <div className="flex items-center gap-1.5 flex-wrap">
         {([
           { value: 'all' as const,   labelEs: 'Todo',      labelEn: 'All',    Icon: Layers },
@@ -122,12 +122,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </DropdownMenu>
       </div>
 
-      {/* Spacer */}
+      {/* Spacer desktop */}
       <div className="hidden sm:block flex-1" />
 
-      {/* Right: platform chips */}
+      {/* Platform chips */}
       {activePlatforms.length > 0 && (
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pt-1 sm:pt-0 border-t border-white/5 sm:border-0">
           {activePlatforms.map(p => {
             const isFocused = focusPlatformId === p.id;
             const hasFocus = focusPlatformId !== null;

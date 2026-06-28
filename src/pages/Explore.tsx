@@ -194,7 +194,7 @@ const Explore = () => {
       {GENRE_CAROUSELS.map((config, index) => (
         <React.Fragment key={config.id}>
           {index === 2 && (
-            <MustWatchBlock mediaType={filtersState.mediaType} />
+            <MustWatchBlock mediaType={filtersState.mediaType} platformIds={effectivePlatformIds} />
           )}
           <div id={config.id}>
             <EditorialSection

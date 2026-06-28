@@ -3,10 +3,8 @@ import { Media } from '@/types/media';
 import { fetchTopRated } from '@/services/tmdb/topRated';
 
 const MIN_VOTE_AVERAGE = 8.0;
-const MIN_VOTE_COUNT = 1000;
 const TARGET_COUNT = 8;
 
-// Seeded Fisher-Yates shuffle — same result for the same seed (daily)
 function seededShuffle<T>(arr: T[], seed: number): T[] {
   const result = [...arr];
   let s = seed;
@@ -20,13 +18,23 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
 
 const dailySeed = () => Math.floor(Date.now() / 86400000);
 
-// In-memory session cache
-const sessionCache: Record<string, Media[]> = {};
+// Raw (unfiltered) cache keyed by mediaType — avoids re-fetching when platform changes
+const rawCache: Record<string, Media[]> = {};
 
-export const useMustWatch = (mediaType: 'all' | 'movie' | 'tv') => {
+const filterAndPick = (items: Media[], platformIds: number[]): Media[] => {
+  const filtered = items.filter(m => {
+    if (m.voteAverage < MIN_VOTE_AVERAGE) return false;
+    if (!platformIds.length) return true;
+    return (m.watchProviders?.flatrate ?? []).some(p => platformIds.includes(p.provider_id));
+  });
+  return seededShuffle(filtered, dailySeed()).slice(0, TARGET_COUNT);
+};
+
+export const useMustWatch = (mediaType: 'all' | 'movie' | 'tv', platformIds: number[] = []) => {
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
+  const platformKey = platformIds.join(',');
 
   useEffect(() => {
     mountedRef.current = true;
@@ -34,9 +42,9 @@ export const useMustWatch = (mediaType: 'all' | 'movie' | 'tv') => {
   }, []);
 
   useEffect(() => {
-    const cacheKey = `must-watch-${mediaType}`;
-    if (sessionCache[cacheKey]) {
-      setMedia(sessionCache[cacheKey]);
+    // If raw data already cached, just re-filter without re-fetching
+    if (rawCache[mediaType]) {
+      setMedia(filterAndPick(rawCache[mediaType], platformIds));
       setLoading(false);
       return;
     }
@@ -51,22 +59,17 @@ export const useMustWatch = (mediaType: 'all' | 'movie' | 'tv') => {
       const results = await Promise.all(fetches);
       const combined = results.flat();
 
-      const filtered = combined.filter(
-        m => m.voteAverage >= MIN_VOTE_AVERAGE
-      );
-
-      const shuffled = seededShuffle(filtered, dailySeed()).slice(0, TARGET_COUNT);
-
       if (!mountedRef.current) return;
-      sessionCache[cacheKey] = shuffled;
-      setMedia(shuffled);
+      rawCache[mediaType] = combined;
+      setMedia(filterAndPick(combined, platformIds));
       setLoading(false);
     };
 
     load().catch(() => {
       if (mountedRef.current) setLoading(false);
     });
-  }, [mediaType]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaType, platformKey]);
 
   return { media, loading };
 };
