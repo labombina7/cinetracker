@@ -43,8 +43,8 @@ export const enrichFavorite = async (
     if (providersRes.ok) {
       const providersData = await providersRes.json();
       const countryData = providersData?.results?.[COUNTRY];
-      const flatrate: WatchProvider[] = countryData?.flatrate ?? [];
-      if (flatrate.length > 0) watchProviders = flatrate;
+      // Keep empty array for movies in theaters (flatrate exists but is empty)
+      watchProviders = countryData?.flatrate ?? [];
     }
 
     return { posterPath: details.poster_path ?? '', title, year, voteAverage, watchProviders };
