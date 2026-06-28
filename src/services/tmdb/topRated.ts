@@ -1,6 +1,7 @@
 import { Media } from '../../types/media';
 import { buildApiUrl } from './config';
 import { cachedFetch } from './apiCache';
+import { fetchWatchProviders } from './providers';
 
 interface TMDBTopRatedResult {
   id: number;
@@ -43,5 +44,25 @@ export const fetchTopRated = async (
   const res = await cachedFetch(url);
   if (!res.ok) return [];
   const data: TMDBTopRatedResponse = await res.json();
-  return (data.results ?? []).map(item => mapResult(item, type));
+  const items = (data.results ?? []).map(item => mapResult(item, type));
+
+  const withProviders = await Promise.all(
+    items.map(async media => {
+      try {
+        const providers = await fetchWatchProviders(media.id, type);
+        if (providers?.results?.ES) {
+          media.watchProviders = {
+            flatrate: providers.results.ES.flatrate || [],
+            rent: providers.results.ES.rent || [],
+            buy: providers.results.ES.buy || [],
+          };
+        }
+      } catch {
+        // skip provider errors silently
+      }
+      return media;
+    })
+  );
+
+  return withProviders;
 };
