@@ -920,6 +920,150 @@ const CARDS = {
     ], outOfScope: ['Trailer en el hero', '"No me interesa" para ocultar items', 'Notificaciones push de estrenos', 'Filtro por plataforma en el hero'],
   },
 
+  'US-024': {
+    id: 'US-024', type: 'US', column: 'done', effort: 'S',
+    title: 'Persistencia local de favoritos + aviso sin Trakt',
+    summary: 'Garantiza formato {id,type} en localStorage y muestra un toast la primera vez que el usuario añade un favorito sin Trakt configurado.',
+    story: 'Como usuario sin cuenta Trakt,\nquiero que mis favoritos se guarden en el dispositivo y ver un aviso claro de que son locales,\npara saber que puedo perderlos si limpio el navegador o cambio de dispositivo.',
+    description: [
+      'Toast (sonner) con botón "Conectar Trakt" al añadir el primer favorito sin Trakt. Flag favorites_warning_seen en localStorage evita que vuelva a aparecer.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Favoritos cargados de localStorage al montar sin flash', done: true },
+      { text: 'Cambios reflejados en localStorage de forma síncrona', done: true },
+      { text: 'Formato almacenado: Array<{id, type, title, posterPath, year}>', done: true },
+      { text: 'Toast con mensaje y botón "Conectar Trakt" al primer favorito sin Trakt', done: true },
+      { text: 'Flag favorites_warning_seen evita repetición', done: true },
+      { text: 'Migración del formato antiguo (number[]) funciona', done: true },
+    ]}],
+    dependencies: ['US-009'], components: [
+      { path: 'src/contexts/FavoritesContext.tsx', desc: 'Lógica de aviso integrada en toggleFavorite', isNew: false },
+    ], tech: ['localStorage key: favorites_warning_seen'], outOfScope: ['Sincronización con Trakt', 'Exportación de favoritos'],
+  },
+
+  'US-025': {
+    id: 'US-025', type: 'US', column: 'done', effort: 'M',
+    title: 'Gestión de favoritos sin cuenta Trakt',
+    summary: 'Estado reactivo global de favoritos vía Context; badge numérico en navbar.',
+    story: 'Como usuario sin cuenta Trakt,\nquiero poder añadir y quitar favoritos libremente y verlos siempre actualizados,\npara mantener mi lista personal aunque no use ningún servicio externo.',
+    description: [
+      'useFavorites elevado a FavoritesContext para que MediaCard y MediaDetails compartan el mismo estado. Badge en navbar con favorites.length.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Botón favorito en MediaCard alterna correctamente', done: true },
+      { text: 'Botón favorito en MediaDetails sincronizado con MediaCard', done: true },
+      { text: 'Badge numérico en navbar; desaparece si no hay favoritos', done: true },
+      { text: 'Al volver de Detalle a Home el corazón refleja el estado correcto', done: true },
+    ]}],
+    dependencies: ['US-024'], components: [
+      { path: 'src/contexts/FavoritesContext.tsx', desc: 'Contexto global de favoritos', isNew: true },
+      { path: 'src/hooks/useFavorites.ts', desc: 'Re-export del contexto', isNew: false },
+      { path: 'src/components/Navbar.tsx', desc: 'Badge con favorites.length', isNew: false },
+    ], tech: [], outOfScope: ['Página "Mis Favoritos"', 'Sincronización con Trakt'],
+  },
+
+  'US-026': {
+    id: 'US-026', type: 'US', column: 'done', effort: 'L',
+    title: 'Sincronización bidireccional de favoritos con Trakt',
+    summary: 'Pull del watchlist de Trakt al arrancar, merge con local, add/remove en background con reversión optimista.',
+    story: 'Como usuario con cuenta Trakt vinculada,\nquiero que mis favoritos estén siempre en sync con mi watchlist de Trakt,\npara no perder nada si cambio de dispositivo.',
+    description: [
+      'Al arrancar: pull /users/me/watchlist/movies + /shows, fusión aditiva con locales, upload de locales que faltan en Trakt. Al añadir: addToWatchlist en background. Al quitar: removeFromWatchlist con reversión si falla.',
+      'Ítems sin ids.tmdb se resuelven via IMDB fallback (findByImdbId → TMDB /find/{imdb_id}). Ítems resueltos se enriquecen con posterPath, voteAverage y watchProviders via enrichFavorite.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Pull watchlist al arrancar con Trakt configurado', done: true },
+      { text: 'Fusión aditiva sin duplicados', done: true },
+      { text: 'Upload silencioso de locales que faltan en Trakt', done: true },
+      { text: 'Add optimista + addToWatchlist en background', done: true },
+      { text: 'Remove optimista + removeFromWatchlist; reversión si falla', done: true },
+      { text: 'Fallback IMDB→TMDB para ítems sin ids.tmdb', done: true },
+      { text: 'Enriquecimiento lazy: poster, nota y plataformas desde TMDB', done: true },
+      { text: 'Toast de error si la carga inicial de Trakt falla', done: true },
+    ]}],
+    dependencies: ['US-025'], components: [
+      { path: 'src/services/trakt/watchlist.ts', desc: 'getWatchlist (resolved/unresolved), addToWatchlist, removeFromWatchlist', isNew: false },
+      { path: 'src/services/tmdb/findByImdb.ts', desc: 'Resolve IMDB ID → TMDB via /find/{imdb_id}', isNew: true },
+      { path: 'src/services/tmdb/enrichFavorite.ts', desc: 'Enriquece posterPath, voteAverage y watchProviders', isNew: true },
+      { path: 'src/contexts/FavoritesContext.tsx', desc: 'enrichResolved, resolveByImdb integrados', isNew: false },
+    ], tech: [
+      'Trakt GET /users/me/watchlist/movies|shows',
+      'Trakt POST /sync/watchlist y /sync/watchlist/remove',
+      'TMDB GET /find/{imdb_id}?external_source=imdb_id',
+      'TMDB GET /movie|tv/{id} y /movie|tv/{id}/watch/providers',
+    ], outOfScope: ['Renovación automática del token Trakt', 'Sincronización de ratings o historial', 'Polling/websocket para conflictos multi-tab'],
+  },
+
+  'US-027': {
+    id: 'US-027', type: 'US', column: 'done', effort: 'M',
+    title: 'Consistencia global del estado de favoritos',
+    summary: 'Una sola fuente de verdad (FavoritesContext); clearTraktFavorites en logout.',
+    story: 'Como usuario de CineTracker,\nquiero que el corazón refleje el estado correcto en todas las vistas al mismo tiempo,\npara no ver estados contradictorios entre la card y el detalle.',
+    description: [
+      'FavoritesContext como única fuente de verdad. MediaDetails elimina su useState local de isFavorite. Al logout de Trakt, clearTraktFavorites() elimina del estado en memoria los ítems exclusivos de Trakt usando un snapshot pre-merge.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'useFavorites consume FavoritesContext, no useState local', done: true },
+      { text: 'Añadir/quitar desde cualquier componente actualiza todos los demás', done: true },
+      { text: 'Al volver de Detalle a Home las cards muestran estado correcto', done: true },
+      { text: 'Al desconectar Trakt se eliminan favoritos exclusivos de Trakt', done: true },
+      { text: 'Los favoritos locales previos al login de Trakt permanecen', done: true },
+    ]}],
+    dependencies: ['US-025', 'US-026'], components: [
+      { path: 'src/contexts/FavoritesContext.tsx', desc: 'clearTraktFavorites + preTraktSnapshot', isNew: false },
+      { path: 'src/components/media/MediaDetails.tsx', desc: 'Elimina useState local de isFavorite', isNew: false },
+      { path: 'src/pages/TraktAuth.tsx', desc: 'Llama clearTraktFavorites en handleLogout y handleClearAll', isNew: false },
+    ], tech: [], outOfScope: ['Sincronización multi-tab (BroadcastChannel)', 'Persistencia del origen de cada favorito más allá de la sesión'],
+  },
+
+  'US-028': {
+    id: 'US-028', type: 'US', column: 'done', effort: 'L',
+    title: 'Página de Mis Favoritos con carruseles por tipo',
+    summary: 'Ruta /favorites con carruseles separados de Películas y Series, badge en navbar, estado vacío con CTA.',
+    story: 'Como usuario de CineTracker,\nquiero una página donde ver todos mis favoritos organizados en carruseles de Películas y Series,\npara tener una vista rápida de mi lista.',
+    description: [
+      'Carrusel de Películas y carrusel de Series con contador y botón "Ver todas" → /favorites/list?type=. Estado vacío con botón "Explorar contenido". FavoriteItem ampliado con title, posterPath, year, voteAverage, watchProviders para renderizar sin fetch adicional.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Ruta /favorites existe con Favorites.tsx', done: true },
+      { text: 'Navbar: icono corazón → /favorites con badge total', done: true },
+      { text: 'Carrusel Películas y carrusel Series con contador', done: true },
+      { text: '"Ver todas" → /favorites/list?type=movie|tv', done: true },
+      { text: 'Estado vacío con CTA a Explorar', done: true },
+      { text: 'Desmarcar corazón en carrusel elimina la card reactivamente', done: true },
+      { text: 'Indicador "En cines" igual que en el grid (🎬)', done: true },
+      { text: 'FavoriteItem incluye title, posterPath, year, voteAverage, watchProviders', done: true },
+    ]}],
+    dependencies: ['US-027'], components: [
+      { path: 'src/pages/Favorites.tsx', desc: 'Página raíz de favoritos con carruseles', isNew: true },
+      { path: 'src/contexts/FavoritesContext.tsx', desc: 'FavoriteItem ampliado', isNew: false },
+      { path: 'src/components/Navbar.tsx', desc: 'Enlace a /favorites', isNew: false },
+      { path: 'src/services/tmdb/enrichFavorite.ts', desc: 'Enriquecimiento lazy de poster, nota y plataformas', isNew: true },
+    ], tech: [], outOfScope: ['Ordenación o filtrado en la página', 'Drag & drop', 'Compartir lista'],
+  },
+
+  'US-029': {
+    id: 'US-029', type: 'US', column: 'done', effort: 'M',
+    title: 'Lista drill-down de favoritos',
+    summary: 'Ruta /favorites/list con grid, tabs Todas/Películas/Series y búsqueda client-side.',
+    story: 'Como usuario que quiere ver todos sus favoritos de un tipo,\nquiero una página de lista completa filtrable a la que llego desde "Ver todas",\npara explorar mi lista con comodidad.',
+    description: [
+      'Grid 3/4/5 columnas. Tabs que sincronizan con ?type= query param (useSearchParams). Búsqueda client-side por título. Estado vacío diferenciado para búsqueda sin resultados vs tipo vacío.',
+    ],
+    criteria: [{ group: 'Aceptación', items: [
+      { text: 'Ruta /favorites/list con FavoritesList.tsx', done: true },
+      { text: 'Query param ?type=movie|tv activa tab correspondiente', done: true },
+      { text: 'Tabs Todas/Películas/Series actualizan URL', done: true },
+      { text: 'Búsqueda filtra por título en tiempo real', done: true },
+      { text: 'Grid 3 cols mobile / 4 tablet / 5 desktop', done: true },
+      { text: 'Desmarcar favorito elimina card reactivamente', done: true },
+      { text: 'Estado vacío con CTA a Explorar', done: true },
+    ]}],
+    dependencies: ['US-028'], components: [
+      { path: 'src/pages/FavoritesList.tsx', desc: 'Grid filtrable con tabs y búsqueda', isNew: true },
+    ], tech: ['useSearchParams de react-router para sync URL↔tabs'], outOfScope: ['Ordenación', 'Virtualización', 'Selección múltiple'],
+  },
+
   'IDEA-historial': {
     id: 'IDEA-historial', type: 'IDEA', column: 'ideas',
     title: 'Historial de visualización',
