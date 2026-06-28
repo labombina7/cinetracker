@@ -26,7 +26,9 @@ export {
 
 // Watchlist exports
 export {
-  addToWatchlist
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
 } from './watchlist';
 
 // Search exports
