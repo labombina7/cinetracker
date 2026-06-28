@@ -27,6 +27,7 @@ interface FilterBarProps {
   activePlatforms: Platform[];
   onPlatformClick: (id: number) => void;
   focusPlatformId?: number | null;
+  showSortBy?: boolean;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -39,6 +40,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   activePlatforms,
   onPlatformClick,
   focusPlatformId,
+  showSortBy = true,
 }) => {
   const { language } = useLanguage();
 
@@ -100,26 +102,28 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className={`flex items-center gap-1 h-7 px-2 rounded-md text-xs transition-colors ${
-              sortBy !== 'none' ? 'text-yellow-400' : 'text-muted-foreground hover:text-foreground'
-            }`}>
-              {sortIcon}
-              {sortBy !== 'none'
-                ? sortLabels[sortBy]
-                : (language === 'es' ? 'Ordenar' : 'Sort')}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {(Object.entries(sortLabels) as [('none' | 'rating' | 'date'), string][]).map(([key, label]) => (
-              <DropdownMenuItem key={key} onSelect={() => onSortChange(key)}
-                className={sortBy === key ? 'font-semibold' : ''}>
-                {label} {sortBy === key && '✓'}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {showSortBy && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className={`flex items-center gap-1 h-7 px-2 rounded-md text-xs transition-colors ${
+                sortBy !== 'none' ? 'text-yellow-400' : 'text-muted-foreground hover:text-foreground'
+              }`}>
+                {sortIcon}
+                {sortBy !== 'none'
+                  ? sortLabels[sortBy]
+                  : (language === 'es' ? 'Ordenar' : 'Sort')}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {(Object.entries(sortLabels) as [('none' | 'rating' | 'date'), string][]).map(([key, label]) => (
+                <DropdownMenuItem key={key} onSelect={() => onSortChange(key)}
+                  className={sortBy === key ? 'font-semibold' : ''}>
+                  {label} {sortBy === key && '✓'}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Spacer desktop */}

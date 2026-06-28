@@ -73,7 +73,6 @@ const Explore = () => {
     filtersState,
     setSpanishFilter,
     setMediaType,
-    setSortBy,
   } = useMediaFilters();
   const { platforms } = useProvidersData();
   const { items: heroItems, loading: heroLoading } = useWeeklyReleases(filtersState.mediaType);
@@ -159,8 +158,9 @@ const Explore = () => {
           onMediaTypeChange={setMediaType}
           spanishFilter={filtersState.spanishFilter}
           onSpanishFilterChange={setSpanishFilter}
-          sortBy={filtersState.sortBy}
-          onSortChange={setSortBy}
+          sortBy="none"
+          onSortChange={() => {}}
+          showSortBy={false}
           activePlatforms={selectedPlatforms}
           onPlatformClick={(id) => setFocusPlatformId(prev => prev === id ? null : id)}
           focusPlatformId={focusPlatformId}
