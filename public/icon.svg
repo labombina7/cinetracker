@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fondo -->
+  <rect width="512" height="512" rx="114" fill="#1b2838"/>
+
+  <!-- Cuerpo claqueta: y=273..440, h=167 -->
+  <rect x="96" y="273" width="320" height="167" rx="14" fill="#f0f0f0"/>
+
+  <!-- Franja superior: y=192..273, h=81 -->
+  <rect x="96" y="192" width="320" height="94" rx="14" fill="#1a1a1a"/>
+  <rect x="96" y="273" width="320" height="14" fill="#1a1a1a"/>
+
+  <!-- Rayas rojas en franja -->
+  <clipPath id="cf">
+    <rect x="96" y="192" width="320" height="94" rx="14"/>
+  </clipPath>
+  <g clip-path="url(#cf)">
+    <rect x="82"  y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+    <rect x="132" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+    <rect x="182" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+    <rect x="232" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+    <rect x="282" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+    <rect x="332" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+    <rect x="382" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+  </g>
+
+  <!-- Bisagra -->
+  <rect x="96" y="284" width="320" height="5" rx="2" fill="#ccc"/>
+
+  <!-- Líneas de texto -->
+  <rect x="120" y="302" width="272" height="14" rx="7" fill="#bbb"/>
+  <rect x="120" y="326" width="200" height="14" rx="7" fill="#bbb"/>
+
+  <!-- Estrella centrada -->
+  <polygon points="256,352 263,374 286,374 268,387 275,409 256,397 237,409 244,387 226,374 249,374" fill="#f39c12"/>
+</svg>
