@@ -9,10 +9,8 @@ import ApiKeySetup from '@/components/ApiKeySetup';
 import HomeLoadingSkeleton from '@/components/home/HomeLoadingSkeleton';
 import EditorialSection from '@/components/explore/EditorialSection';
 import MustWatchBlock from '@/components/explore/MustWatchBlock';
-import HeroRelease from '@/components/explore/HeroRelease';
 import FilterBar from '@/components/FilterBar';
 import { CarouselConfig } from '@/hooks/useEditorialCarousel';
-import { useWeeklyReleases } from '@/hooks/useWeeklyReleases';
 
 const sixtyDaysAgo = (): string => {
   const d = new Date();
