@@ -1,26 +1,22 @@
 {
   "name": "CineTracker",
   "short_name": "CineTracker",
-  "description": "Descubre y sigue tus películas y series favoritas",
+  "description": "Descubre y haz seguimiento de películas y series de TV",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1b2838",
-  "theme_color": "#1b2838",
+  "background_color": "#06080f",
+  "theme_color": "#0f1729",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
