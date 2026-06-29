@@ -1,35 +1,75 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Fondo -->
-  <rect width="512" height="512" rx="114" fill="#1b2838"/>
+  <title>CineTracker</title>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#111827"></stop>
+      <stop offset="100%" stop-color="#060810"></stop>
+    </linearGradient>
+    <linearGradient id="playGrad" x1="198" y1="190" x2="330" y2="322" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a5b4fc"></stop>
+      <stop offset="100%" stop-color="#4338ca"></stop>
+    </linearGradient>
+    <radialGradient id="glowGrad" cx="256" cy="256" r="145" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.6"></stop>
+      <stop offset="55%" stop-color="#6366f1" stop-opacity="0.18"></stop>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0"></stop>
+    </radialGradient>
+    <radialGradient id="shineGrad" cx="180" cy="140" r="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.06"></stop>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
+    </radialGradient>
+    <clipPath id="iconClip">
+      <rect width="512" height="512" rx="115"></rect>
+    </clipPath>
+  </defs>
 
-  <!-- Cuerpo claqueta: y=273..440, h=167 -->
-  <rect x="96" y="273" width="320" height="167" rx="14" fill="#f0f0f0"/>
+  
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"></rect>
 
-  <!-- Franja superior: y=192..273, h=81 -->
-  <rect x="96" y="192" width="320" height="94" rx="14" fill="#1a1a1a"/>
-  <rect x="96" y="273" width="320" height="14" fill="#1a1a1a"/>
+  <g clip-path="url(#iconClip)">
+    
+    <rect x="48" y="100" width="416" height="312" fill="#131c30"></rect>
 
-  <!-- Rayas rojas en franja -->
-  <clipPath id="cf">
-    <rect x="96" y="192" width="320" height="94" rx="14"/>
-  </clipPath>
-  <g clip-path="url(#cf)">
-    <rect x="82"  y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
-    <rect x="132" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
-    <rect x="182" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
-    <rect x="232" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
-    <rect x="282" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
-    <rect x="332" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
-    <rect x="382" y="192" width="28" height="94" fill="#c0392b" transform="skewX(-20)"/>
+    
+    <rect x="48" y="100" width="416" height="66" fill="#08090f"></rect>
+    
+    <rect x="48" y="346" width="416" height="66" fill="#08090f"></rect>
+
+    
+    <rect x="48" y="165" width="416" height="1" fill="#1e2d4a" opacity="0.6"></rect>
+    <rect x="48" y="346" width="416" height="1" fill="#1e2d4a" opacity="0.6"></rect>
+
+    
+    <rect x="72" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="120" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="168" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="216" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="264" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="312" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="360" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="408" y="117" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+
+    
+    <rect x="72" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="120" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="168" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="216" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="264" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="312" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="360" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+    <rect x="408" y="362" width="32" height="33" rx="5" fill="#1a2a48"></rect>
+
+    
+    <circle cx="256" cy="256" r="145" fill="url(#glowGrad)"></circle>
+
+    
+    
+    <polygon points="196,190 196,322 330,256" fill="url(#playGrad)"></polygon>
+
+    
+    <rect width="512" height="512" fill="url(#shineGrad)"></rect>
+
+    
+    <rect width="512" height="512" rx="115" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="2"></rect>
   </g>
-
-  <!-- Bisagra -->
-  <rect x="96" y="284" width="320" height="5" rx="2" fill="#ccc"/>
-
-  <!-- Líneas de texto -->
-  <rect x="120" y="302" width="272" height="14" rx="7" fill="#bbb"/>
-  <rect x="120" y="326" width="200" height="14" rx="7" fill="#bbb"/>
-
-  <!-- Estrella centrada -->
-  <polygon points="256,352 263,374 286,374 268,387 275,409 256,397 237,409 244,387 226,374 249,374" fill="#f39c12"/>
 </svg>
