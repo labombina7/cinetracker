@@ -95,7 +95,11 @@ export const fetchMediaDetails = async (id: number, type: 'movie' | 'tv', langua
       videos: mapVideos(item.videos?.results),
       lastAiredSeason: type === 'tv' ? (item.last_episode_to_air?.season_number ?? null) : null,
       creators: type === 'tv' ? (item.created_by ?? []).map((c: { id: number; name: string }) => ({ id: c.id, name: c.name })) : [],
-      series: type === 'tv' ? mapSeriesInfo(item) : undefined
+      series: type === 'tv' ? mapSeriesInfo(item) : undefined,
+      voteCount: item.vote_count,
+      collection: item.belongs_to_collection
+        ? { id: item.belongs_to_collection.id, name: item.belongs_to_collection.name }
+        : null
     };
     
     // Si hay datos de proveedores, recopilar todas las plataformas

@@ -20,6 +20,7 @@ interface MediaInfoProps {
   type: 'movie' | 'tv';
   availableForRent?: boolean;
   availableForPurchase?: boolean;
+  ratings?: React.ReactNode; // Sustituye a la nota de TMDB por defecto
 }
 
 const MediaInfo: React.FC<MediaInfoProps> = ({
@@ -33,7 +34,8 @@ const MediaInfo: React.FC<MediaInfoProps> = ({
   platforms,
   type,
   availableForRent,
-  availableForPurchase
+  availableForPurchase,
+  ratings
 }) => {
   const formatDate = (date: string) => {
     try {
@@ -103,12 +105,14 @@ const MediaInfo: React.FC<MediaInfoProps> = ({
   return (
     <div className="mb-6">
       {/* Rating */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="flex items-center gap-1 text-sm text-yellow-400">
-          <Star className="w-4 h-4 fill-yellow-400" />
-          {voteAverage.toFixed(1)}
-        </span>
-      </div>
+      {ratings ?? (
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex items-center gap-1 text-sm text-yellow-400">
+            <Star className="w-4 h-4 fill-yellow-400" />
+            {voteAverage.toFixed(1)}
+          </span>
+        </div>
+      )}
 
       {/* Info grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

@@ -25,6 +25,8 @@ export interface Media {
   lastAiredSeason?: number | null; // Última temporada emitida (solo para series)
   creators?: { id: number; name: string }[]; // Creadores (solo para series)
   series?: SeriesInfo; // Estado, temporadas y emisión (solo para series)
+  voteCount?: number;
+  collection?: { id: number; name: string } | null; // Saga a la que pertenece (solo películas)
   watchProviders?: { // Nuevo campo para proveedores de streaming
     flatrate?: {
       provider_id: number;

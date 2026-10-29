@@ -24,6 +24,7 @@ interface MediaContentProps {
   availableForRent?: boolean;
   availableForPurchase?: boolean;
   crewLine?: React.ReactNode; // "Dirigida por" / "Creada por", bajo el título
+  ratings?: React.ReactNode;
 }
 
 const MediaContent: React.FC<MediaContentProps> = ({
@@ -43,7 +44,8 @@ const MediaContent: React.FC<MediaContentProps> = ({
   type,
   availableForRent,
   availableForPurchase,
-  crewLine
+  crewLine,
+  ratings
 }) => {
   // Filter out any invalid or empty genres
   const validGenres = genres.filter(genre => genre && genre.id && genre.name);
@@ -74,6 +76,7 @@ const MediaContent: React.FC<MediaContentProps> = ({
       
       <MediaInfo
         voteAverage={voteAverage}
+        ratings={ratings}
         releaseDate={releaseDate}
         runtime={runtime}
         episodeRuntime={episodeRuntime}
