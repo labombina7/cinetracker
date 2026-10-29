@@ -16,6 +16,7 @@ import Explore from "./pages/Explore";
 import List from "./pages/List";
 import Favorites from "./pages/Favorites";
 import FavoritesList from "./pages/FavoritesList";
+import ActorProfile from "./pages/ActorProfile";
 import { MediaFiltersProvider } from "./contexts/MediaFiltersContext";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
 
@@ -37,6 +38,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Navigate to="/explore" replace />} />
                 <Route path="/details/:type/:id" element={<MediaDetail />} />
+                <Route path="/actor/:actorId" element={<ActorProfile />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/auth/trakt" element={<TraktAuth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />

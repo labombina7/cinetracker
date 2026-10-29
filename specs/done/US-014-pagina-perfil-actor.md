@@ -55,7 +55,7 @@ La página de perfil muestra la foto del actor, su biografía truncada (expandib
 
 - Endpoints TMDB:
   - `GET /person/:actorId?language=es-ES` — detalles del actor (nombre, biografía, foto, fecha nacimiento)
-  - `GET /person/:actorId/combined_credits?language=es-ES` — créditos combinados (película + TV); ordenar por `popularity` desc y tomar los primeros 20
+  - `GET /person/:actorId/combined_credits?language=es-ES` — créditos combinados (película + TV); ordenar por `vote_count` desc y tomar los primeros 20 (`popularity` dejaba arriba talk shows y cameos en series). Se excluyen géneros Talk (10767), News (10763), Reality (10764) y personajes "Self/Himself/Herself"
 - La foto del actor: `TMDB_CONFIG.IMAGE_BASE_URL + '/w185' + person.profile_path`
 - Los créditos devuelven tanto `cast` como `crew`; para esta feature usar solo `cast`
 - El tipo `CastMember` ya existe en `src/types/media.ts`; puede extenderse o crear `ActorDetails`

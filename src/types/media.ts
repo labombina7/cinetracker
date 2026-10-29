@@ -70,6 +70,17 @@ export interface CastMember {
   profile_path: string | null;
 }
 
+export interface ActorDetails {
+  id: number;
+  name: string;
+  biography: string;
+  profilePath: string | null;
+  birthday: string | null;
+  deathday: string | null;
+  placeOfBirth: string | null;
+  knownForDepartment: string | null;
+}
+
 export interface MediaDetails extends Media {
   status?: string;
   tagline?: string;

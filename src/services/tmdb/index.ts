@@ -3,6 +3,7 @@
 export { fetchTrending } from './trending';
 export { searchMedia } from './search';
 export { fetchMediaDetails, fetchSeasonVideos } from './details';
+export { fetchActorDetails, fetchActorCredits } from './actors';
 export { discoverMedia, discoverSpanishMedia, fetchMediaByPlatforms } from './discover/index';
 export { fetchGenres } from './genres';
 export { fetchWatchProviders, isAvailableOnStreaming } from './providers';
