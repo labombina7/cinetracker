@@ -35,6 +35,9 @@ export {
   removeFromWatchlist,
 } from './watchlist';
 
+// Ratings exports
+export { fetchTraktRatings } from './ratings';
+
 // Search exports
 export {
   searchTraktMedia

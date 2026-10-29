@@ -52,7 +52,7 @@ También se añade un bloque compacto de "Valoraciones": la nota de TMDB que ya 
 
 ## Notas técnicas
 
-- `append_to_response=watch/providers,videos,recommendations` → sin peticiones extra para el carrusel
+- Recomendaciones: `GET /:type/:id/recommendations` (fallback `/similar`) pedidas al acercarse al bloque, en vez de `append_to_response`: así no engordan la carga inicial de la ficha
 - `GET /collection/:id?language=es-ES` → `parts[]`
 - Trakt: `GET /movies/:id/ratings` y `GET /shows/:id/ratings` (públicos), `GET /sync/ratings/movies` (usuario); aceptan el ID de TMDB vía `/search/tmdb/:id`
 - Cargar los bloques con lazy loading (IntersectionObserver) porque están bajo el pliegue

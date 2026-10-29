@@ -20,6 +20,9 @@ import MediaVideos from './MediaVideos';
 import MediaCrewLine from './MediaCrewLine';
 import SeriesStatus from './tv/SeriesStatus';
 import SeasonsSection from './tv/SeasonsSection';
+import MediaRatings from './MediaRatings';
+import MediaCollection from './MediaCollection';
+import MediaRecommendations from './MediaRecommendations';
 import { seriesTranslations } from '@/utils/translations/series';
 import { pickTrailer } from '@/utils/pickTrailer';
 
@@ -202,6 +205,16 @@ const MediaDetails = () => {
             type={media.type}
             availableForRent={media.availableForRent}
             availableForPurchase={media.availableForPurchase}
+            ratings={
+              <MediaRatings
+                tmdbId={media.id}
+                type={media.type}
+                voteAverage={media.voteAverage}
+                voteCount={media.voteCount}
+                language={language}
+                labels={{ votes: t.votes, yourRating: t.yourRating }}
+              />
+            }
             crewLine={
               media.type === 'movie' ? (
                 <MediaCrewLine label={t.directedBy} people={directors} />
@@ -237,6 +250,29 @@ const MediaDetails = () => {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="mt-6">
+        {media.collection && (
+          <MediaCollection
+            key={media.collection.id}
+            collectionId={media.collection.id}
+            currentId={media.id}
+            language={language}
+            labels={{ saga: t.saga, upcoming: t.upcoming, current: t.currentPart }}
+          />
+        )}
+        <MediaRecommendations
+          id={media.id}
+          type={media.type}
+          language={language}
+          labels={{
+            title: t.recommendations,
+            onlyMine: t.onlyMine,
+            noneOnMine: t.noneOnMine,
+            checking: t.checkingPlatforms
+          }}
+        />
       </div>
     </div>
   );

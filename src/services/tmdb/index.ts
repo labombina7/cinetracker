@@ -4,6 +4,7 @@ export { fetchTrending } from './trending';
 export { searchMedia } from './search';
 export { fetchMediaDetails, fetchSeasonVideos } from './details';
 export { fetchSeasonEpisodes } from './seasons';
+export { fetchRecommendations, fetchCollection } from './recommendations';
 export { fetchPersonProfile, pickKnownFor, filmographyEntryToMedia, KNOWN_FOR_DEPARTMENT_KIND } from './actors';
 export { discoverMedia, discoverSpanishMedia, fetchMediaByPlatforms } from './discover/index';
 export { fetchGenres } from './genres';
