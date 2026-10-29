@@ -90,6 +90,44 @@ export const addToWatchlist = async (
   }
 };
 
+// Sube varios ítems en una sola petición: Trakt limita las escrituras a 1 por segundo
+export const addManyToWatchlist = async (
+  items: { id: number; type: 'movie' | 'tv'; title: string; year?: number }[]
+): Promise<number> => {
+  const token = localStorage.getItem('trakt_token');
+  if (!token || items.length === 0) return 0;
+
+  const toEntry = (item: { id: number; title: string; year?: number }) => ({
+    title: item.title,
+    ...(item.year ? { year: item.year } : {}),
+    ids: { tmdb: item.id },
+  });
+
+  try {
+    const response = await authenticatedFetch(`${TRAKT_API_URL}/sync/watchlist`, {
+      method: 'POST',
+      headers: getTraktHeaders(),
+      body: JSON.stringify({
+        movies: items.filter((i) => i.type === 'movie').map(toEntry),
+        shows: items.filter((i) => i.type === 'tv').map(toEntry),
+      }),
+      credentials: 'omit',
+    });
+
+    if (!response.ok) {
+      console.error('Trakt watchlist bulk add failed:', response.status, await response.text());
+      return 0;
+    }
+
+    const data = await response.json();
+    console.log('Trakt watchlist bulk add:', JSON.stringify(data));
+    return (data.added?.movies ?? 0) + (data.added?.shows ?? 0);
+  } catch (error) {
+    console.error('Trakt watchlist bulk add error:', error);
+    return 0;
+  }
+};
+
 export const removeFromWatchlist = async (mediaId: number, mediaType: 'movie' | 'tv'): Promise<boolean> => {
   const token = localStorage.getItem('trakt_token');
   if (!token) return false;
@@ -105,10 +143,18 @@ export const removeFromWatchlist = async (mediaId: number, mediaType: 'movie' | 
       credentials: 'omit',
     });
 
-    if (!response.ok) return false;
+    if (!response.ok) {
+      console.error('Trakt watchlist remove failed:', response.status, await response.text());
+      return false;
+    }
 
+    // Trakt siempre devuelve not_found (aunque vacío): solo cuenta como borrado si deleted > 0
     const data = await response.json();
-    return data.deleted?.movies > 0 || data.deleted?.shows > 0 || data.not_found != null;
+    const deleted = (data.deleted?.movies ?? 0) + (data.deleted?.shows ?? 0);
+    if (deleted === 0) {
+      console.warn('Trakt watchlist remove deleted nothing:', JSON.stringify(data));
+    }
+    return deleted > 0;
   } catch {
     return false;
   }

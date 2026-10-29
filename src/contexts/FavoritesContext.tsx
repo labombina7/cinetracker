@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { isAuthenticated } from '@/services/trakt';
-import { getWatchlist, addToWatchlist, removeFromWatchlist } from '@/services/trakt';
+import { getWatchlist, addToWatchlist, addManyToWatchlist, removeFromWatchlist } from '@/services/trakt';
 import { findByImdbId } from '@/services/tmdb/findByImdb';
 import { enrichFavorite } from '@/services/tmdb/enrichFavorite';
 
@@ -98,11 +98,14 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             }
           }
 
-          // Upload locals missing in Trakt (fire-and-forget)
-          for (const localItem of local) {
-            if (!resolvedKeys.has(`${localItem.id}:${localItem.type}`)) {
-              addToWatchlist(localItem.id, localItem.type, localItem.title, undefined);
-            }
+          // Upload locals missing in Trakt in a single request (Trakt rate-limits writes)
+          const missingInTrakt = local.filter((f) => !resolvedKeys.has(`${f.id}:${f.type}`));
+          if (missingInTrakt.length > 0) {
+            addManyToWatchlist(missingInTrakt).then((added) => {
+              if (added < missingInTrakt.length) {
+                toast.error(`Solo se subieron ${added} de ${missingInTrakt.length} favoritos a Trakt.`);
+              }
+            });
           }
 
           return merged;
