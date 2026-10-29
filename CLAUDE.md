@@ -63,6 +63,7 @@ Platform data lives in two places kept in sync:
 | `trakt_client_id` | Trakt OAuth client ID |
 | `trakt_client_secret` | Trakt OAuth client secret |
 | `trakt_auth_state` | CSRF state param, deleted after OAuth callback |
+| `hideSpoilers` | `"true"`/`"false"` — blur episode synopses and stills in the seasons section |
 
 ### UI components
 `src/components/ui/` contains shadcn/ui components — don't edit these manually; use the shadcn CLI if adding new ones. The `@` alias resolves to `src/`.
