@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { User } from 'lucide-react';
 import { CastMember } from '@/types/media';
 import { TMDB_CONFIG } from '@/config/tmdb.config';
 
@@ -11,8 +13,13 @@ const MediaCastCarousel: React.FC<MediaCastCarouselProps> = ({ cast, language })
   return (
     <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
       {cast.map((actor) => (
-        <div key={actor.id} className="shrink-0 w-24">
-          <div className="overflow-hidden rounded-md bg-muted aspect-[2/3]">
+        <Link
+          key={actor.id}
+          to={`/actor/${actor.id}`}
+          className="shrink-0 w-24 group rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={language === 'es' ? `Ver perfil de ${actor.name}` : `View ${actor.name}'s profile`}
+        >
+          <div className="relative overflow-hidden rounded-md bg-muted aspect-[2/3]">
             {actor.profile_path ? (
               <img
                 src={`${TMDB_CONFIG.IMAGE_BASE_URL}/w185${actor.profile_path}`}
@@ -28,10 +35,13 @@ const MediaCastCarousel: React.FC<MediaCastCarouselProps> = ({ cast, language })
                 <span className="text-muted-foreground text-xs">{actor.name}</span>
               </div>
             )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/50 transition-colors">
+              <User className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
           </div>
-          <h3 className="mt-2 text-sm font-medium truncate">{actor.name}</h3>
+          <h3 className="mt-2 text-sm font-medium truncate group-hover:underline">{actor.name}</h3>
           <p className="text-xs text-muted-foreground truncate">{actor.character}</p>
-        </div>
+        </Link>
       ))}
     </div>
   );
