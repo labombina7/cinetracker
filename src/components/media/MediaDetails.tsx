@@ -18,6 +18,9 @@ import FavoriteButton from './FavoriteButton';
 import TrailerButton from './TrailerButton';
 import MediaVideos from './MediaVideos';
 import MediaCrewLine from './MediaCrewLine';
+import SeriesStatus from './tv/SeriesStatus';
+import SeasonsSection from './tv/SeasonsSection';
+import { seriesTranslations } from '@/utils/translations/series';
 import { pickTrailer } from '@/utils/pickTrailer';
 
 const MediaDetails = () => {
@@ -33,6 +36,7 @@ const MediaDetails = () => {
   const [seasonVideos, setSeasonVideos] = useState<Video[]>([]);
   const [directors, setDirectors] = useState<{ id: number; name: string }[]>([]);
   const t = mediaDetailTranslations[language];
+  const ts = seriesTranslations[language];
 
   const fetchCast = async (mediaId: number, mediaType: 'movie' | 'tv') => {
     try {
@@ -207,6 +211,13 @@ const MediaDetails = () => {
             }
           />
           
+          {media.series && (
+            <>
+              <SeriesStatus series={media.series} t={ts} language={language} />
+              <SeasonsSection tvId={media.id} series={media.series} t={ts} language={language} />
+            </>
+          )}
+
           {allVideos.length > 1 && (
             <MediaVideos videos={allVideos} title={t.videos} typeLabels={t.videoTypes} />
           )}

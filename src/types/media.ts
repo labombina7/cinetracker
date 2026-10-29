@@ -24,6 +24,7 @@ export interface Media {
   videos?: Video[]; // Vídeos de YouTube (tráileres, teasers, clips)
   lastAiredSeason?: number | null; // Última temporada emitida (solo para series)
   creators?: { id: number; name: string }[]; // Creadores (solo para series)
+  series?: SeriesInfo; // Estado, temporadas y emisión (solo para series)
   watchProviders?: { // Nuevo campo para proveedores de streaming
     flatrate?: {
       provider_id: number;
@@ -50,6 +51,47 @@ export interface Video {
   official: boolean;
   language: string; // iso_639_1
   publishedAt?: string;
+}
+
+export type SeriesStatus = 'returning' | 'ended' | 'canceled' | 'inProduction' | 'planned';
+
+export interface EpisodeSummary {
+  seasonNumber: number;
+  episodeNumber: number;
+  name: string;
+  airDate: string | null;
+}
+
+export interface SeasonSummary {
+  seasonNumber: number;
+  name: string;
+  episodeCount: number;
+  airDate: string | null;
+  posterPath: string | null;
+}
+
+export interface SeriesInfo {
+  status: SeriesStatus | null;
+  seasons: SeasonSummary[];
+  nextEpisode: EpisodeSummary | null;
+  lastEpisode: EpisodeSummary | null;
+  networks: { id: number; name: string; logoPath: string | null }[];
+}
+
+export interface Episode {
+  id: number;
+  seasonNumber: number;
+  episodeNumber: number;
+  name: string;
+  overview: string;
+  airDate: string | null;
+  runtime: number | null;
+  stillPath: string | null;
+  voteAverage: number;
+  voteCount: number;
+  directors: { id: number; name: string }[];
+  writers: { id: number; name: string }[];
+  guestStars: { id: number; name: string; character: string; profilePath: string | null }[];
 }
 
 export interface Genre {
