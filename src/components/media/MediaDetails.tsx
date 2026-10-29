@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Media, CastMember } from '@/types/media';
-import { fetchMediaDetails } from '@/services/tmdb/index';
+import { Media, CastMember, Video } from '@/types/media';
+import { fetchMediaDetails, fetchSeasonVideos } from '@/services/tmdb/index';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -15,6 +15,9 @@ import MediaCastCarousel from './MediaCastCarousel';
 import MediaDetailSkeleton from './MediaDetailSkeleton';
 import MediaPoster from './MediaPoster';
 import FavoriteButton from './FavoriteButton';
+import TrailerButton from './TrailerButton';
+import MediaVideos from './MediaVideos';
+import { pickTrailer } from '@/utils/pickTrailer';
 
 const MediaDetails = () => {
   const { id, type } = useParams<{ id: string; type: string }>();
@@ -26,6 +29,7 @@ const MediaDetails = () => {
   const { language } = useLanguage();
   const [cast, setCast] = useState<CastMember[]>([]);
   const [loadingCast, setLoadingCast] = useState(true);
+  const [seasonVideos, setSeasonVideos] = useState<Video[]>([]);
   const t = mediaDetailTranslations[language];
 
   const fetchCast = async (mediaId: number, mediaType: 'movie' | 'tv') => {
@@ -77,6 +81,10 @@ const MediaDetails = () => {
       
       setMedia(mediaDetails);
       fetchCast(Number(id), type as 'movie' | 'tv');
+      setSeasonVideos([]);
+      if (mediaDetails.type === 'tv' && mediaDetails.lastAiredSeason) {
+        fetchSeasonVideos(mediaDetails.id, mediaDetails.lastAiredSeason, language).then(setSeasonVideos);
+      }
     } catch (err) {
       console.error('Error fetching media details:', err);
       
@@ -99,6 +107,21 @@ const MediaDetails = () => {
     window.scrollTo(0, 0);
     fetchData();
   }, [id, type, language]);
+
+  // En series se prioriza el tráiler de la última temporada emitida
+  const trailer = useMemo(
+    () => pickTrailer(seasonVideos, language) ?? pickTrailer(media?.videos ?? [], language),
+    [seasonVideos, media, language]
+  );
+
+  const allVideos = useMemo(() => {
+    const seen = new Set<string>();
+    return [...seasonVideos, ...(media?.videos ?? [])].filter((v) => {
+      if (seen.has(v.key)) return false;
+      seen.add(v.key);
+      return true;
+    });
+  }, [seasonVideos, media]);
 
   const handleFavoriteClick = () => {
     if (!media) return;
@@ -135,7 +158,8 @@ const MediaDetails = () => {
         <MediaDetailHeader backdropPath={media.backdropPath} />
       </div>
       
-      <div className="fixed top-20 right-4 z-20">
+      <div className="fixed top-20 right-4 z-20 flex flex-col gap-2">
+        {trailer && <TrailerButton trailer={trailer} label={`${t.watchTrailer}: ${media.title}`} />}
         <FavoriteButton
           isFavorite={media ? checkIsFavorite(media.id, media.type) : false}
           onToggle={handleFavoriteClick}
@@ -168,6 +192,10 @@ const MediaDetails = () => {
             availableForPurchase={media.availableForPurchase}
           />
           
+          {allVideos.length > 1 && (
+            <MediaVideos videos={allVideos} title={t.videos} typeLabels={t.videoTypes} />
+          )}
+
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">{t.actors}</h2>
             {loadingCast ? (

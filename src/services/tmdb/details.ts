@@ -1,13 +1,54 @@
 
 
-import { Media } from '../../types/media';
+import { Media, Video } from '../../types/media';
 import { buildApiUrl } from './config';
+import { cachedFetch } from './apiCache';
+
+interface TMDBVideo {
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+  official: boolean;
+  iso_639_1: string;
+  published_at?: string;
+}
+
+const mapVideos = (results: TMDBVideo[] = []): Video[] =>
+  results
+    .filter((v) => v.site === 'YouTube' && v.key)
+    .map((v) => ({
+      key: v.key,
+      name: v.name,
+      type: v.type,
+      official: v.official,
+      language: v.iso_639_1,
+      publishedAt: v.published_at
+    }));
+
+// Vídeos de una temporada concreta (los tráileres de series suelen colgarse aquí)
+export const fetchSeasonVideos = async (tvId: number, seasonNumber: number, language: string = 'es'): Promise<Video[]> => {
+  try {
+    const url = buildApiUrl(`/tv/${tvId}/season/${seasonNumber}/videos`, {
+      language,
+      include_video_language: `${language},en,null`
+    });
+    const response = await cachedFetch(url);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return mapVideos(data.results);
+  } catch (error) {
+    console.error('Error fetching season videos:', error);
+    return [];
+  }
+};
 
 // Función para obtener detalles de un medio específico
 export const fetchMediaDetails = async (id: number, type: 'movie' | 'tv', language: string = 'es'): Promise<Media | null> => {
   try {
     const params = {
-      append_to_response: 'watch/providers',
+      append_to_response: 'watch/providers,videos',
+      include_video_language: `${language},en,null`,
       language: language
     };
 
@@ -49,7 +90,9 @@ export const fetchMediaDetails = async (id: number, type: 'movie' | 'tv', langua
       numberOfEpisodes: type === 'tv' ? item.number_of_episodes : null,
       numberOfSeasons: type === 'tv' ? item.number_of_seasons : null,
       availableForRent: false,
-      availableForPurchase: false
+      availableForPurchase: false,
+      videos: mapVideos(item.videos?.results),
+      lastAiredSeason: type === 'tv' ? (item.last_episode_to_air?.season_number ?? null) : null
     };
     
     // Si hay datos de proveedores, recopilar todas las plataformas
