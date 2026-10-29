@@ -25,7 +25,19 @@ export const mediaDetailTranslations = {
     errorLoading: "Error al cargar los detalles. Por favor, inténtalo de nuevo más tarde.",
     minutes: "minutos",
     actors: "Actores principales",
-    loadingCast: "Cargando reparto..."
+    loadingCast: "Cargando reparto...",
+    watchTrailer: "Ver tráiler",
+    videos: "Vídeos",
+    videoTypes: {
+      Trailer: "Tráiler",
+      Teaser: "Teaser",
+      Clip: "Clip",
+      Featurette: "Making of",
+      "Behind the Scenes": "Detrás de las cámaras",
+      Bloopers: "Tomas falsas",
+      Recap: "Resumen",
+      "Opening Credits": "Cabecera"
+    } as Record<string, string>
   },
   en: {
     back: "Back",
@@ -52,6 +64,18 @@ export const mediaDetailTranslations = {
     errorLoading: "Error loading details. Please try again later.",
     minutes: "minutes",
     actors: "Main Cast",
-    loadingCast: "Loading cast..."
+    loadingCast: "Loading cast...",
+    watchTrailer: "Watch trailer",
+    videos: "Videos",
+    videoTypes: {
+      Trailer: "Trailer",
+      Teaser: "Teaser",
+      Clip: "Clip",
+      Featurette: "Featurette",
+      "Behind the Scenes": "Behind the Scenes",
+      Bloopers: "Bloopers",
+      Recap: "Recap",
+      "Opening Credits": "Opening Credits"
+    } as Record<string, string>
   }
 };

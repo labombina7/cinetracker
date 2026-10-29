@@ -21,6 +21,8 @@ export interface Media {
   availableForPurchase?: boolean; // Disponible para comprar
   original_language?: string; // Idioma original del contenido
   original_title?: string; // Título original del contenido - añadido para resolver el error
+  videos?: Video[]; // Vídeos de YouTube (tráileres, teasers, clips)
+  lastAiredSeason?: number | null; // Última temporada emitida (solo para series)
   watchProviders?: { // Nuevo campo para proveedores de streaming
     flatrate?: {
       provider_id: number;
@@ -38,6 +40,15 @@ export interface Media {
       logo_path: string;
     }[];
   };
+}
+
+export interface Video {
+  key: string; // ID del vídeo en YouTube
+  name: string;
+  type: string; // 'Trailer' | 'Teaser' | 'Clip' | 'Featurette' | ...
+  official: boolean;
+  language: string; // iso_639_1
+  publishedAt?: string;
 }
 
 export interface Genre {

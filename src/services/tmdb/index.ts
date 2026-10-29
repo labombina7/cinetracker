@@ -2,7 +2,7 @@
 // Exportar todas las funciones públicas
 export { fetchTrending } from './trending';
 export { searchMedia } from './search';
-export { fetchMediaDetails } from './details';
+export { fetchMediaDetails, fetchSeasonVideos } from './details';
 export { discoverMedia, discoverSpanishMedia, fetchMediaByPlatforms } from './discover/index';
 export { fetchGenres } from './genres';
 export { fetchWatchProviders, isAvailableOnStreaming } from './providers';
