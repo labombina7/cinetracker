@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import { ActorDetails, Media } from '@/types/media';
-import { fetchActorDetails, fetchActorCredits } from '@/services/tmdb/index';
+import { useEffect, useMemo, useState } from 'react';
+import { ActorDetails, CreditKind, FilmographyEntry } from '@/types/media';
+import { fetchPersonProfile, pickKnownFor, KNOWN_FOR_DEPARTMENT_KIND } from '@/services/tmdb/index';
 
 type Status = 'loading' | 'ready' | 'notFound' | 'error';
 
 export const useActorProfile = (actorId: number, language: string) => {
   const [actor, setActor] = useState<ActorDetails | null>(null);
-  const [credits, setCredits] = useState<Media[]>([]);
+  const [filmography, setFilmography] = useState<FilmographyEntry[]>([]);
   const [status, setStatus] = useState<Status>('loading');
   const [attempt, setAttempt] = useState(0);
 
@@ -14,21 +14,20 @@ export const useActorProfile = (actorId: number, language: string) => {
     let cancelled = false;
     setStatus('loading');
 
-    Promise.all([fetchActorDetails(actorId, language), fetchActorCredits(actorId, language)])
-      .then(([details, knownFor]) => {
+    fetchPersonProfile(actorId, language)
+      .then((profile) => {
         if (cancelled) return;
-        if (!details) {
+        if (!profile) {
           setStatus('notFound');
           return;
         }
-        setActor(details);
-        setCredits(knownFor);
+        setActor(profile.details);
+        setFilmography(profile.filmography);
         setStatus('ready');
       })
       .catch((error) => {
         console.error('Error loading actor profile:', error);
-        // Un 404 en los créditos también significa que la persona no existe
-        if (!cancelled) setStatus(String(error?.message).includes('404') ? 'notFound' : 'error');
+        if (!cancelled) setStatus('error');
       });
 
     return () => {
@@ -36,5 +35,8 @@ export const useActorProfile = (actorId: number, language: string) => {
     };
   }, [actorId, language, attempt]);
 
-  return { actor, credits, status, retry: () => setAttempt((n) => n + 1) };
+  const primaryKind: CreditKind = KNOWN_FOR_DEPARTMENT_KIND[actor?.knownForDepartment ?? ''] ?? 'acting';
+  const knownFor = useMemo(() => pickKnownFor(filmography, primaryKind), [filmography, primaryKind]);
+
+  return { actor, filmography, knownFor, primaryKind, status, retry: () => setAttempt((n) => n + 1) };
 };

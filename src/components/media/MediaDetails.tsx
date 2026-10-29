@@ -17,6 +17,7 @@ import MediaPoster from './MediaPoster';
 import FavoriteButton from './FavoriteButton';
 import TrailerButton from './TrailerButton';
 import MediaVideos from './MediaVideos';
+import MediaCrewLine from './MediaCrewLine';
 import { pickTrailer } from '@/utils/pickTrailer';
 
 const MediaDetails = () => {
@@ -30,6 +31,7 @@ const MediaDetails = () => {
   const [cast, setCast] = useState<CastMember[]>([]);
   const [loadingCast, setLoadingCast] = useState(true);
   const [seasonVideos, setSeasonVideos] = useState<Video[]>([]);
+  const [directors, setDirectors] = useState<{ id: number; name: string }[]>([]);
   const t = mediaDetailTranslations[language];
 
   const fetchCast = async (mediaId: number, mediaType: 'movie' | 'tv') => {
@@ -44,9 +46,15 @@ const MediaDetails = () => {
       
       const data = await response.json();
       setCast(data.cast.slice(0, 20));
+      setDirectors(
+        (data.crew ?? [])
+          .filter((c: { job: string }) => c.job === 'Director')
+          .map((c: { id: number; name: string }) => ({ id: c.id, name: c.name }))
+      );
     } catch (error) {
       console.error('Error fetching cast:', error);
       setCast([]);
+      setDirectors([]);
     } finally {
       setLoadingCast(false);
     }
@@ -190,6 +198,13 @@ const MediaDetails = () => {
             type={media.type}
             availableForRent={media.availableForRent}
             availableForPurchase={media.availableForPurchase}
+            crewLine={
+              media.type === 'movie' ? (
+                <MediaCrewLine label={t.directedBy} people={directors} />
+              ) : (
+                <MediaCrewLine label={t.createdBy} people={media.creators ?? []} />
+              )
+            }
           />
           
           {allVideos.length > 1 && (

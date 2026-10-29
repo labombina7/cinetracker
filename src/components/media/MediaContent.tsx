@@ -23,6 +23,7 @@ interface MediaContentProps {
   type: 'movie' | 'tv';
   availableForRent?: boolean;
   availableForPurchase?: boolean;
+  crewLine?: React.ReactNode; // "Dirigida por" / "Creada por", bajo el título
 }
 
 const MediaContent: React.FC<MediaContentProps> = ({
@@ -41,7 +42,8 @@ const MediaContent: React.FC<MediaContentProps> = ({
   country,
   type,
   availableForRent,
-  availableForPurchase
+  availableForPurchase,
+  crewLine
 }) => {
   // Filter out any invalid or empty genres
   const validGenres = genres.filter(genre => genre && genre.id && genre.name);
@@ -53,6 +55,7 @@ const MediaContent: React.FC<MediaContentProps> = ({
         {tagline && (
           <p className="text-muted-foreground italic mb-3">{tagline}</p>
         )}
+        {crewLine}
       </div>
       
       <div className="flex flex-wrap gap-2 mb-4">

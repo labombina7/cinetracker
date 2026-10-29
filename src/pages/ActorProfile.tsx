@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { differenceInYears, format } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
-import { AlertTriangle, CalendarIcon, MapPin, User } from 'lucide-react';
+import { AlertTriangle, CalendarIcon, Clapperboard, ExternalLink, Loader2, MapPin, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -14,8 +14,12 @@ import {
 } from '@/components/ui/carousel';
 import MediaCard from '@/components/MediaCard';
 import MediaDetailHeader from '@/components/media/MediaDetailHeader';
+import Filmography from '@/components/person/Filmography';
+import FilmographyFilters from '@/components/person/FilmographyFilters';
+import PersonPhotos from '@/components/person/PersonPhotos';
 import { TMDB_CONFIG } from '@/config/tmdb.config';
 import { useActorProfile } from '@/hooks/useActorProfile';
+import { usePersonFilmography } from '@/hooks/usePersonFilmography';
 import { useLanguage } from '@/hooks/useLanguage';
 import { actorProfileTranslations } from '@/utils/translations/actorProfile';
 
@@ -44,7 +48,8 @@ const ActorProfile = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const t = actorProfileTranslations[language];
-  const { actor, credits, status, retry } = useActorProfile(Number(actorId), language);
+  const { actor, filmography, knownFor, primaryKind, status, retry } = useActorProfile(Number(actorId), language);
+  const film = usePersonFilmography(filmography, primaryKind);
 
   const [bioExpanded, setBioExpanded] = useState(false);
   const [bioOverflows, setBioOverflows] = useState(false);
@@ -87,7 +92,7 @@ const ActorProfile = () => {
   return (
     <div className="container mx-auto px-4 py-0">
       <div className="relative mb-6">
-        <MediaDetailHeader backdropPath={credits[0]?.backdropPath ?? ''} />
+        <MediaDetailHeader backdropPath={knownFor[0]?.backdropPath ?? ''} />
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
@@ -135,7 +140,38 @@ const ActorProfile = () => {
                 <span>{actor.placeOfBirth}</span>
               </div>
             )}
+            {film.total > 0 && (
+              <div className="flex items-center gap-2">
+                <Clapperboard className="h-4 w-4 text-gray-500" />
+                <span>{film.total} {t.credits}</span>
+              </div>
+            )}
           </div>
+
+          {(actor.imdbId || actor.instagramId) && (
+            <div className="flex gap-2 mb-6">
+              {actor.imdbId && (
+                <a
+                  href={`https://www.imdb.com/name/${actor.imdbId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  IMDb <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {actor.instagramId && (
+                <a
+                  href={`https://www.instagram.com/${actor.instagramId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  Instagram <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          )}
 
           <h2 className="text-xl font-semibold mb-2">{t.biography}</h2>
           {actor.biography ? (
@@ -165,12 +201,12 @@ const ActorProfile = () => {
 
       <section className="mt-10 mb-10">
         <h2 className="text-lg md:text-xl font-bold mb-4">{t.knownFor}</h2>
-        {credits.length === 0 ? (
+        {knownFor.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t.noCredits}</p>
         ) : (
           <Carousel opts={{ align: 'start', dragFree: true }} className="w-full">
             <CarouselContent className="-ml-3">
-              {credits.map((item) => (
+              {knownFor.map((item) => (
                 <CarouselItem
                   key={`${item.type}-${item.id}`}
                   className="pl-3 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
@@ -184,6 +220,39 @@ const ActorProfile = () => {
           </Carousel>
         )}
       </section>
+
+      {film.total > 0 && (
+        <section className="mb-10">
+          <h2 className="text-lg md:text-xl font-bold mb-4">{t.filmography}</h2>
+          <FilmographyFilters
+            t={t}
+            type={film.type}
+            onTypeChange={film.setType}
+            role={film.role}
+            availableRoles={film.availableRoles}
+            onRoleChange={film.setRole}
+            onlyMine={film.onlyMine}
+            canFilterByPlatform={film.canFilterByPlatform}
+            onOnlyMineChange={film.setOnlyMine}
+          />
+          {film.loadingPlatforms && (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+              <Loader2 className="h-4 w-4 animate-spin" /> {t.checkingPlatforms}
+            </p>
+          )}
+          {film.visibleCount === 0 && !film.loadingPlatforms ? (
+            <p className="text-sm text-muted-foreground">{t.noResults}</p>
+          ) : (
+            <Filmography groups={film.groups} t={t} platformsFor={film.platformsFor} />
+          )}
+        </section>
+      )}
+
+      {actor.photos.length > 0 && (
+        <div className="mb-10">
+          <PersonPhotos photos={actor.photos} name={actor.name} title={t.photos} />
+        </div>
+      )}
     </div>
   );
 };

@@ -23,6 +23,7 @@ export interface Media {
   original_title?: string; // Título original del contenido - añadido para resolver el error
   videos?: Video[]; // Vídeos de YouTube (tráileres, teasers, clips)
   lastAiredSeason?: number | null; // Última temporada emitida (solo para series)
+  creators?: { id: number; name: string }[]; // Creadores (solo para series)
   watchProviders?: { // Nuevo campo para proveedores de streaming
     flatrate?: {
       provider_id: number;
@@ -79,6 +80,27 @@ export interface ActorDetails {
   deathday: string | null;
   placeOfBirth: string | null;
   knownForDepartment: string | null;
+  imdbId: string | null;
+  instagramId: string | null;
+  photos: string[]; // profile_path de la galería de fotos
+}
+
+export type CreditKind = 'acting' | 'directing' | 'writing' | 'production' | 'other';
+
+export interface FilmographyEntry {
+  id: number;
+  type: 'movie' | 'tv';
+  title: string;
+  posterPath: string;
+  backdropPath: string;
+  overview: string;
+  voteAverage: number;
+  voteCount: number;
+  releaseDate: string | null;
+  genreIds: number[];
+  originalLanguage?: string;
+  roles: { kind: CreditKind; label: string }[]; // personaje (acting) o cargo (crew)
+  episodeCount: number | null; // solo series, en las que aparece
 }
 
 export interface MediaDetails extends Media {
