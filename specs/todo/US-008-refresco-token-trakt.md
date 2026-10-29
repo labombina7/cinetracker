@@ -1,36 +1,47 @@
-# Feature: Refresco automático del token de Trakt
+# Feature: Refresco fiable del token de Trakt
 
 ## Historia de usuario
 
 Como usuario de CineTracker conectado con Trakt.tv,
-quiero que mi sesión se mantenga activa de forma transparente cuando el token expire,
-para no encontrarme con errores 401 inesperados ni tener que reconectarme manualmente.
+quiero que mi sesión se renueve sola y no se cierre por fallos pasajeros o por tener varias pestañas abiertas,
+para no tener que reconectarme cada pocos días.
 
 ---
 
 ## Descripción
 
-Actualmente el `refresh_token` de Trakt se guarda en `localStorage` (`trakt_refresh_token`) pero nunca se usa. Cuando el `access_token` expira (por defecto 3 meses en Trakt), todas las llamadas a la API de Trakt devuelven 401 y el usuario ve errores sin entender por qué, ya que en la UI sigue apareciendo como "conectado".
+Desde la migración de Trakt a PKCE (PR #28), los tokens de acceso duran **7 días** y cada refresh token es **de un solo uso**: al renovar, Trakt devuelve un par nuevo e invalida el anterior. Un refresh token rechazado devuelve `400 invalid_grant`.
 
-Esta US implementa un mecanismo de refresco automático: cuando una petición a Trakt devuelve 401, se intenta refrescar el token usando el `refresh_token` almacenado y se reintenta la petición original. Si el refresco falla (token revocado o expirado), se hace logout limpio y se notifica al usuario.
+La app ya renovaba el token al recibir un 401 (`authenticatedFetch`), pero con tokens de una semana aparecían fallos que antes eran raros:
+
+- Con dos pestañas abiertas, ambas renovaban con el mismo refresh token; la segunda recibía `invalid_grant` y borraba la sesión, incluido el token nuevo que acababa de guardar la primera.
+- Cualquier fallo de red o error 5xx durante la renovación cerraba la sesión para siempre.
+- Al cerrar la sesión se borraba también el Client ID, que con PKCE es configuración de la app.
+- Solo se renovaba después de que una petición fallara.
+
+Esta US hace la renovación preventiva, coordinada entre pestañas y tolerante a fallos pasajeros.
 
 ---
 
 ## Criterios de aceptación
 
-### Refresco automático
-- [ ] Cuando una petición autenticada a Trakt devuelve 401, se llama automáticamente a `POST /oauth/token` con `grant_type: refresh_token`
-- [ ] Si el refresco es exitoso, el nuevo `access_token` y `refresh_token` se guardan en `localStorage` y la petición original se reintenta una vez
-- [ ] El refresco es transparente para el usuario: no ve ningún mensaje si funciona correctamente
-- [ ] El reintento se hace como máximo una vez por petición (no bucle infinito)
+### Renovación
+- [x] Al obtener o renovar un token se guardan `trakt_token_created_at` y `trakt_token_expires_at` (de `created_at` + `expires_in`; 7 días si no vienen)
+- [x] Si al token le quedan menos de 24 h, se renueva antes de la petición; si la renovación falla por red, la petición sigue con el token actual
+- [x] Si una petición devuelve 401, se renueva y se reintenta una sola vez
+- [x] La renovación se envía sin `client_secret` ni `code_verifier` (apps PKCE)
+- [x] Siempre se guarda el refresh token nuevo
 
-### Logout limpio al fallar el refresco
-- [ ] Si el refresco devuelve error (token revocado, expirado permanentemente o red caída), se hace logout completo: se eliminan `trakt_token`, `trakt_refresh_token`, `trakt_client_id`, `trakt_client_secret`
-- [ ] Se muestra un toast informando al usuario: "Tu sesión de Trakt.tv ha expirado. Por favor, vuelve a conectarte."
-- [ ] La app continúa funcionando sin la integración de Trakt (favoritos locales siguen funcionando)
+### Varias pestañas y peticiones simultáneas
+- [x] Dentro de una pestaña, las peticiones que caducan a la vez comparten una única renovación
+- [x] Entre pestañas, la renovación se serializa con `navigator.locks`; la pestaña que espera reutiliza el token que ya ha guardado la otra, sin llamar a Trakt
+- [x] Si Trakt rechaza el refresh token pero otra pestaña ya guardó uno nuevo, se usa ese y no se cierra la sesión
 
-### Indicador de expiración próxima (opcional nice-to-have)
-- [ ] Si el token lleva más de 80 días activo (calculado desde la fecha de creación guardada), se muestra un banner sutil informando que la sesión expirará pronto
+### Cierre de sesión
+- [x] La sesión solo se cierra si Trakt rechaza el refresh token (400/401) o no hay refresh token
+- [x] Un fallo de red o un 5xx no cierra la sesión; se reintenta en la siguiente petición
+- [x] Al cerrar la sesión se borran los tokens pero se conserva el Client ID
+- [x] Se muestra una sola vez el aviso "Tu sesión de Trakt.tv ha expirado. Por favor, vuelve a conectarte."
 
 ---
 
@@ -38,24 +49,21 @@ Esta US implementa un mecanismo de refresco automático: cuando una petición a 
 
 | Componente | Descripción |
 |---|---|
-| `src/services/trakt/auth.ts` | Añadir función `refreshAccessToken()` que llama a `/oauth/token` con `grant_type: refresh_token` |
-| `src/services/trakt/client.ts` | Añadir wrapper `authenticatedFetch()` que intercepta 401, llama a `refreshAccessToken()` y reintenta |
-| `src/services/trakt/watchlist.ts` | Usar `authenticatedFetch()` en lugar de `fetch` directo |
-| `src/services/trakt/user.ts` | Usar `authenticatedFetch()` en lugar de `fetch` directo |
+| `src/services/trakt/auth.ts` | `saveTokens()`, `getTokenExpiry()`, `refreshAccessToken(staleToken)` con resultado `ok` / `invalid` / `transient` y Web Locks |
+| `src/services/trakt/client.ts` | `authenticatedFetch()` con renovación preventiva y cierre de sesión solo con `invalid` |
+| `CLAUDE.md` | Claves de localStorage y flujo OAuth actualizados |
 
 ---
 
 ## Notas técnicas
 
-- Endpoint de refresco: `POST https://api.trakt.tv/oauth/token` con body `{ refresh_token, client_id, client_secret, redirect_uri, grant_type: 'refresh_token' }`
-- El `client_secret` es opcional si la app usa flujo PKCE, pero actualmente se guarda en localStorage si el usuario lo proporcionó
-- Guardar `trakt_token_created_at` (timestamp ISO) al obtener un nuevo token para calcular la antigüedad
-- Para evitar race conditions si varias peticiones hacen refresh simultáneamente, usar una Promise compartida (`let refreshPromise: Promise<string | null> | null = null`)
+- Documentación: https://developer.trakt.tv/docs/authentication-oauth y https://developer.trakt.tv/docs/pkce
+- Los tokens anteriores a la migración de Trakt devuelven `invalid_grant`: esos usuarios tendrán que reconectar una vez
+- Sin `navigator.locks` (navegadores muy antiguos) se mantiene la comprobación de "otra pestaña ya renovó" tras un `invalid_grant`
 
 ---
 
 ## Fuera de alcance (v1)
 
-- Migración a flujo PKCE (elimina la necesidad de client_secret)
-- Notificaciones push de expiración
-- Sincronización del estado de autenticación entre pestañas
+- Que la interfaz (Navbar, página de Trakt) reaccione al cierre de sesión sin recargar
+- Sincronizar el estado de autenticación entre pestañas en tiempo real (evento `storage`)

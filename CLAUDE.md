@@ -59,9 +59,11 @@ Platform data lives in two places kept in sync:
 | `mediaFilters` | `MediaFiltersState` JSON |
 | `favorites` | `number[]` JSON (IDs only — known bug: collides across movie/TV) |
 | `trakt_token` | Trakt access token |
-| `trakt_refresh_token` | Trakt refresh token (not currently used for auto-refresh) |
+| `trakt_refresh_token` | Trakt refresh token — single-use, rotated on every refresh |
+| `trakt_token_created_at` / `trakt_token_expires_at` | ISO dates; access tokens last 7 days, refreshed when <24h remain |
+| `trakt_code_verifier` | PKCE verifier, deleted after the token exchange |
 | `trakt_client_id` | Trakt OAuth client ID |
-| `trakt_client_secret` | Trakt OAuth client secret |
+| `trakt_client_secret` | Obsolete (PKCE); removed when saving the client ID |
 | `trakt_auth_state` | CSRF state param, deleted after OAuth callback |
 | `hideSpoilers` | `"true"`/`"false"` — blur episode synopses and stills in the seasons section |
 
@@ -72,7 +74,7 @@ Platform data lives in two places kept in sync:
 1. `getTraktAuthUrl()` generates the URL and saves `state` to localStorage
 2. User is redirected to Trakt, then back to `/#/auth/callback`
 3. `AuthCallback.tsx` validates state and exchanges the code for a token via `getAccessToken()`
-4. Token stored in localStorage; no automatic refresh is implemented yet
+4. Token stored in localStorage. `authenticatedFetch()` (`services/trakt/client.ts`) refreshes it before expiry and on 401, coordinated across tabs with `navigator.locks`. Only a rejected refresh token (400 `invalid_grant`) ends the session; network errors keep it. The client ID is kept on logout
 
 ### Specs and planning
 `specs/todo/` contains User Stories (US-NNN format) ready to implement. `specs/done/` has completed ones. `insights/` has audit reports (tech-debt, ux-audit). Check these before implementing new features to avoid duplicating planned work.
