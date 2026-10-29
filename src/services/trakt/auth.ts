@@ -1,6 +1,38 @@
 
 import { TRAKT_API_URL, getClientId, getRedirectUri } from './config';
 
+// Trakt emite tokens de acceso de 7 días; se usa si no tenemos expires_in guardado (tokens antiguos)
+const DEFAULT_TOKEN_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface TraktTokenResponse {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number; // segundos
+  created_at?: number; // epoch en segundos
+}
+
+// Guarda el par de tokens. El refresh token es de un solo uso: hay que guardar siempre el nuevo
+const saveTokens = (data: TraktTokenResponse): string | null => {
+  if (!data.access_token) return null;
+  const createdAt = data.created_at ? data.created_at * 1000 : Date.now();
+  const lifetime = data.expires_in ? data.expires_in * 1000 : DEFAULT_TOKEN_LIFETIME_MS;
+
+  localStorage.setItem('trakt_token', data.access_token);
+  localStorage.setItem('trakt_token_created_at', new Date(createdAt).toISOString());
+  localStorage.setItem('trakt_token_expires_at', new Date(createdAt + lifetime).toISOString());
+  if (data.refresh_token) {
+    localStorage.setItem('trakt_refresh_token', data.refresh_token);
+  }
+  return data.access_token;
+};
+
+export const getTokenExpiry = (): number | null => {
+  const expiresAt = localStorage.getItem('trakt_token_expires_at');
+  if (expiresAt) return new Date(expiresAt).getTime();
+  const createdAt = localStorage.getItem('trakt_token_created_at');
+  return createdAt ? new Date(createdAt).getTime() + DEFAULT_TOKEN_LIFETIME_MS : null;
+};
+
 const toBase64Url = (bytes: Uint8Array): string =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
@@ -66,17 +98,7 @@ export const getAccessToken = async (code: string): Promise<string | null> => {
       return null;
     }
 
-    const data = await response.json();
-
-    if (data.access_token) {
-      localStorage.setItem('trakt_token', data.access_token);
-      localStorage.setItem('trakt_token_created_at', new Date().toISOString());
-      if (data.refresh_token) {
-        localStorage.setItem('trakt_refresh_token', data.refresh_token);
-      }
-      return data.access_token;
-    }
-    return null;
+    return saveTokens(await response.json());
   } catch (error) {
     console.error('Error getting Trakt access token:', error);
     return null;
@@ -85,23 +107,27 @@ export const getAccessToken = async (code: string): Promise<string | null> => {
   }
 };
 
-export const refreshAccessToken = async (): Promise<string | null> => {
+export type RefreshResult =
+  | { status: 'ok'; token: string }
+  | { status: 'invalid' } // Trakt rechaza el refresh token: hay que volver a conectar
+  | { status: 'transient' }; // red caída o error de Trakt: se puede reintentar más tarde
+
+// Otra pestaña puede haber renovado ya el token (y gastado el refresh token que teníamos)
+const tokenRotatedSince = (staleToken: string | null): string | null => {
+  const current = localStorage.getItem('trakt_token');
+  return current && current !== staleToken ? current : null;
+};
+
+const requestRefresh = async (staleToken: string | null): Promise<RefreshResult> => {
+  const rotated = tokenRotatedSince(staleToken);
+  if (rotated) return { status: 'ok', token: rotated };
+
   const refreshToken = localStorage.getItem('trakt_refresh_token');
   const clientId = getClientId();
-  const redirectUri = getRedirectUri();
-
-  if (!refreshToken || !clientId) {
-    return null;
-  }
+  if (!refreshToken || !clientId) return { status: 'invalid' };
 
   try {
-    const body: Record<string, string> = {
-      refresh_token: refreshToken,
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      grant_type: 'refresh_token',
-    };
-
+    // Apps PKCE: sin client_secret ni code_verifier
     const response = await fetch(`${TRAKT_API_URL}/oauth/token`, {
       method: 'POST',
       headers: {
@@ -109,35 +135,48 @@ export const refreshAccessToken = async (): Promise<string | null> => {
         'trakt-api-version': '2',
         'trakt-api-key': clientId,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        refresh_token: refreshToken,
+        client_id: clientId,
+        redirect_uri: getRedirectUri(),
+        grant_type: 'refresh_token',
+      }),
       credentials: 'omit',
     });
 
-    if (!response.ok) {
-      return null;
+    if (response.ok) {
+      const token = saveTokens(await response.json());
+      return token ? { status: 'ok', token } : { status: 'transient' };
     }
 
-    const data = await response.json();
-
-    if (data.access_token) {
-      localStorage.setItem('trakt_token', data.access_token);
-      localStorage.setItem('trakt_token_created_at', new Date().toISOString());
-      if (data.refresh_token) {
-        localStorage.setItem('trakt_refresh_token', data.refresh_token);
-      }
-      return data.access_token;
+    // 400 invalid_grant: refresh token gastado, revocado o anterior a la migración de Trakt
+    if (response.status === 400 || response.status === 401) {
+      const rotatedMeanwhile = tokenRotatedSince(staleToken);
+      if (rotatedMeanwhile) return { status: 'ok', token: rotatedMeanwhile };
+      console.error('Trakt rejected the refresh token:', response.status, await response.text().catch(() => ''));
+      return { status: 'invalid' };
     }
 
-    return null;
+    return { status: 'transient' };
   } catch {
-    return null;
+    return { status: 'transient' };
   }
+};
+
+// `staleToken` es el token que ha fallado o va a caducar. Con Web Locks solo una pestaña
+// renueva a la vez; las demás esperan y reutilizan el token nuevo
+export const refreshAccessToken = (staleToken: string | null): Promise<RefreshResult> => {
+  if (typeof navigator !== 'undefined' && navigator.locks) {
+    return navigator.locks.request('trakt-token-refresh', () => requestRefresh(staleToken));
+  }
+  return requestRefresh(staleToken);
 };
 
 export const logout = (): void => {
   localStorage.removeItem('trakt_token');
   localStorage.removeItem('trakt_refresh_token');
   localStorage.removeItem('trakt_token_created_at');
+  localStorage.removeItem('trakt_token_expires_at');
 };
 
 export const hasPendingAuth = (): boolean => {
