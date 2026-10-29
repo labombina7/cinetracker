@@ -1,4 +1,5 @@
 
+import { getRedirectUri } from '@/services/trakt';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -17,7 +18,7 @@ import { toast } from '@/components/ui/use-toast';
 interface TraktClientFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (clientId: string, clientSecret: string) => void;
+  onSave: (clientId: string) => void;
 }
 
 const TraktClientForm: React.FC<TraktClientFormProps> = ({
@@ -26,15 +27,12 @@ const TraktClientForm: React.FC<TraktClientFormProps> = ({
   onSave
 }) => {
   const [clientId, setClientId] = useState<string>('');
-  const [clientSecret, setClientSecret] = useState<string>('');
   
   // Load saved credentials on mount
   useEffect(() => {
     const savedClientId = localStorage.getItem('trakt_client_id');
-    const savedClientSecret = localStorage.getItem('trakt_client_secret');
     
     if (savedClientId) setClientId(savedClientId);
-    if (savedClientSecret) setClientSecret(savedClientSecret);
   }, []);
 
   const handleSave = () => {
@@ -47,16 +45,7 @@ const TraktClientForm: React.FC<TraktClientFormProps> = ({
       return;
     }
 
-    if (!clientSecret.trim()) {
-      toast({
-        title: "Error",
-        description: "El Client Secret es obligatorio",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    onSave(clientId, clientSecret);
+    onSave(clientId.trim());
     onOpenChange(false);
     
     toast({
@@ -81,7 +70,7 @@ const TraktClientForm: React.FC<TraktClientFormProps> = ({
               <div>
                 <p className="font-medium text-amber-800">Debes registrar una aplicación en Trakt.tv</p>
                 <p className="text-amber-700 mt-1">
-                  Para obtener tu Client ID y Client Secret, debes registrar una nueva aplicación en{" "}
+                  Para obtener tu Client ID, debes registrar una nueva aplicación en{" "}
                   <a 
                     href="https://trakt.tv/oauth/applications/new" 
                     target="_blank" 
@@ -106,22 +95,10 @@ const TraktClientForm: React.FC<TraktClientFormProps> = ({
               placeholder="Ingresa tu Client ID"
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="clientSecret" className="text-right">
-              Client Secret <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="clientSecret"
-              value={clientSecret}
-              onChange={(e) => setClientSecret(e.target.value)}
-              type="password"
-              placeholder="Ingresa tu Client Secret"
-            />
-          </div>
           <div className="text-sm text-muted-foreground mt-2">
-            <p>Configura el Redirect URI en Trakt.tv como:</p>
+            <p>No hace falta Client Secret: la app usa PKCE. Configura el Redirect URI en Trakt.tv como:</p>
             <code className="bg-muted px-1 py-0.5 rounded text-xs">
-              {window.location.origin}/trakt-redirect.html
+              {getRedirectUri()}
             </code>
           </div>
         </div>

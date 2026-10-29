@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   getTraktAuthUrl, isAuthenticated, getUserInfo, logout,
-  hasClientCredentials, saveClientCredentials, clearAllTraktData
+  hasClientCredentials, saveClientCredentials, clearAllTraktData,
+  isManualAuthFlow, hasPendingAuth, parseAuthResponse, completeTraktLogin
 } from '@/services/trakt';
 import { TraktUser } from '@/services/trakt/user';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import TraktConnectionInstructions from '@/components/trakt/TraktConnectionInstr
 import TraktErrorState from '@/components/trakt/TraktErrorState';
 import TraktLoadingState from '@/components/trakt/TraktLoadingState';
 import TraktConnectPrompt from '@/components/trakt/TraktConnectPrompt';
+import TraktPasteCode from '@/components/trakt/TraktPasteCode';
 import { useFavorites } from '@/hooks/useFavorites';
 
 const TraktAuth = () => {
@@ -23,6 +25,8 @@ const TraktAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showClientForm, setShowClientForm] = useState(false);
+  const [awaitingCode, setAwaitingCode] = useState(() => isManualAuthFlow() && hasPendingAuth());
+  const [submittingCode, setSubmittingCode] = useState(false);
   const navigate = useNavigate();
   const { clearTraktFavorites } = useFavorites();
 
@@ -60,16 +64,30 @@ const TraktAuth = () => {
     }
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     try {
       if (!hasClientCredentials()) {
         setShowClientForm(true);
         return;
       }
       
-      const authUrl = getTraktAuthUrl();
-      console.log('Redirecting to Trakt auth URL:', authUrl);
-      window.location.href = authUrl;
+      if (!isManualAuthFlow()) {
+        const authUrl = await getTraktAuthUrl();
+        console.log('Redirecting to Trakt auth URL:', authUrl);
+        window.location.href = authUrl;
+        return;
+      }
+
+      // Abrir la pestaña antes del await para que el navegador no la bloquee como popup
+      const authWindow = window.open('', '_blank');
+      const authUrl = await getTraktAuthUrl();
+      console.log('Opening Trakt auth URL for manual flow:', authUrl);
+      setAwaitingCode(true);
+      if (authWindow) {
+        authWindow.location.href = authUrl;
+      } else {
+        window.location.href = authUrl;
+      }
     } catch (error) {
       console.error('Error generating auth URL:', error);
       toast({
@@ -78,6 +96,42 @@ const TraktAuth = () => {
         variant: "destructive",
       });
       setShowClientForm(true);
+    }
+  };
+
+  const handlePasteCode = async (value: string) => {
+    const { code, state } = parseAuthResponse(value);
+    if (!code) {
+      toast({
+        title: "URL no válida",
+        description: "No se encontró ningún código de autorización en lo que has pegado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmittingCode(true);
+    try {
+      const token = await completeTraktLogin(code, state);
+      if (!token) {
+        throw new Error('Failed to get access token');
+      }
+      setAwaitingCode(false);
+      toast({
+        title: "Conexión exitosa",
+        description: "Tu cuenta de Trakt.tv ha sido conectada correctamente.",
+      });
+      fetchUserInfo();
+    } catch (error) {
+      console.error('Manual auth error:', error);
+      setAwaitingCode(hasPendingAuth());
+      toast({
+        title: "Error de autenticación",
+        description: "No se pudo completar la conexión. Vuelve a pulsar \"Conectar con Trakt.tv\" e inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingCode(false);
     }
   };
 
@@ -100,8 +154,8 @@ const TraktAuth = () => {
     }
   };
 
-  const handleSaveCredentials = (clientId: string, clientSecret: string) => {
-    saveClientCredentials(clientId, clientSecret);
+  const handleSaveCredentials = (clientId: string) => {
+    saveClientCredentials(clientId);
     toast({
       title: "Credenciales guardadas",
       description: "Ahora puedes iniciar sesión en Trakt.tv",
@@ -149,7 +203,12 @@ const TraktAuth = () => {
       return <div className="text-center py-4"><p>Verificando estado de conexión...</p></div>;
     }
     
-    return <TraktConnectPrompt onConfigureCredentials={() => setShowClientForm(true)} />;
+    return (
+      <>
+        <TraktConnectPrompt onConfigureCredentials={() => setShowClientForm(true)} />
+        {awaitingCode && <TraktPasteCode onSubmit={handlePasteCode} submitting={submittingCode} />}
+      </>
+    );
   };
 
   return (

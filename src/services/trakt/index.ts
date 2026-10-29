@@ -5,8 +5,8 @@
 export { 
   TRAKT_API_URL,
   getClientId,
-  getClientSecret,
   getRedirectUri,
+  isManualAuthFlow,
   getTraktHeaders,
   isAuthenticated,
   hasClientCredentials
@@ -16,6 +16,9 @@ export {
 export {
   getTraktAuthUrl,
   getAccessToken,
+  hasPendingAuth,
+  parseAuthResponse,
+  completeTraktLogin,
   logout
 } from './auth';
 

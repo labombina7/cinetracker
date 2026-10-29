@@ -8,14 +8,20 @@ export const getClientId = (): string => {
   return localStorage.getItem('trakt_client_id') || '';
 };
 
-// Get stored client secret (if any)
-export const getClientSecret = (): string => {
-  return localStorage.getItem('trakt_client_secret') || '';
-};
+// Las apps de desarrollo de Trakt solo admiten redirecciones a localhost, así que
+// la redirect URI es fija aunque la app se sirva desde otro dominio (NAS)
+const TRAKT_REDIRECT_URI: string =
+  import.meta.env.VITE_TRAKT_REDIRECT_URI || 'http://localhost:8084/trakt-redirect.html';
 
 // Get the redirect URI
 export const getRedirectUri = (): string => {
-  return window.location.origin + '/trakt-redirect.html';
+  return TRAKT_REDIRECT_URI;
+};
+
+// Fuera de localhost, Trakt redirige a una página que no existe en este dispositivo:
+// el usuario debe copiar la URL resultante y pegarla en la app
+export const isManualAuthFlow = (): boolean => {
+  return new URL(getRedirectUri()).origin !== window.location.origin;
 };
 
 // Función para actualizar los headers de las peticiones a Trakt

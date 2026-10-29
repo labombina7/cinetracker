@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getAccessToken } from '@/services/trakt';
+import { completeTraktLogin } from '@/services/trakt';
 import { toast } from '@/components/ui/use-toast';
 
 const AuthCallback = () => {
@@ -29,15 +29,13 @@ const AuthCallback = () => {
           throw new Error('No authorization code found in response');
         }
         
-        // Verify state (security measure)
-        const savedState = localStorage.getItem('trakt_auth_state');
-        if (!state || !savedState || state !== savedState) {
+        if (!state) {
           throw new Error('State verification failed');
         }
         
-        // Exchange code for token
+        // Verify state and exchange code for token
         console.log('Exchanging code for token:', code);
-        const token = await getAccessToken(code);
+        const token = await completeTraktLogin(code, state);
         
         if (token) {
           toast({

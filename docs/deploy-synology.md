@@ -85,37 +85,22 @@ http://192.168.1.146:8080/
 
 ## 4. Configuración Trakt
 
-- `redirect_uri` registrado en Trakt:
+Trakt ya no emite Client Secret: la conexión usa **PKCE** y solo hace falta el Client ID.
+Sin plan de desarrollador de pago solo se pueden crear apps de tipo **Development**,
+que únicamente admiten redirecciones a `localhost`.
+
+- Crea una app **Development** en https://trakt.tv/oauth/applications/new con la Redirect URI:
 
 ```
-https://xava73.synology.me:5554/trakt-redirect.html
+http://localhost:8084/trakt-redirect.html
 ```
 
-- En tu frontend, asegúrate de que al iniciar login haces:
-
-```ts
-const state = crypto.randomUUID();
-sessionStorage.setItem("trakt_state", state);
-
-const traktUrl = `https://trakt.tv/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
-window.location.href = traktUrl;
-```
-
-- En `AuthCallback.tsx`:
-
-```ts
-const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
-const returnedState = params.get("state");
-const expectedState = sessionStorage.getItem("trakt_state");
-
-if (returnedState !== expectedState) {
-  console.error("State verification failed");
-  return;
-}
-
-// POST a Trakt para recuperar el token
-```
+- En local (`npm run dev`) el login es automático.
+- En el NAS, tras autorizar en Trakt el navegador abre esa URL de `localhost` (no carga, es normal):
+  copia la URL completa de la barra de direcciones y pégala en la pantalla de Trakt de la app.
+- Si en el futuro hay app de producción, compila con
+  `VITE_TRAKT_REDIRECT_URI=https://xava73.synology.me:5554/trakt-redirect.html`
+  y registra esa URI en Trakt: el login vuelve a ser automático también en el NAS.
 
 ---
 
