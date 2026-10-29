@@ -27,6 +27,8 @@ export const mediaDetailTranslations = {
     actors: "Actores principales",
     loadingCast: "Cargando reparto...",
     watchTrailer: "Ver tráiler",
+    directedBy: "Dirigida por",
+    createdBy: "Creada por",
     videos: "Vídeos",
     videoTypes: {
       Trailer: "Tráiler",
@@ -66,6 +68,8 @@ export const mediaDetailTranslations = {
     actors: "Main Cast",
     loadingCast: "Loading cast...",
     watchTrailer: "Watch trailer",
+    directedBy: "Directed by",
+    createdBy: "Created by",
     videos: "Videos",
     videoTypes: {
       Trailer: "Trailer",

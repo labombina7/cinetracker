@@ -13,7 +13,48 @@ export const actorProfileTranslations = {
     errorLoading: "No se pudo cargar el perfil. Inténtalo de nuevo.",
     retry: "Reintentar",
     back: "Volver",
-    noCredits: "No hay títulos disponibles."
+    noCredits: "No hay títulos disponibles.",
+    filmography: "Filmografía",
+    credits: "créditos",
+    upcoming: "Próximamente",
+    noDate: "Próximamente / sin fecha",
+    episodes: "ep.",
+    all: "Todo",
+    movies: "Películas",
+    series: "Series",
+    allRoles: "Todos los roles",
+    roles: {
+      acting: "Interpretación",
+      directing: "Dirección",
+      writing: "Guion",
+      production: "Producción",
+      other: "Otros"
+    },
+    onlyMine: "Solo en mis plataformas",
+    noPlatformsConfigured: "Elige tus plataformas en Ajustes para usar este filtro",
+    checkingPlatforms: "Comprobando disponibilidad…",
+    noResults: "Ningún título coincide con los filtros.",
+    photos: "Fotos",
+    movie: "Película",
+    tv: "Serie",
+    // Cargos de TMDB (vienen siempre en inglés); los no listados se muestran tal cual
+    jobs: {
+      Director: "Dirección",
+      "Co-Director": "Codirección",
+      Writer: "Guion",
+      Screenplay: "Guion",
+      Story: "Historia",
+      Novel: "Novela",
+      Characters: "Personajes",
+      Creator: "Creación",
+      Producer: "Producción",
+      "Executive Producer": "Producción ejecutiva",
+      "Co-Producer": "Coproducción",
+      "Co-Executive Producer": "Coproducción ejecutiva",
+      Editor: "Montaje",
+      "Director of Photography": "Fotografía",
+      "Original Music Composer": "Música"
+    } as Record<string, string>
   },
   en: {
     knownFor: "Known for",
@@ -29,6 +70,30 @@ export const actorProfileTranslations = {
     errorLoading: "Couldn't load the profile. Please try again.",
     retry: "Retry",
     back: "Back",
-    noCredits: "No titles available."
+    noCredits: "No titles available.",
+    filmography: "Filmography",
+    credits: "credits",
+    upcoming: "Upcoming",
+    noDate: "Upcoming / no date",
+    episodes: "ep.",
+    all: "All",
+    movies: "Movies",
+    series: "TV Shows",
+    allRoles: "All roles",
+    roles: {
+      acting: "Acting",
+      directing: "Directing",
+      writing: "Writing",
+      production: "Production",
+      other: "Other"
+    },
+    onlyMine: "Only on my platforms",
+    noPlatformsConfigured: "Pick your platforms in Settings to use this filter",
+    checkingPlatforms: "Checking availability…",
+    noResults: "No titles match the filters.",
+    photos: "Photos",
+    movie: "Movie",
+    tv: "TV Show",
+    jobs: {} as Record<string, string>
   }
 };
