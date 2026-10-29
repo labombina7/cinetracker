@@ -3,13 +3,10 @@ import { toast } from 'sonner';
 import { refreshAccessToken } from './auth';
 import { getTraktHeaders } from './config';
 
-export const saveClientCredentials = (clientId: string, clientSecret: string): void => {
+export const saveClientCredentials = (clientId: string): void => {
   localStorage.setItem('trakt_client_id', clientId);
-  if (clientSecret) {
-    localStorage.setItem('trakt_client_secret', clientSecret);
-  } else {
-    localStorage.removeItem('trakt_client_secret');
-  }
+  // Trakt ya no emite Client Secret: limpiar el de configuraciones antiguas
+  localStorage.removeItem('trakt_client_secret');
 };
 
 export const clearAllTraktData = (): void => {
@@ -18,6 +15,7 @@ export const clearAllTraktData = (): void => {
   localStorage.removeItem('trakt_token_created_at');
   localStorage.removeItem('trakt_client_id');
   localStorage.removeItem('trakt_client_secret');
+  localStorage.removeItem('trakt_code_verifier');
 };
 
 // Shared refresh promise to avoid race conditions when multiple requests expire simultaneously

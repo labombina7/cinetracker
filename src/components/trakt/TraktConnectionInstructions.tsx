@@ -1,4 +1,5 @@
 
+import { getRedirectUri } from '@/services/trakt';
 import React from 'react';
 import { AlertTriangle, ExternalLink, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,18 +48,19 @@ const TraktConnectionInstructions: React.FC<TraktConnectionInstructionsProps> = 
             className="text-primary font-medium inline-flex items-center"
           >
             Crear Nueva Aplicación <ExternalLink className="h-3 w-3 ml-0.5" />
-          </a>
+          </a>{' '}
+          de tipo <strong>Development</strong>
           </li>
           <li>Completa el formulario con la siguiente información:
             <ul className="list-disc pl-5 mt-1">
               <li>Nombre: CineTracker (o el que prefieras)</li>
-              <li>Redirect URI: <code className="bg-muted px-1 py-0.5 rounded">{window.location.origin}/auth/callback</code></li>
+              <li>Redirect URI: <code className="bg-muted px-1 py-0.5 rounded">{getRedirectUri()}</code></li>
               <li>Descripción: Sincronización de películas y series</li>
               <li>Acepta los términos y condiciones</li>
             </ul>
           </li>
-          <li>Copia el Client ID y Client Secret generados</li>
-          <li>Pégalos en el formulario de configuración de esta aplicación</li>
+          <li>Copia el Client ID generado (no hace falta Client Secret: la conexión usa PKCE)</li>
+          <li>Pégalo en el formulario de configuración de esta aplicación</li>
         </ol>
       </div>
     </div>
